@@ -8,6 +8,11 @@ repository = "https://github.com/peterellisjones/rust_move_gen.git"
 keywords = ["chess"]
 categories = ["game-engines"]
 license = "MIT"
+include = [
+    "src/*.rs",
+    "Cargo.toml",
+    "LICENSE.txt"
+]
 
 [dependencies]
 rand = "*"
