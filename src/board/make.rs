@@ -81,7 +81,6 @@ impl Board {
 
 
         xor_key ^= self.hash.state(&initial_state, &self.state);
-        println!("{} key: {}", mv, xor_key);
 
         self.key ^= xor_key;
 
