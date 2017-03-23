@@ -1,0 +1,9 @@
+[package]
+name = "chess-move-gen"
+version = "0.1.0"
+authors = ["Peter Ellis Jones <pete@peterellisjones.com>"]
+
+[dependencies]
+rand = "*"
+unindent = "*"
+simd = "*"
