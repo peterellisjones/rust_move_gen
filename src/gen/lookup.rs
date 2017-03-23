@@ -31,12 +31,14 @@ pub fn knight_moves<L: MoveList>(board: &Board, to_mask: BB, from_mask: BB, list
     }
 }
 
+#[inline]
 pub fn king_moves_from_sq(sq: Square) -> BB {
     unsafe {
         return *KING_MOVES.get_unchecked(sq.to_usize());
     }
 }
 
+#[inline]
 pub fn knight_moves_from_sq(sq: Square) -> BB {
     unsafe {
         return *KNIGHT_MOVES.get_unchecked(sq.to_usize());

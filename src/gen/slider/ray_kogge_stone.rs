@@ -4,12 +4,14 @@ use bb::*;
 use dbb::*;
 
 /// calculates the bitboard of pinned pieces
+#[inline]
 pub fn pinned_pieces(king: BB, empty: BB, enemy_diag: BB, enemy_non_diag: BB) -> BB {
     diag_pinned_pieces(king, empty, enemy_diag) |
     non_diag_pinned_pieces(king, empty, enemy_non_diag)
 }
 
 #[cfg(not(target_feature = "sse3"))]
+#[inline]
 fn diag_pinned_pieces(king: BB, empty: BB, enemy_bishops: BB) -> BB {
     let north_west = king.north_west_attacks(empty) & enemy_bishops.south_east_attacks(empty);
     let south_west = king.south_west_attacks(empty) & enemy_bishops.north_east_attacks(empty);
@@ -20,6 +22,7 @@ fn diag_pinned_pieces(king: BB, empty: BB, enemy_bishops: BB) -> BB {
 }
 
 #[cfg(target_feature = "sse3")]
+#[inline]
 fn diag_pinned_pieces(king_bb: BB, empty_bb: BB, enemy_bishops_bb: BB) -> BB {
     let king_and_enemy_bishops = DBB::new(king_bb, enemy_bishops_bb);
     let enemy_bishop_and_king = DBB::new(enemy_bishops_bb, king_bb);
@@ -36,6 +39,7 @@ fn diag_pinned_pieces(king_bb: BB, empty_bb: BB, enemy_bishops_bb: BB) -> BB {
 }
 
 #[cfg(not(target_feature = "sse3"))]
+#[inline]
 fn non_diag_pinned_pieces(king: BB, empty: BB, enemy_rooks: BB) -> BB {
     let north = king.north_attacks(empty) & enemy_rooks.south_attacks(empty);
     let south = king.south_attacks(empty) & enemy_rooks.north_attacks(empty);
@@ -46,6 +50,7 @@ fn non_diag_pinned_pieces(king: BB, empty: BB, enemy_rooks: BB) -> BB {
 }
 
 #[cfg(target_feature = "sse3")]
+#[inline]
 fn non_diag_pinned_pieces(king_bb: BB, empty_bb: BB, enemy_rooks: BB) -> BB {
     let king_and_enemy_rooks = DBB::new(king_bb, enemy_rooks);
     let enemy_rooks_and_king = DBB::new(enemy_rooks, king_bb);
@@ -62,6 +67,7 @@ fn non_diag_pinned_pieces(king_bb: BB, empty_bb: BB, enemy_rooks: BB) -> BB {
 }
 
 #[cfg(not(target_feature = "sse3"))]
+#[inline]
 pub fn diag_pin_rays_including_attackers(source: BB, empty: BB, enemy_diag_pieces: BB) -> (BB, BB) {
     let north_west = source.north_west_attacks(empty) &
                      enemy_diag_pieces.occluded_south_east_fill(empty);
@@ -76,6 +82,7 @@ pub fn diag_pin_rays_including_attackers(source: BB, empty: BB, enemy_diag_piece
 }
 
 #[cfg(target_feature = "sse3")]
+#[inline]
 pub fn diag_pin_rays_including_attackers(source_bb: BB,
                                          empty_bb: BB,
                                          enemy_diag_bb: BB)
@@ -98,6 +105,7 @@ pub fn diag_pin_rays_including_attackers(source_bb: BB,
 
 /// TODO: can we do north-south attacks together by considering the king an attacker?
 #[cfg(not(target_feature = "sse3"))]
+#[inline]
 pub fn non_diag_pin_rays_including_attackers(source: BB,
                                              empty: BB,
                                              enemy_non_diag_pieces: BB)
@@ -111,6 +119,7 @@ pub fn non_diag_pin_rays_including_attackers(source: BB,
 }
 
 #[cfg(target_feature = "sse3")]
+#[inline]
 pub fn non_diag_pin_rays_including_attackers(source_bb: BB,
                                              empty_bb: BB,
                                              enemy_non_diag_bb: BB)
@@ -132,6 +141,7 @@ pub fn non_diag_pin_rays_including_attackers(source_bb: BB,
 }
 
 #[cfg(not(target_feature = "sse3"))]
+#[inline]
 pub fn pin_ray_diag(source: BB, empty: BB, enemy_diag_pieces: BB) -> BB {
     let north_west = source.occluded_north_west_fill(empty) &
                      enemy_diag_pieces.occluded_south_east_fill(empty);
@@ -145,8 +155,8 @@ pub fn pin_ray_diag(source: BB, empty: BB, enemy_diag_pieces: BB) -> BB {
     north_east | north_west | south_east | south_west
 }
 
-
 #[cfg(not(target_feature = "sse3"))]
+#[inline]
 pub fn pin_ray_non_diag(source: BB, empty: BB, enemy_non_diag_pieces: BB) -> BB {
     let north = source.occluded_north_fill(empty) &
                 enemy_non_diag_pieces.occluded_south_fill(empty);
@@ -158,8 +168,8 @@ pub fn pin_ray_non_diag(source: BB, empty: BB, enemy_non_diag_pieces: BB) -> BB 
     north | west | south | east
 }
 
-
 #[cfg(target_feature = "sse3")]
+#[inline]
 pub fn pin_ray_diag(source_bb: BB, empty_bb: BB, enemy_diag_bb: BB) -> BB {
     let source_and_diag = DBB::new(source_bb, enemy_diag_bb);
     let diag_and_source = DBB::new(enemy_diag_bb, source_bb);
@@ -177,6 +187,7 @@ pub fn pin_ray_diag(source_bb: BB, empty_bb: BB, enemy_diag_bb: BB) -> BB {
 }
 
 #[cfg(target_feature = "sse3")]
+#[inline]
 pub fn pin_ray_non_diag(source_bb: BB, empty_bb: BB, enemy_non_diag_bb: BB) -> BB {
     let source_and_non_diag = DBB::new(source_bb, enemy_non_diag_bb);
     let non_diag_and_source = DBB::new(enemy_non_diag_bb, source_bb);
@@ -193,12 +204,14 @@ pub fn pin_ray_non_diag(source_bb: BB, empty_bb: BB, enemy_non_diag_bb: BB) -> B
     pos | neg
 }
 
+#[inline]
 pub fn rook_attacks(from: BB, occupied: BB) -> BB {
     let empty = !occupied;
     from.east_attacks(empty) | from.north_attacks(empty) | from.south_attacks(empty) |
     from.west_attacks(empty)
 }
 
+#[inline]
 pub fn bishop_attacks(from: BB, occupied: BB) -> BB {
     let empty = !occupied;
     from.north_east_attacks(empty) | from.north_west_attacks(empty) |

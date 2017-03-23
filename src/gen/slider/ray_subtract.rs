@@ -5,10 +5,12 @@ use dbb::*;
 
 use simd::x86::sse2::*;
 
+#[inline]
 pub fn rook_attacks_from_sq(from: Square, occupied: BB) -> BB {
     file_attacks_from_sq(from, occupied) | rank_attacks_from_sq(from, occupied)
 }
 
+#[inline]
 pub fn file_attacks_from_sq(from: Square, occupied: BB) -> BB {
     let source = BB::new(from);
 
@@ -18,6 +20,7 @@ pub fn file_attacks_from_sq(from: Square, occupied: BB) -> BB {
     ((forward - source) ^ (backward - source.bswap()).bswap()) & filemask
 }
 
+#[inline]
 pub fn rank_attacks_from_sq(from: Square, occupied: BB) -> BB {
     let rank_x8 = from.raw() & 56;
     let file = from.raw() & 7;
@@ -30,6 +33,7 @@ pub fn rank_attacks_from_sq(from: Square, occupied: BB) -> BB {
 }
 
 #[cfg(not(target_feature = "sse3"))]
+#[inline]
 pub fn bishop_attacks_from_sq(from: Square, occupied: BB) -> BB {
     let source = BB::new(from);
 
@@ -48,6 +52,7 @@ pub fn bishop_attacks_from_sq(from: Square, occupied: BB) -> BB {
 }
 
 #[cfg(target_feature = "sse3")]
+#[inline]
 pub fn bishop_attacks_from_sq(from: Square, occupied_bb: BB) -> BB {
     let source_bb = BB::new(from);
     let source = DBB::splat(source_bb);
@@ -67,6 +72,7 @@ pub fn bishop_attacks_from_sq(from: Square, occupied_bb: BB) -> BB {
 }
 
 #[cfg(not(target_feature = "sse3"))]
+#[inline]
 pub fn diagonals_from_sq(sq: Square) -> BB {
     unsafe {
         return *DIAGONALS.get_unchecked(sq.to_usize());
@@ -74,6 +80,7 @@ pub fn diagonals_from_sq(sq: Square) -> BB {
 }
 
 #[cfg(not(target_feature = "sse3"))]
+#[inline]
 pub fn anti_diagonals_from_sq(sq: Square) -> BB {
     unsafe {
         return *ANTI_DIAGONALS.get_unchecked(sq.to_usize());

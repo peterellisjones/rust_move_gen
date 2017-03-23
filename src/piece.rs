@@ -28,14 +28,17 @@ const NAMES: [&'static str; 12] = ["white bishop",
 pub struct Kind(pub Internal);
 
 impl Kind {
+    #[inline]
     pub fn pc(&self, side: Side) -> Piece {
         Piece((self.0 << 1) | side.raw() as Internal)
     }
 
+    #[inline]
     pub fn to_usize(&self) -> usize {
         self.0 as usize
     }
 
+    #[inline]
     pub fn to_u8(&self) -> u8 {
         self.0 as u8
     }

@@ -113,13 +113,15 @@ impl Board {
         }
     }
 
+    #[inline]
     fn unmake_castle(&mut self, castle: Castle, stm: Side) {
         let (to, from) = castle_king_squares(stm, castle);
         self.move_piece(from, to);
         let (to, from) = castle_rook_squares(stm, castle);
         self.move_piece(from, to);
     }
-
+    
+    #[inline]
     fn make_castle(&mut self, castle: Castle, stm: Side) {
         let (from, to) = castle_king_squares(stm, castle);
         self.move_piece(from, to);

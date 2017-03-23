@@ -102,21 +102,25 @@ impl Board {
         to_fen(&self.grid, &self.state)
     }
 
+    #[inline]
     pub fn hash_key(&self) -> u64 {
         self.key
     }
 
     /// Get board non-positional state
+    #[inline]
     pub fn state(&self) -> &State {
         &self.state
     }
 
     /// Get board position
+    #[inline]
     pub fn grid(&self) -> &[Option<Piece>; 64] {
         &self.grid
     }
 
     /// Get piece at square
+    #[inline]
     pub fn at(&self, sq: Square) -> Option<Piece> {
         unsafe { return *self.grid.get_unchecked(sq.to_usize()) }
     }
@@ -133,6 +137,7 @@ impl Board {
                                   props.as_slice())
     }
 
+    #[inline]
     fn put_piece(&mut self, pc: Piece, sq: Square) {
         debug_assert!(self.at(sq).is_none());
         self.grid[sq.to_usize()] = Some(pc);
@@ -142,7 +147,7 @@ impl Board {
         self.bb_pieces[idx] |= bb_mask;
     }
 
-
+    #[inline]
     fn remove_piece(&mut self, sq: Square) {
         debug_assert!(self.at(sq).is_some());
         let pc = self.grid[sq.to_usize()].unwrap();
@@ -153,6 +158,7 @@ impl Board {
         self.bb_pieces[idx] &= bb_mask;
     }
 
+    #[inline]
     fn move_piece(&mut self, from: Square, to: Square) -> BB {
         debug_assert!(self.at(from).is_some());
         debug_assert!(self.at(to).is_none());

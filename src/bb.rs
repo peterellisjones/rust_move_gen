@@ -12,11 +12,13 @@ use rand;
 pub struct BB(pub u64);
 
 impl BB {
+    #[inline]
     pub fn new(sq: Square) -> BB {
         BB(1u64 << sq.to_usize())
     }
 
     /// Creates a random bitboard with a given average density
+    #[inline]
     #[cfg(test)]
     pub fn random(density: f64) -> BB {
         let mut u = 0u64;
@@ -30,41 +32,50 @@ impl BB {
         BB(u)
     }
 
+    #[inline]
     pub fn to_u64(&self) -> u64 {
         self.0
     }
 
+    #[inline]
     pub fn to_usize(&self) -> usize {
         self.0 as usize
     }
 
     /// true if non empty
+    #[inline]
     pub fn any(&self) -> bool {
         self.0 != 0u64
     }
 
     /// swaps bytes
+    #[inline]
     pub fn bswap(&self) -> BB {
         BB(self.0.swap_bytes())
     }
 
+    #[inline]
     pub fn rot_left(&self, amount: u32) -> BB {
         BB(self.0.rotate_left(amount))
     }
 
+    #[inline]
     pub fn rot_right(&self, amount: u32) -> BB {
         BB(self.0.rotate_right(amount))
     }
 
+    #[inline]
     pub fn is_set(&self, sq: Square) -> bool {
         (self.0 >> sq.to_usize()) & 1 != 0
     }
 
+    #[inline]
     pub fn row_empty(&self, row: usize) -> bool {
         let row_mask = 0xFFu64 << (row * 8);
         (self.0 & row_mask) == 0u64
     }
 
+    #[inline]
     pub fn pop_count(&self) -> u32 {
         self.0.count_ones()
     }
@@ -73,27 +84,33 @@ impl BB {
         grid_to_string(|sq: Square| -> char { if self.is_set(sq) { '#' } else { '.' } })
     }
 
+    #[inline]
     fn lsb(&self) -> BB {
         BB(self.0 & 0u64.wrapping_sub(self.0))
     }
 
+    #[inline]
     pub fn bitscan(&self) -> Square {
         Square::new(self.0.trailing_zeros() as usize)
     }
 
     #[allow(dead_code)]
+    #[inline]
     pub fn bitscan_reverse(&self) -> Square {
         Square::new((self.0.leading_zeros() ^ 63) as usize)
     }
 
+    #[inline]
     pub fn iter(self) -> BBIterator {
         BBIterator(self)
     }
 
+    #[inline]
     pub fn square_list(&self) -> Vec<Square> {
         self.iter().map(|(sq, _)| sq).collect::<Vec<Square>>()
     }
 
+    #[inline]
     pub fn occluded_east_fill(&self, empty: BB) -> BB {
         let mut prop = empty.0 & NOT_FILE_A.0;
         let mut gen = self.0;
@@ -107,12 +124,14 @@ impl BB {
         BB(gen)
     }
 
+    #[inline]
     pub fn east_attacks(&self, empty: BB) -> BB {
         let gen = self.occluded_east_fill(empty);
 
         (gen << 1) & NOT_FILE_A
     }
 
+    #[inline]
     pub fn occluded_north_east_fill(&self, empty: BB) -> BB {
         let mut prop = empty.0 & NOT_FILE_A.0;
         let mut gen = self.0;
@@ -126,12 +145,14 @@ impl BB {
         BB(gen)
     }
 
+    #[inline]
     pub fn north_east_attacks(&self, empty: BB) -> BB {
         let gen = self.occluded_north_east_fill(empty);
 
         (gen << 9) & NOT_FILE_A
     }
 
+    #[inline]
     pub fn occluded_north_fill(&self, empty: BB) -> BB {
         let mut prop = empty.0;
         let mut gen = self.0;
@@ -145,12 +166,14 @@ impl BB {
         BB(gen)
     }
 
+    #[inline]
     pub fn north_attacks(&self, empty: BB) -> BB {
         let gen = self.occluded_north_fill(empty);
 
         gen << 8
     }
 
+    #[inline]
     pub fn occluded_south_east_fill(&self, empty: BB) -> BB {
         let mut prop = empty.0 & NOT_FILE_A.0;
         let mut gen = self.0;
@@ -164,12 +187,14 @@ impl BB {
         BB(gen)
     }
 
+    #[inline]
     pub fn south_east_attacks(&self, empty: BB) -> BB {
         let gen = self.occluded_south_east_fill(empty);
 
         (gen >> 7) & NOT_FILE_A
     }
 
+    #[inline]
     pub fn occluded_west_fill(&self, empty: BB) -> BB {
         let mut prop = empty.0 & NOT_FILE_H.0;
         let mut gen = self.0;
@@ -183,12 +208,14 @@ impl BB {
         BB(gen)
     }
 
+    #[inline]
     pub fn west_attacks(&self, empty: BB) -> BB {
         let gen = self.occluded_west_fill(empty);
 
         (gen >> 1) & NOT_FILE_H
     }
 
+    #[inline]
     pub fn occluded_south_west_fill(&self, empty: BB) -> BB {
         let mut prop = empty.0 & NOT_FILE_H.0;
         let mut gen = self.0;
@@ -202,12 +229,14 @@ impl BB {
         BB(gen)
     }
 
+    #[inline]
     pub fn south_west_attacks(&self, empty: BB) -> BB {
         let gen = self.occluded_south_west_fill(empty);
 
         (gen >> 9) & NOT_FILE_H
     }
 
+    #[inline]
     pub fn occluded_north_west_fill(&self, empty: BB) -> BB {
         let mut prop = empty.0 & NOT_FILE_H.0;
         let mut gen = self.0;
@@ -221,12 +250,14 @@ impl BB {
         BB(gen)
     }
 
+    #[inline]
     pub fn north_west_attacks(&self, empty: BB) -> BB {
         let gen = self.occluded_north_west_fill(empty);
 
         (gen << 7) & NOT_FILE_H
     }
 
+    #[inline]
     pub fn occluded_south_fill(&self, empty: BB) -> BB {
         let mut prop = empty.0;
         let mut gen = self.0;
@@ -240,54 +271,63 @@ impl BB {
         BB(gen)
     }
 
+    #[inline]
     pub fn south_attacks(&self, empty: BB) -> BB {
         let gen = self.occluded_south_fill(empty);
 
         gen >> 8
     }
 
+    #[inline]
     pub fn occluded_east_fill_with_occluders(&self, empty: BB) -> BB {
         let gen = self.occluded_east_fill(empty);
 
         BB(gen.0 | ((gen.0 << 1) & NOT_FILE_A.0))
     }
 
+    #[inline]
     pub fn occluded_north_east_fill_with_occluders(&self, empty: BB) -> BB {
         let gen = self.occluded_north_east_fill(empty);
 
         BB(gen.0 | ((gen.0 << 9) & NOT_FILE_A.0))
     }
 
+    #[inline]
     pub fn occluded_north_fill_with_occluders(&self, empty: BB) -> BB {
         let gen = self.occluded_north_fill(empty);
 
         BB(gen.0 | (gen.0 << 8))
     }
 
+    #[inline]
     pub fn occluded_south_east_fill_with_occluders(&self, empty: BB) -> BB {
         let gen = self.occluded_south_east_fill(empty);
 
         BB(gen.0 | ((gen.0 >> 7) & NOT_FILE_A.0))
     }
 
+    #[inline]
     pub fn occluded_west_fill_with_occluders(&self, empty: BB) -> BB {
         let gen = self.occluded_west_fill(empty);
 
         BB(gen.0 | ((gen.0 >> 1) & NOT_FILE_H.0))
     }
 
+    #[inline]
     pub fn occluded_south_west_fill_with_occluders(&self, empty: BB) -> BB {
         let gen = self.occluded_south_west_fill(empty);
 
         BB(gen.0 | ((gen.0 >> 9) & NOT_FILE_H.0))
     }
 
+    #[inline]
     pub fn occluded_north_west_fill_with_occluders(&self, empty: BB) -> BB {
         let gen = self.occluded_north_west_fill(empty);
 
         BB(gen.0 | ((gen.0 << 7) & NOT_FILE_H.0))
     }
 
+    #[inline]
     pub fn occluded_south_fill_with_occluders(&self, empty: BB) -> BB {
         let gen = self.occluded_south_fill(empty);
 
@@ -299,6 +339,7 @@ impl BB {
 impl Shr<usize> for BB {
     type Output = BB;
 
+    #[inline]
     fn shr(self, amount: usize) -> BB {
         BB(self.0 >> amount)
     }
@@ -307,6 +348,7 @@ impl Shr<usize> for BB {
 impl Shl<usize> for BB {
     type Output = BB;
 
+    #[inline]
     fn shl(self, amount: usize) -> BB {
         BB(self.0 << amount)
     }
@@ -315,6 +357,7 @@ impl Shl<usize> for BB {
 impl Not for BB {
     type Output = BB;
 
+    #[inline]
     fn not(self) -> BB {
         BB(!self.0)
     }
@@ -323,12 +366,14 @@ impl Not for BB {
 impl BitOr for BB {
     type Output = BB;
 
+    #[inline]
     fn bitor(self, other: BB) -> BB {
         BB(self.0 | other.0)
     }
 }
 
 impl BitOrAssign for BB {
+    #[inline]
     fn bitor_assign(&mut self, other: BB) {
         self.0 |= other.0
     }
@@ -338,12 +383,14 @@ impl BitOrAssign for BB {
 impl BitXor for BB {
     type Output = BB;
 
+    #[inline]
     fn bitxor(self, other: BB) -> BB {
         BB(self.0 ^ other.0)
     }
 }
 
 impl BitXorAssign for BB {
+    #[inline]
     fn bitxor_assign(&mut self, other: BB) {
         self.0 ^= other.0
     }
@@ -352,12 +399,14 @@ impl BitXorAssign for BB {
 impl BitAnd for BB {
     type Output = BB;
 
+    #[inline]
     fn bitand(self, other: BB) -> BB {
         BB(self.0 & other.0)
     }
 }
 
 impl BitAndAssign for BB {
+    #[inline]
     fn bitand_assign(&mut self, other: BB) {
         self.0 &= other.0
     }
@@ -366,6 +415,7 @@ impl BitAndAssign for BB {
 impl Sub for BB {
     type Output = BB;
 
+    #[inline]
     fn sub(self, other: BB) -> BB {
         BB((Wrapping(self.0) - Wrapping(other.0)).0)
     }
@@ -403,6 +453,8 @@ pub struct BBIterator(BB);
 
 impl Iterator for BBIterator {
     type Item = (Square, BB);
+
+    #[inline]
     fn next(&mut self) -> Option<(Square, BB)> {
         if (self.0).0 == EMPTY.0 {
             return None;

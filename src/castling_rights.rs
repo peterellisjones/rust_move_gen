@@ -20,38 +20,46 @@ pub const WHITE_RIGHTS: CastlingRights = CastlingRights(1 | 4);
 const CASTLING_RIGHTS_CHARS: [char; 4] = ['Q', 'q', 'K', 'k'];
 
 impl CastlingRights {
+    #[inline]
     pub fn to_usize(&self) -> Internal {
         self.0
     }
 
+    #[inline]
     pub fn has(&self, right: CastlingRights) -> bool {
         self.0 & right.0 != 0
     }
 
     #[allow(dead_code)]
+    #[inline]
     pub fn add(&mut self, castle: Castle, side: Side) {
         self.0 |= CastlingRights::from(castle, side).to_usize()
     }
 
+    #[inline]
     pub fn set(&mut self, rights: CastlingRights) {
         self.0 |= rights.0;
     }
 
+    #[inline]
     pub fn clear_side(&mut self, side: Side) {
         let rights = WHITE_RIGHTS.0 << side.raw();
         self.0 &= !rights;
     }
 
+    #[inline]
     pub fn clear(&mut self, rights: CastlingRights) {
         self.0 &= !rights.0;
     }
 
     #[allow(dead_code)]
+    #[inline]
     pub fn side_can(&self, side: Side) -> bool {
         let rights = WHITE_RIGHTS.0 << side.raw();
         self.0 & rights != 0
     }
 
+    #[inline]
     pub fn any(&self) -> bool {
         self.0 != 0
     }
@@ -73,6 +81,7 @@ impl CastlingRights {
         string
     }
 
+    #[inline]
     pub fn from(castle: Castle, side: Side) -> CastlingRights {
 
         CastlingRights(1 << (castle.to_usize() * 2 + side.0))

@@ -14,16 +14,18 @@ impl Side {
         CHARS[self.to_usize()]
     }
 
-
+    #[inline]
     pub fn to_usize(&self) -> usize {
         self.0
     }
 
+    #[inline]
     pub fn raw(&self) -> Internal {
         self.0
     }
 
     /// Flip switches sides
+    #[inline]
     pub fn flip(&self) -> Side {
         Side(self.0 ^ 1)
     }

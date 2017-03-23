@@ -127,28 +127,34 @@ impl Zobrist {
     }
 
     /// Generates the difference between two states
+    #[inline]
     pub fn state(&self, before: &State, after: &State) -> u64 {
         self.castling_rights[before.castling_rights.to_usize()] ^
         self.castling_rights[after.castling_rights.to_usize()] ^
         self.ep_hash(before.ep_square) ^ self.ep_hash(after.ep_square) ^ self.stm
     }
 
+    #[inline]
     pub fn castle(&self, castle: Castle, stm: Side) -> u64 {
         self.castles[castle.to_usize()][stm.to_usize()]
     }
 
+    #[inline]
     pub fn capture(&self, captured: Piece, capture_square: Square) -> u64 {
         self.piece_square(captured, capture_square)
     }
 
+    #[inline]
     pub fn push(&self, pc_from: Piece, from: Square, pc_to: Piece, to: Square) -> u64 {
         self.piece_square(pc_from, from) ^ self.piece_square(pc_to, to)
     }
 
+    #[inline]
     fn piece_square(&self, piece: Piece, square: Square) -> u64 {
         self.pieces[piece.to_usize()].rotate_left(square.to_u32())
     }
 
+    #[inline]
     fn ep_hash(&self, ep_square: Option<Square>) -> u64 {
         if ep_square.is_some() {
             self.en_passant_file[ep_square.unwrap().col()]

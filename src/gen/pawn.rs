@@ -23,6 +23,7 @@ pub fn pawn_moves<L: MoveList>(board: &Board,
 static PAWN_CAPTURE_FILE_MASKS: [[(usize, BB); 2]; 2] =
     [[(7, NOT_FILE_H), (9, NOT_FILE_A)], [(64 - 9, NOT_FILE_H), (64 - 7, NOT_FILE_A)]];
 
+#[inline]
 pub fn get_pawn_capture_file_masks<'a>(s: Side) -> &'a [(usize, BB); 2] {
     unsafe {
         return PAWN_CAPTURE_FILE_MASKS.get_unchecked(s.to_usize());
@@ -31,6 +32,7 @@ pub fn get_pawn_capture_file_masks<'a>(s: Side) -> &'a [(usize, BB); 2] {
 
 static PUSH_SHIFTS: [usize; 2] = [8, 64 - 8];
 
+#[inline]
 fn pawn_push_shift(s: Side) -> usize {
     unsafe {
         return *PUSH_SHIFTS.get_unchecked(s.to_usize());
@@ -39,12 +41,14 @@ fn pawn_push_shift(s: Side) -> usize {
 
 static PAWN_DOUBLE_PUSH_TARGETS: [BB; 2] = [ROW_4, ROW_5];
 
+#[inline]
 fn pawn_double_push_targets(s: Side) -> BB {
     unsafe {
         return *PAWN_DOUBLE_PUSH_TARGETS.get_unchecked(s.to_usize());
     }
 }
 
+#[inline]
 pub fn pawn_pushes<L: MoveList>(board: &Board, to_mask: BB, from_mask: BB, list: &mut L) {
     // NOTE in the case of EP capture, mask is for the enemy piece taken
     let stm = board.state().stm;

@@ -7,12 +7,14 @@ use super::slider::*;
 use super::pawn::*;
 use super::lookup::*;
 
+#[inline]
 pub fn slider_non_diag_rays_to_squares(source: BB, attacker: BB, board: &Board) -> BB {
     let empty = board.bb_empty();
 
     pin_ray_non_diag(source, empty, attacker)
 }
 
+#[inline]
 pub fn slider_diag_rays_to_squares(source: BB, attacker: BB, board: &Board) -> BB {
     let empty = board.bb_empty();
 
