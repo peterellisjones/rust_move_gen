@@ -10,13 +10,14 @@ use castling_rights::*;
 use side::*;
 use super::util::grid_to_string_with_props;
 use self::fen::*;
+use hash::{Zobrist, DEFAULT_ZOBRISH_HASH};
 
 use std;
 
 pub const STARTING_POSITION_FEN: &'static str = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w \
                                                  QqKk - 0 1";
 
-/// State encodes non-positional state of the game
+/// State encodes all game state except position
 #[derive(Debug, Clone)]
 pub struct State {
     pub castling_rights: CastlingRights,
@@ -36,6 +37,9 @@ pub struct Board {
     bb_pieces: [BB; 12],
     // state represents non-positional game state (eg side to move)
     state: State,
+
+    key: u64,
+    hash: &'static Zobrist,
 }
 
 impl std::clone::Clone for Board {
@@ -45,6 +49,8 @@ impl std::clone::Clone for Board {
             bb_sides: self.bb_sides.clone(),
             bb_pieces: self.bb_pieces.clone(),
             state: self.state.clone(),
+            key: self.key,
+            hash: self.hash,
         }
     }
 }
@@ -73,11 +79,16 @@ impl Board {
             bb_pieces[pc.to_usize()] |= bb_mask;
         }
 
+        let hash = &DEFAULT_ZOBRISH_HASH;
+        let key = hash.board(&grid, &state);
+
         Board {
             grid: grid,
             bb_pieces: bb_pieces,
             bb_sides: bb_sides,
             state: state,
+            hash: &DEFAULT_ZOBRISH_HASH,
+            key: key,
         }
     }
 
@@ -89,6 +100,10 @@ impl Board {
     // Convert board to FEN representation
     pub fn to_fen(&self) -> String {
         to_fen(&self.grid, &self.state)
+    }
+
+    pub fn hash_key(&self) -> u64 {
+        self.key
     }
 
     /// Get board non-positional state

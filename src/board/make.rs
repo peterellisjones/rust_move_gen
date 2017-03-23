@@ -14,9 +14,10 @@ const CASTLE_MASKS: [BB; 4] = [BB(1u64 | (1u64 << 4)), // WHITE QS: A1 + E1
                                BB(((1u64 << 4) | (1u64 << 7)) << 56) /* BLACK KS: E8 + H8 */];
 
 impl Board {
-    // Returns piece captured and square if any and hash to zor with existing key
+    /// Returns piece captured and square if any
     pub fn make(&mut self, mv: Move) -> Option<(Piece, Square)> {
         let stm = self.state.stm;
+        let initial_state = self.state.clone();
 
         self.state.half_move_clock += 1;
         // increment full move clock if black moved
@@ -24,56 +25,79 @@ impl Board {
         self.state.stm = self.state.stm.flip();
 
         self.state.ep_square = None;
-
-        if mv.is_castle() {
-            self.state.castling_rights.clear_side(stm);
-            self.make_castle(mv, stm);
-            return None;
-        }
-
         let mut captured = None;
 
-        if mv.is_capture() {
-            let capture_sq = if mv.is_ep_capture() {
-                mv.from().along_row_with_col(mv.to())
-            } else {
-                mv.to()
-            };
+        let mut xor_key = 0u64;
 
-            debug_assert!(self.at(capture_sq).is_some());
+        if mv.is_castle() {
+            let castle = mv.castle();
+            self.state.castling_rights.clear_side(stm);
+            self.make_castle(castle, stm);
 
-            let captured_piece = self.at(capture_sq).unwrap();
-            self.remove_piece(capture_sq);
+            xor_key ^= self.hash.castle(castle, stm);
+        } else {
+            let from = mv.from();
+            let to = mv.to();
 
-            captured = Some((captured_piece, capture_sq));
-        }
+            if mv.is_capture() {
+                let capture_sq = if mv.is_ep_capture() {
+                    from.along_row_with_col(to)
+                } else {
+                    to
+                };
 
-        let mover = self.at(mv.from()).unwrap();
-        let move_mask = self.move_piece(mv.from(), mv.to());
+                debug_assert!(self.at(capture_sq).is_some());
 
-        // if double pawn push (pawn move that travels two rows)
-        if mover.kind() == PAWN && mv.distance() == 16 {
-            self.state.ep_square = Some(Square((mv.to().raw() + mv.from().raw()) >> 1));
-        }
+                let captured_piece = self.at(capture_sq).unwrap();
+                self.remove_piece(capture_sq);
 
-        if mv.is_promotion() {
-            self.change_piece(mv.to(), mv.promote_to().pc(stm));
-        }
+                captured = Some((captured_piece, capture_sq));
 
-        for (i, mask) in CASTLE_MASKS.iter().enumerate() {
-            if (move_mask & *mask) != EMPTY {
-                self.state.castling_rights.clear(CastlingRights(1 << i));
+                xor_key ^= self.hash.capture(captured_piece, capture_sq);
+            }
+
+            let mover = self.at(from).unwrap();
+            let move_mask = self.move_piece(from, to);
+            let mut updated_mover = mover;
+
+            // if double pawn push (pawn move that travels two rows), set ep square
+            if mover.kind() == PAWN && mv.distance() == 16 {
+                self.state.ep_square = Some(Square((to.raw() + from.raw()) >> 1));
+            }
+
+            if mv.is_promotion() {
+                updated_mover = mv.promote_to().pc(stm);
+                self.change_piece(to, updated_mover);
+            }
+
+            xor_key ^= self.hash.push(mover, from, updated_mover, to);
+
+            for (i, mask) in CASTLE_MASKS.iter().enumerate() {
+                if (move_mask & *mask) != EMPTY {
+                    self.state.castling_rights.clear(CastlingRights(1 << i));
+                }
             }
         }
+
+
+        xor_key ^= self.hash.state(&initial_state, &self.state);
+        println!("{} key: {}", mv, xor_key);
+
+        self.key ^= xor_key;
 
         captured
     }
 
-    pub fn unmake(&mut self, mv: Move, capture: Option<(Piece, Square)>, original_state: &State) {
+    pub fn unmake(&mut self,
+                  mv: Move,
+                  capture: Option<(Piece, Square)>,
+                  original_state: &State,
+                  original_hash_key: u64) {
         self.state = original_state.clone();
+        self.key = original_hash_key;
 
         if mv.is_castle() {
-            self.unmake_castle(mv, original_state.stm);
+            self.unmake_castle(mv.castle(), original_state.stm);
             return;
         }
 
@@ -90,16 +114,14 @@ impl Board {
         }
     }
 
-    fn unmake_castle(&mut self, mv: Move, stm: Side) {
-        let castle = mv.castle();
+    fn unmake_castle(&mut self, castle: Castle, stm: Side) {
         let (to, from) = castle_king_squares(stm, castle);
         self.move_piece(from, to);
         let (to, from) = castle_rook_squares(stm, castle);
         self.move_piece(from, to);
     }
 
-    fn make_castle(&mut self, mv: Move, stm: Side) {
-        let castle = mv.castle();
+    fn make_castle(&mut self, castle: Castle, stm: Side) {
         let (from, to) = castle_king_squares(stm, castle);
         self.move_piece(from, to);
         let (from, to) = castle_rook_squares(stm, castle);
@@ -122,16 +144,38 @@ mod test {
 
         let state = board.state().clone();
 
+        let initial_key = board.hash_key();
+
         let capture = board.make(mv);
         assert_eq!(board.to_string(),
                    Board::from_fen(expected_fen).unwrap().to_string());
 
         assert!(integrity::test(&board).is_none());
 
-        board.unmake(mv, capture, &state);
+        board.unmake(mv, capture, &state, initial_key);
         assert_eq!(board.to_string(),
                    Board::from_fen(initial_fen).unwrap().to_string());
         assert!(integrity::test(&board).is_none());
+    }
+
+    #[test]
+    fn test_hash() {
+        let mut board_1 = Board::from_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/R3KBNR w QqKk - 1 1")
+            .unwrap();
+        let mut board_2 = Board::from_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/R3KBNR w QqKk - 1 1")
+            .unwrap();
+        board_1.make(Move::new_push(D2, D4));
+        board_1.make(Move::new_push(B8, C6));
+        board_1.make(Move::new_castle(QUEEN_SIDE));
+        board_1.make(Move::new_capture(C6, D4));
+
+        board_2.make(Move::new_castle(QUEEN_SIDE));
+        board_2.make(Move::new_push(B8, C6));
+        board_2.make(Move::new_push(D2, D4));
+        board_2.make(Move::new_capture(C6, D4));
+
+        assert_eq!(board_1.to_fen(), board_2.to_fen());
+        assert_eq!(board_1.hash_key(), board_2.hash_key());
     }
 
     #[test]

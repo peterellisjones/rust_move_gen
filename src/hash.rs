@@ -17,7 +17,7 @@ pub struct Zobrist {
 }
 
 /// Default zobrist_keys generated with seed = 1
-pub const DEFAULT_ZOBRISH_HASH: Zobrist = Zobrist {
+pub static DEFAULT_ZOBRISH_HASH: Zobrist = Zobrist {
     pieces: [16257666806172921645,
              12079090740189436754,
              11577349684372483860,
@@ -97,12 +97,12 @@ impl Zobrist {
                 let mut hash = 0u64;
 
                 let (king_from, king_to) = castle_king_squares(side, castle);
-                hash ^= keys.hash_piece_square(KING.pc(side), king_from);
-                hash ^= keys.hash_piece_square(KING.pc(side), king_to);
+                hash ^= keys.piece_square(KING.pc(side), king_from);
+                hash ^= keys.piece_square(KING.pc(side), king_to);
 
                 let (rook_from, rook_to) = castle_rook_squares(side, castle);
-                hash ^= keys.hash_piece_square(ROOK.pc(side), rook_to);
-                hash ^= keys.hash_piece_square(ROOK.pc(side), rook_from);
+                hash ^= keys.piece_square(ROOK.pc(side), rook_to);
+                hash ^= keys.piece_square(ROOK.pc(side), rook_from);
 
                 keys.castles[castle.to_usize()][side.to_usize()] = hash;
             }
@@ -112,11 +112,11 @@ impl Zobrist {
     }
 
     /// Generates the hash of the entire board
-    pub fn hash_board(&self, grid: &[Option<Piece>; 64], state: &State) -> u64 {
+    pub fn board(&self, grid: &[Option<Piece>; 64], state: &State) -> u64 {
         let mut hash = 0u64;
 
         for (idx, &pc) in grid.iter().enumerate().filter(|&(_, &pc)| pc.is_some()) {
-            hash ^= self.hash_piece_square(pc.unwrap(), Square::new(idx));
+            hash ^= self.piece_square(pc.unwrap(), Square::new(idx));
         }
 
         hash ^= self.castling_rights[state.castling_rights.to_usize()];
@@ -127,28 +127,25 @@ impl Zobrist {
     }
 
     /// Generates the difference between two states
-    pub fn hash_state(&self, before: &State, after: &State) -> u64 {
+    pub fn state(&self, before: &State, after: &State) -> u64 {
         self.castling_rights[before.castling_rights.to_usize()] ^
         self.castling_rights[after.castling_rights.to_usize()] ^
         self.ep_hash(before.ep_square) ^ self.ep_hash(after.ep_square) ^ self.stm
     }
 
-    pub fn hash_castle(&self, stm: Side, castle: Castle) -> u64 {
+    pub fn castle(&self, castle: Castle, stm: Side) -> u64 {
         self.castles[castle.to_usize()][stm.to_usize()]
     }
 
-    pub fn hash_capture(&self, captured: Piece, capture_square: Square) -> u64 {
-        self.hash_piece_square(captured, capture_square)
+    pub fn capture(&self, captured: Piece, capture_square: Square) -> u64 {
+        self.piece_square(captured, capture_square)
     }
 
-    pub fn hash_push(&self, pc_from: Piece, from: Square, pc_to: Piece, to: Square) -> u64 {
-
-        let hash = self.hash_piece_square(pc_from, from) ^ self.hash_piece_square(pc_to, to);
-
-        hash
+    pub fn push(&self, pc_from: Piece, from: Square, pc_to: Piece, to: Square) -> u64 {
+        self.piece_square(pc_from, from) ^ self.piece_square(pc_to, to)
     }
 
-    pub fn hash_piece_square(&self, piece: Piece, square: Square) -> u64 {
+    fn piece_square(&self, piece: Piece, square: Square) -> u64 {
         self.pieces[piece.to_usize()].rotate_left(square.to_u32())
     }
 
@@ -167,19 +164,19 @@ mod test {
     use square::*;
 
     #[test]
-    fn test_new() {
+    fn test_castle() {
         let keys = Zobrist::new(1);
 
         let side = WHITE;
         let castle = QUEEN_SIDE;
 
-        let actual_key = keys.hash_castle(side, castle);
+        let actual_key = keys.castle(castle, side);
 
         let mut expected_key = 0u64;
-        expected_key ^= keys.hash_piece_square(WHITE_KING, E1);
-        expected_key ^= keys.hash_piece_square(WHITE_KING, C1);
-        expected_key ^= keys.hash_piece_square(WHITE_ROOK, A1);
-        expected_key ^= keys.hash_piece_square(WHITE_ROOK, D1);
+        expected_key ^= keys.piece_square(WHITE_KING, E1);
+        expected_key ^= keys.piece_square(WHITE_KING, C1);
+        expected_key ^= keys.piece_square(WHITE_ROOK, A1);
+        expected_key ^= keys.piece_square(WHITE_ROOK, D1);
 
         assert_eq!(actual_key, expected_key);
     }

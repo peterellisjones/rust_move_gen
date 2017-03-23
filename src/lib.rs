@@ -47,7 +47,6 @@ pub use mv::Move;
 pub use mv_list::{MoveList, MoveCounter, MoveVec};
 pub use side::*;
 pub use piece::*;
-pub use hash::{Zobrist, DEFAULT_ZOBRISH_HASH};
 pub use square::*;
 pub use bb::*;
 pub use dbb::*;

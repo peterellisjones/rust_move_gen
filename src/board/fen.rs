@@ -74,6 +74,7 @@ pub fn to_fen(grid: &[Option<Piece>; 64], state: &State) -> String {
         }
     }
 
+
     fen.push(' ');
     fen.push(state.stm.to_char());
     fen.push(' ');
