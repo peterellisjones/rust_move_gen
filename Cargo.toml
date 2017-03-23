@@ -1,7 +1,7 @@
 [package]
 name = "chess-move-gen"
 description = "Fast chess move generation library"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["Peter Ellis Jones <pete@peterellisjones.com>"]
 homepage = "https://github.com/peterellisjones/rust_move_gen"
 repository = "https://github.com/peterellisjones/rust_move_gen.git"
