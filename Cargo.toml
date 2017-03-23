@@ -15,6 +15,6 @@ include = [
 ]
 
 [dependencies]
-rand = "*"
-unindent = "*"
-simd = "*"
+rand = "0.*"
+unindent = "0.*"
+simd = "0.*"
