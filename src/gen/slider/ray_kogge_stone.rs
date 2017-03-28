@@ -1,4 +1,8 @@
+// loop-based sliding piece attacks
+// efficient for pinned pieces and calculating multiple sliders simulataneously
+
 use bb::*;
+use square::Square;
 
 #[cfg(target_feature = "sse3")]
 use dbb::*;
@@ -21,6 +25,17 @@ fn diag_pinned_pieces(king: BB, empty: BB, enemy_bishops: BB) -> BB {
     north_east | north_west | south_east | south_west
 }
 
+#[cfg(not(target_feature = "sse3"))]
+#[inline]
+fn non_diag_pinned_pieces(king: BB, empty: BB, enemy_rooks: BB) -> BB {
+    let north = king.north_attacks(empty) & enemy_rooks.south_attacks(empty);
+    let south = king.south_attacks(empty) & enemy_rooks.north_attacks(empty);
+    let east = king.east_attacks(empty) & enemy_rooks.west_attacks(empty);
+    let west = king.west_attacks(empty) & enemy_rooks.east_attacks(empty);
+
+    north | south | east | west
+}
+
 #[cfg(target_feature = "sse3")]
 #[inline]
 fn diag_pinned_pieces(king_bb: BB, empty_bb: BB, enemy_bishops_bb: BB) -> BB {
@@ -36,17 +51,6 @@ fn diag_pinned_pieces(king_bb: BB, empty_bb: BB, enemy_bishops_bb: BB) -> BB {
     let (north, south) = (nw_and_se | ne_and_sw).extract();
 
     north | south
-}
-
-#[cfg(not(target_feature = "sse3"))]
-#[inline]
-fn non_diag_pinned_pieces(king: BB, empty: BB, enemy_rooks: BB) -> BB {
-    let north = king.north_attacks(empty) & enemy_rooks.south_attacks(empty);
-    let south = king.south_attacks(empty) & enemy_rooks.north_attacks(empty);
-    let east = king.east_attacks(empty) & enemy_rooks.west_attacks(empty);
-    let west = king.west_attacks(empty) & enemy_rooks.east_attacks(empty);
-
-    north | south | east | west
 }
 
 #[cfg(target_feature = "sse3")]
@@ -103,7 +107,6 @@ pub fn diag_pin_rays_including_attackers(source_bb: BB,
     (north_east | south_west, north_west | south_east)
 }
 
-/// TODO: can we do north-south attacks together by considering the king an attacker?
 #[cfg(not(target_feature = "sse3"))]
 #[inline]
 pub fn non_diag_pin_rays_including_attackers(source: BB,
@@ -205,6 +208,18 @@ pub fn pin_ray_non_diag(source_bb: BB, empty_bb: BB, enemy_non_diag_bb: BB) -> B
 }
 
 #[inline]
+#[allow(dead_code)]
+pub fn rook_attacks_from_sq(from: Square, occupied: BB) -> BB {
+    rook_attacks(BB::new(from), occupied)
+}
+
+#[inline]
+#[allow(dead_code)]
+pub fn bishop_attacks_from_sq(from: Square, occupied: BB) -> BB {
+    bishop_attacks(BB::new(from), occupied)
+}
+
+#[inline]
 pub fn rook_attacks(from: BB, occupied: BB) -> BB {
     let empty = !occupied;
     from.east_attacks(empty) | from.north_attacks(empty) | from.south_attacks(empty) |
@@ -226,21 +241,31 @@ mod test {
 
     #[test]
     fn t_bishop_attacks() {
-        test_bishop_attacks(bishop_attacks);
+        test_bishop_attacks_from_bb(bishop_attacks);
     }
 
     #[test]
     fn t_rook_attacks() {
-        test_rook_attacks(rook_attacks);
+        test_rook_attacks_from_bb(rook_attacks);
     }
 
     #[bench]
     fn bench_rook_attacks(b: &mut test::Bencher) {
-        bench_attacks_from_squares(b, rook_attacks);
+        bench_attacks_from_bb(b, rook_attacks);
     }
 
     #[bench]
     fn bench_bishop_attacks(b: &mut test::Bencher) {
-        bench_attacks_from_squares(b, bishop_attacks);
+        bench_attacks_from_bb(b, bishop_attacks);
+    }
+
+    #[bench]
+    fn bench_rook_attacks_from_sq(b: &mut test::Bencher) {
+        bench_attacks_from_sq(b, rook_attacks_from_sq);
+    }
+
+    #[bench]
+    fn bench_bishop_attacks_from_sq(b: &mut test::Bencher) {
+        bench_attacks_from_sq(b, bishop_attacks_from_sq);
     }
 }

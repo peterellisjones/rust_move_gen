@@ -1,9 +1,15 @@
 // Represents a double bitboard
 use std::ops::*;
 
-use simd::x86::sse2::*;
-use simd::u8x16;
-use simd::x86::ssse3::Ssse3U8x16;
+#[cfg(target_feature = "sse3")]
+extern crate simd;
+#[cfg(target_feature = "sse3")]
+use self::simd::x86::sse2::*;
+#[cfg(target_feature = "sse3")]
+use self::simd::u8x16;
+#[cfg(target_feature = "sse3")]
+use self::simd::x86::ssse3::Ssse3U8x16;
+
 use std::mem::transmute;
 use bb::BB;
 
@@ -47,6 +53,15 @@ impl BitXor for DBB {
     }
 }
 
+impl Shl<usize> for DBB {
+    type Output = DBB;
+
+    #[inline]
+    fn shl(self, amount: usize) -> DBB {
+        DBB(self.0 << amount)
+    }
+}
+
 const NOT_FILE_A: DBB = DBB(u64x2::new(!0x0101010101010101u64, !0x0101010101010101u64));
 const NOT_FILE_H: DBB = DBB(u64x2::new(!(0x0101010101010101u64 << 7),
                                        !(0x0101010101010101u64 << 7)));
@@ -68,7 +83,7 @@ impl DBB {
     }
 
     #[inline]
-    pub fn shuffle_bytes(&self) -> DBB {
+    pub fn bswap(&self) -> DBB {
         // indices to swap bytes for two 64bit integers
         const BYTE_SWAP_INDICES: u8x16 =
             u8x16::new(7, 6, 5, 4, 3, 2, 1, 0, 15, 14, 13, 12, 11, 10, 9, 8);

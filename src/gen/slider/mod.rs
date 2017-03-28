@@ -1,5 +1,6 @@
 mod ray_kogge_stone;
-mod ray_subtract;
+mod ray_magic;
+mod ray_hyperbola;
 
 #[cfg(test)]
 mod testing;
@@ -9,7 +10,7 @@ pub use self::ray_kogge_stone::non_diag_pin_rays_including_attackers;
 pub use self::ray_kogge_stone::diag_pin_rays_including_attackers;
 pub use self::ray_kogge_stone::{pin_ray_non_diag, pin_ray_diag};
 pub use self::ray_kogge_stone::{rook_attacks, bishop_attacks};
-pub use self::ray_subtract::{rook_attacks_from_sq, bishop_attacks_from_sq, rank_attacks_from_sq};
+pub use self::ray_hyperbola::{rook_attacks_from_sq, bishop_attacks_from_sq, rank_attacks_from_sq};
 
 use mv_list::MoveList;
 use piece::{ROOK, QUEEN, BISHOP};
@@ -26,7 +27,7 @@ pub fn slider_moves<L: MoveList>(board: &Board, to_mask: BB, from_mask: BB, list
     let not_friendly = !board.bb_side(stm);
 
     for (from, _) in non_diag_attackers.iter() {
-        let targets = ray_subtract::rook_attacks_from_sq(from, occupied) & to_mask & not_friendly;
+        let targets = ray_hyperbola::rook_attacks_from_sq(from, occupied) & to_mask & not_friendly;
         list.add_moves(from, targets, enemy);
     }
 
@@ -34,7 +35,8 @@ pub fn slider_moves<L: MoveList>(board: &Board, to_mask: BB, from_mask: BB, list
     let diag_attackers = (queens | bishops) & from_mask;
 
     for (from, _) in diag_attackers.iter() {
-        let targets = ray_subtract::bishop_attacks_from_sq(from, occupied) & to_mask & not_friendly;
+        let targets = ray_hyperbola::bishop_attacks_from_sq(from, occupied) & to_mask &
+                      not_friendly;
         list.add_moves(from, targets, enemy);
     }
 }
@@ -52,7 +54,7 @@ pub fn non_diag_slider_moves<L: MoveList>(board: &Board,
     let enemy = board.bb_side(stm.flip());
 
     for (from, _) in non_diag_attackers.iter() {
-        let targets = ray_subtract::rook_attacks_from_sq(from, occupied) & to_mask & not_friendly;
+        let targets = ray_hyperbola::rook_attacks_from_sq(from, occupied) & to_mask & not_friendly;
         list.add_moves(from, targets, enemy);
     }
 }
@@ -67,7 +69,8 @@ pub fn diag_slider_moves<L: MoveList>(board: &Board, to_mask: BB, from_mask: BB,
     let enemy = board.bb_side(stm.flip());
 
     for (from, _) in diag_attackers.iter() {
-        let targets = ray_subtract::bishop_attacks_from_sq(from, occupied) & to_mask & not_friendly;
+        let targets = ray_hyperbola::bishop_attacks_from_sq(from, occupied) & to_mask &
+                      not_friendly;
         list.add_moves(from, targets, enemy);
     }
 }

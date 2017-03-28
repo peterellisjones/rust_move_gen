@@ -1,195 +1,48 @@
+
+#![cfg(test)]
+
 use bb::*;
 use square::*;
 use unindent;
-
-#[cfg(test)]
 use test;
 
-#[cfg(test)]
-pub fn test_bishop_attacks<F: Fn(BB, BB) -> BB>(gen: F) {
-    let bishop_pos = A1;
-    let occupied = EMPTY;
+pub fn test_bishop_attacks_from_bb<F: Fn(BB, BB) -> BB>(gen: F) {
+    let cases = generate_test_cases_from_bb(naive_bishop_attacks_from_sq);
 
-    let expected = unindent::unindent("
-          ABCDEFGH
-        8|.......#|8
-        7|......#.|7
-        6|.....#..|6
-        5|....#...|5
-        4|...#....|4
-        3|..#.....|3
-        2|.#......|2
-        1|........|1
-          ABCDEFGH
-        ");
-    assert_eq!(gen(BB::new(bishop_pos), occupied).to_string(), expected);
-
-    let bishop_pos = H8;
-    let occupied = EMPTY;
-
-    let expected = unindent::unindent("
-          ABCDEFGH
-        8|........|8
-        7|......#.|7
-        6|.....#..|6
-        5|....#...|5
-        4|...#....|4
-        3|..#.....|3
-        2|.#......|2
-        1|#.......|1
-          ABCDEFGH
-        ");
-    assert_eq!(gen(BB::new(bishop_pos), occupied).to_string(), expected);
-
-    let bishop_pos = H1;
-    let occupied = EMPTY;
-
-    let expected = unindent::unindent("
-          ABCDEFGH
-        8|#.......|8
-        7|.#......|7
-        6|..#.....|6
-        5|...#....|5
-        4|....#...|4
-        3|.....#..|3
-        2|......#.|2
-        1|........|1
-          ABCDEFGH
-        ");
-    assert_eq!(gen(BB::new(bishop_pos), occupied).to_string(), expected);
-
-    let bishop_pos = G6;
-    let occupied = BB_D3;
-
-    let expected = unindent::unindent("
-          ABCDEFGH
-        8|....#...|8
-        7|.....#.#|7
-        6|........|6
-        5|.....#.#|5
-        4|....#...|4
-        3|...#....|3
-        2|........|2
-        1|........|1
-          ABCDEFGH
-        ");
-    assert_eq!(gen(BB::new(bishop_pos), occupied).to_string(), expected);
+    for (from, occupied, expected) in cases {
+        let actual = gen(from, occupied);
+        assert_eq!(actual, expected);
+    }
 }
 
-#[cfg(test)]
 pub fn test_bishop_attacks_from_sq<F: Fn(Square, BB) -> BB>(gen: F) {
-    let bishop_pos = A1;
-    let occupied = EMPTY;
+    let cases = generate_test_cases_from_sq(naive_bishop_attacks_from_sq);
 
-    let expected = unindent::unindent("
-          ABCDEFGH
-        8|.......#|8
-        7|......#.|7
-        6|.....#..|6
-        5|....#...|5
-        4|...#....|4
-        3|..#.....|3
-        2|.#......|2
-        1|........|1
-          ABCDEFGH
-        ");
-    assert_eq!(gen(bishop_pos, occupied).to_string(), expected);
-
-    let bishop_pos = H8;
-    let occupied = EMPTY;
-
-    let expected = unindent::unindent("
-          ABCDEFGH
-        8|........|8
-        7|......#.|7
-        6|.....#..|6
-        5|....#...|5
-        4|...#....|4
-        3|..#.....|3
-        2|.#......|2
-        1|#.......|1
-          ABCDEFGH
-        ");
-    assert_eq!(gen(bishop_pos, occupied).to_string(), expected);
-
-    let bishop_pos = H1;
-    let occupied = EMPTY;
-
-    let expected = unindent::unindent("
-          ABCDEFGH
-        8|#.......|8
-        7|.#......|7
-        6|..#.....|6
-        5|...#....|5
-        4|....#...|4
-        3|.....#..|3
-        2|......#.|2
-        1|........|1
-          ABCDEFGH
-        ");
-    assert_eq!(gen(bishop_pos, occupied).to_string(), expected);
-
-    let bishop_pos = G6;
-    let occupied = BB_D3;
-
-    let expected = unindent::unindent("
-          ABCDEFGH
-        8|....#...|8
-        7|.....#.#|7
-        6|........|6
-        5|.....#.#|5
-        4|....#...|4
-        3|...#....|3
-        2|........|2
-        1|........|1
-          ABCDEFGH
-        ");
-    assert_eq!(gen(bishop_pos, occupied).to_string(), expected);
+    for (from, occupied, expected) in cases {
+        let actual = gen(from, occupied);
+        assert_eq!(actual, expected);
+    }
 }
 
-#[cfg(test)]
-pub fn test_rook_attacks<F: Fn(BB, BB) -> BB>(gen: F) {
-    let rook_pos = G6;
-    let occupied = BB_C6;
+pub fn test_rook_attacks_from_bb<F: Fn(BB, BB) -> BB>(gen: F) {
+    let cases = generate_test_cases_from_bb(naive_rook_attacks_from_sq);
 
-    let expected = unindent::unindent("
-          ABCDEFGH
-        8|......#.|8
-        7|......#.|7
-        6|..####.#|6
-        5|......#.|5
-        4|......#.|4
-        3|......#.|3
-        2|......#.|2
-        1|......#.|1
-          ABCDEFGH
-        ");
-    assert_eq!(gen(BB::new(rook_pos), occupied).to_string(), expected);
+    for (from, occupied, expected) in cases {
+        let actual = gen(from, occupied);
+        assert_eq!(actual, expected);
+    }
 }
-
-#[cfg(test)]
 pub fn test_rook_attacks_from_sq<F: Fn(Square, BB) -> BB>(gen: F) {
-    let rook_pos = G6;
-    let occupied = BB_C6;
+    let cases = generate_test_cases_from_sq(naive_rook_attacks_from_sq);
 
-    let expected = unindent::unindent("
-          ABCDEFGH
-        8|......#.|8
-        7|......#.|7
-        6|..####.#|6
-        5|......#.|5
-        4|......#.|4
-        3|......#.|3
-        2|......#.|2
-        1|......#.|1
-          ABCDEFGH
-        ");
-    assert_eq!(gen(rook_pos, occupied).to_string(), expected);
+    for (from, occupied, expected) in cases {
+        let actual = gen(from, occupied);
+        assert_eq!(actual, expected);
+    }
 }
 
-#[cfg(test)]
-pub fn bench_attacks_from_squares<F: Fn(BB, BB) -> BB>(b: &mut test::Bencher, gen: F) {
-    let cases = test_cases_from_squares(100);
+pub fn bench_attacks_from_bb<F: Fn(BB, BB) -> BB>(b: &mut test::Bencher, gen: F) {
+    let cases = random_occupancies_from_bb(100);
     b.iter(|| -> BB {
         let mut ret = EMPTY;
 
@@ -201,8 +54,20 @@ pub fn bench_attacks_from_squares<F: Fn(BB, BB) -> BB>(b: &mut test::Bencher, ge
     });
 }
 
-#[cfg(test)]
-fn test_cases_from_squares(size: isize) -> Vec<(BB, BB)> {
+pub fn bench_attacks_from_sq<F: Fn(Square, BB) -> BB>(b: &mut test::Bencher, gen: F) {
+    let cases = random_occupancies_from_sq(100);
+    b.iter(|| -> BB {
+        let mut ret = EMPTY;
+
+        for &(from, occupied) in cases.iter() {
+            ret ^= gen(from, occupied);
+        }
+
+        ret
+    });
+}
+
+fn random_occupancies_from_bb(size: isize) -> Vec<(BB, BB)> {
     let mut ret = Vec::new();
     for _ in 0..size {
         let sq1 = Square::random();
@@ -212,4 +77,89 @@ fn test_cases_from_squares(size: isize) -> Vec<(BB, BB)> {
         ret.push((from, occupied));
     }
     ret
+}
+
+fn random_occupancies_from_sq(size: usize) -> Vec<(Square, BB)> {
+    let mut ret = Vec::new();
+    for i in 0..size {
+        let from = Square(i % 64);
+        let occupied = BB::random(0.3) | BB::new(from);
+        ret.push((from, occupied));
+    }
+    ret
+}
+
+fn naive_rook_attacks_from_sq(from: Square, occupied: BB) -> BB {
+    const ROOK_DIRECTIONS: [(u32, BB); 4] = [(1, FILE_A), // right
+                                             (8, ROW_1), // up
+                                             (64 - 1, FILE_H), // left
+                                             (64 - 8, ROW_8)]; // down
+    let mut attacks = EMPTY;
+    for &(shift, mask) in ROOK_DIRECTIONS.iter() {
+        let mask_or_occupied = mask | occupied;
+        let mut targets = BB::new(from).rot_left(shift);
+        loop {
+            if (targets & mask_or_occupied).any() {
+                break;
+            }
+            targets |= targets.rot_left(shift);
+        }
+        attacks |= targets & !mask;
+    }
+    attacks
+}
+
+fn naive_bishop_attacks_from_sq(from: Square, occupied: BB) -> BB {
+    const BISHOP_DIRECTIONS: [(u32, BB); 4] = [(9, FILE_A_ROW_1), // up + right
+                                               (7, FILE_H_ROW_1), // up + left
+                                               (64 - 9, FILE_H_ROW_8), // down + left
+                                               (64 - 7, FILE_A_ROW_8)]; // down + right
+
+    let mut attacks = EMPTY;
+    for &(shift, mask) in BISHOP_DIRECTIONS.iter() {
+        let mask_or_occupied = mask | occupied;
+        let mut targets = BB::new(from).rot_left(shift);
+        loop {
+            if (targets & mask_or_occupied).any() {
+                break;
+            }
+            targets |= targets.rot_left(shift);
+        }
+        attacks |= targets & !mask;
+    }
+    attacks
+}
+
+fn generate_test_cases_from_sq<F: Fn(Square, BB) -> BB>(gen: F) -> Vec<(Square, BB, BB)> {
+    let mut cases = Vec::new();
+    for i in 0..64 {
+        let from = Square::new(i);
+        let occupied = BB::random(0.3) | BB::new(from);
+        let expected = gen(from, occupied);
+        cases.push((from, occupied, expected));
+    }
+    cases
+}
+
+fn generate_test_cases_from_bb<F: Fn(Square, BB) -> BB>(gen: F) -> Vec<(BB, BB, BB)> {
+    let mut cases = Vec::new();
+    for i in 0..64 {
+        let from_a = Square::new(i);
+        let from_b = Square::random();
+        let from = BB::new(from_a) | BB::new(from_b);
+        let occupied = BB::random(0.3) | from;
+        let expected = gen(from_a, occupied) | gen(from_b, occupied);
+        cases.push((from, occupied, expected));
+    }
+    cases
+}
+
+#[bench]
+fn bench_naive_rook_attacks_from_sq(b: &mut test::Bencher) {
+    bench_attacks_from_sq(b, naive_rook_attacks_from_sq);
+}
+
+#[bench]
+fn bench_naive_bishop_attacks_from_sq(b: &mut test::Bencher) {
+    bench_attacks_from_sq(b, naive_bishop_attacks_from_sq);
 }
