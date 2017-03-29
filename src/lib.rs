@@ -5,6 +5,7 @@
 //!
 //! ```
 //! use chess_move_gen::*;
+//! init_all();
 //! let mut list = MoveVec::new();
 //! let board = &Board::from_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w QqKk - 0 1").unwrap();
 //! legal_moves::<MoveVec>(board, &mut list);
@@ -49,6 +50,7 @@ pub use side::{Side, WHITE, BLACK};
 pub use piece::*;
 pub use square::Square;
 pub use bb::BB;
+pub use gen::init_all;
 
 #[cfg(target_feature = "sse3")]
 pub use dbb::*;

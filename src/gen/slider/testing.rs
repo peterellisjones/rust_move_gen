@@ -5,6 +5,7 @@ use bb::*;
 use square::*;
 use unindent;
 use test;
+use gen::statics::{ROOK_DIRECTIONS, BISHOP_DIRECTIONS};
 
 pub fn test_bishop_attacks_from_bb<F: Fn(BB, BB) -> BB>(gen: F) {
     let cases = generate_test_cases_from_bb(naive_bishop_attacks_from_sq);
@@ -90,10 +91,6 @@ fn random_occupancies_from_sq(size: usize) -> Vec<(Square, BB)> {
 }
 
 fn naive_rook_attacks_from_sq(from: Square, occupied: BB) -> BB {
-    const ROOK_DIRECTIONS: [(u32, BB); 4] = [(1, FILE_A), // right
-                                             (8, ROW_1), // up
-                                             (64 - 1, FILE_H), // left
-                                             (64 - 8, ROW_8)]; // down
     let mut attacks = EMPTY;
     for &(shift, mask) in ROOK_DIRECTIONS.iter() {
         let mask_or_occupied = mask | occupied;
@@ -109,12 +106,8 @@ fn naive_rook_attacks_from_sq(from: Square, occupied: BB) -> BB {
     attacks
 }
 
-fn naive_bishop_attacks_from_sq(from: Square, occupied: BB) -> BB {
-    const BISHOP_DIRECTIONS: [(u32, BB); 4] = [(9, FILE_A_ROW_1), // up + right
-                                               (7, FILE_H_ROW_1), // up + left
-                                               (64 - 9, FILE_H_ROW_8), // down + left
-                                               (64 - 7, FILE_A_ROW_8)]; // down + right
 
+fn naive_bishop_attacks_from_sq(from: Square, occupied: BB) -> BB {
     let mut attacks = EMPTY;
     for &(shift, mask) in BISHOP_DIRECTIONS.iter() {
         let mask_or_occupied = mask | occupied;

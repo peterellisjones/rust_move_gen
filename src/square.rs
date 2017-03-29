@@ -235,12 +235,17 @@ impl Square {
 
     #[inline]
     pub fn row(&self) -> Internal {
-        self.0 / 8
+        self.0 >> 3
+    }
+
+    #[inline]
+    pub fn rowx8(&self) -> Internal {
+        self.0 & 56
     }
 
     #[inline]
     pub fn col(&self) -> Internal {
-        self.0 % 8
+        self.0 & 7
     }
 
     #[inline]

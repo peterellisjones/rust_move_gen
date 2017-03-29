@@ -1,5 +1,4 @@
 use std::fmt;
-use std::num::Wrapping;
 use square::*;
 use std::ops::*;
 use util::grid_to_string;
@@ -25,7 +24,7 @@ impl BB {
 
         for i in 0..64 {
             if rand::random::<f64>() < density {
-                u &= 1u64 << i;
+                u |= 1u64 << i;
             }
         }
 
@@ -94,10 +93,21 @@ impl BB {
         Square::new(self.0.trailing_zeros() as usize)
     }
 
-    #[allow(dead_code)]
     #[inline]
-    pub fn bitscan_reverse(&self) -> Square {
-        Square::new((self.0.leading_zeros() ^ 63) as usize)
+    pub fn msb(&self) -> u32 {
+        debug_assert!(self.0 != 0);
+        63 ^ self.0.leading_zeros()
+    }
+
+    #[inline]
+    pub fn leading_zeros(&self) -> u32 {
+        debug_assert!(self.0 != 0);
+        self.0.leading_zeros()
+    }
+
+    #[inline]
+    pub fn bitscan_reverse(&self) -> u32 {
+        self.0.leading_zeros() ^ 63
     }
 
     #[inline]
@@ -417,7 +427,34 @@ impl Sub for BB {
 
     #[inline]
     fn sub(self, other: BB) -> BB {
-        BB((Wrapping(self.0) - Wrapping(other.0)).0)
+        BB(self.0.wrapping_sub(other.0))
+    }
+}
+
+impl Add for BB {
+    type Output = BB;
+
+    #[inline]
+    fn add(self, other: BB) -> BB {
+        BB(self.0.wrapping_add(other.0))
+    }
+}
+
+impl Mul for BB {
+    type Output = BB;
+
+    #[inline]
+    fn mul(self, other: BB) -> BB {
+        BB(self.0.wrapping_mul(other.0))
+    }
+}
+
+impl Neg for BB {
+    type Output = BB;
+
+    #[inline]
+    fn neg(self) -> BB {
+        BB(self.0.wrapping_neg())
     }
 }
 
@@ -440,16 +477,16 @@ pub const BB_H6: BB = BB(1u64 << 47);
 pub const EMPTY: BB = BB(0);
 pub const END_ROWS: BB = BB(ROW_1.0 | ROW_8.0);
 pub const FILE_A: BB = BB(0x0101010101010101u64);
-pub const FILE_A_ROW_1: BB = BB(0x0101010101010101u64 | 0xFFu64);
-pub const FILE_A_ROW_8: BB = BB(0x0101010101010101u64 | 0xFFu64 << (7 * 8));
-pub const FILE_H: BB = BB(0x0101010101010101u64 << 7);
-pub const FILE_H_ROW_1: BB = BB(0x0101010101010101u64 << 7 | 0xFFu64);
-pub const FILE_H_ROW_8: BB = BB(0x0101010101010101u64 << 7 | 0xFFu64 << (7 * 8));
+pub const FILE_B: BB = BB(FILE_A.0 << 1);
+pub const FILE_G: BB = BB(FILE_A.0 << 6);
+pub const FILE_H: BB = BB(FILE_A.0 << 7);
 pub const NOT_FILE_A: BB = BB(!FILE_A.0);
 pub const NOT_FILE_H: BB = BB(!FILE_H.0);
 pub const ROW_1: BB = BB(0xFFu64);
+pub const ROW_2: BB = BB(0xFFu64 << (8));
 pub const ROW_4: BB = BB(0xFFu64 << (3 * 8));
 pub const ROW_5: BB = BB(0xFFu64 << (4 * 8));
+pub const ROW_7: BB = BB(0xFFu64 << (6 * 8));
 pub const ROW_8: BB = BB(0xFFu64 << (7 * 8));
 
 /// `BBIterator` iterates over set bits in a bitboard, from low to high, returning a Square and the bit-board with that bit set

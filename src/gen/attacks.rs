@@ -107,9 +107,12 @@ mod test {
     use side::*;
     use bb::*;
     use unindent;
+    use gen::init_all;
 
     #[test]
     fn test_checks_to_sq() {
+        init_all();
+
         let board = &Board::from_fen("rnbqkbnr/pppppp1p/8/8/8/8/PPPPPPPP/RNB1KBNR w").unwrap();
         let attacks = checks_to_sq(C6, BLACK, board);
 
