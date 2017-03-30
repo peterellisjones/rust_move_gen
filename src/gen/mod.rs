@@ -20,7 +20,6 @@ use bb::EMPTY;
 use mv_list::MoveList;
 use piece::KING;
 
-pub use self::statics::init_all;
 pub use self::attacks::king_danger_squares;
 
 /// Adds legal moves to the provided MoveList. Returns true if mover is in check

@@ -191,13 +191,11 @@ mod test {
 
     #[test]
     fn t_rook_attacks() {
-        init_all();
         test_rook_attacks_from_sq(rook_attacks_from_sq);
     }
 
     #[test]
     fn t_bishop_attacks() {
-        init_all();
         test_bishop_attacks_from_sq(bishop_attacks_from_sq);
     }
 

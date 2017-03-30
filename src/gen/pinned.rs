@@ -79,7 +79,6 @@ pub fn pin_ray_moves<L: MoveList>(board: &Board,
 
 #[cfg(test)]
 mod test {
-    use gen::statics::init_all;
     use super::*;
     use board::Board;
     use side::*;
@@ -88,8 +87,6 @@ mod test {
 
     #[test]
     fn test_pin_ray_moves() {
-        init_all();
-
         let board = Board::from_fen("rnb2k1r/pp1Pbppp/2p5/q7/2B5/8/PPPQNnPP/RNB1K2R w QK - 3 9")
             .unwrap();
 
@@ -113,8 +110,6 @@ mod test {
 
     #[test]
     fn test_pin_ray_moves_2() {
-        init_all();
-
         let board = Board::from_fen("5k2/8/8/q7/8/2Q5/8/4K3 w - -").unwrap();
 
         let mut list = MoveVec::new();

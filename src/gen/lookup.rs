@@ -54,12 +54,9 @@ mod test {
     use board::STARTING_POSITION_FEN;
     use mv_list::MoveVec;
     use square::*;
-    use gen::statics::init_all;
 
     #[test]
     fn king_pushes() {
-        init_all();
-
         let board = &Board::from_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNB1KBNR w").unwrap();
         let mut list = MoveVec::new();
         king_moves::<MoveVec>(board, !EMPTY, &mut list);
@@ -69,8 +66,6 @@ mod test {
 
     #[test]
     fn king_captures() {
-        init_all();
-
         let board = &Board::from_fen("rnbqkbnr/pppppPpp/8/8/8/8/PPPPPPPP/RNB1KBNR b").unwrap();
         let mut list = MoveVec::new();
         king_moves::<MoveVec>(board, !EMPTY, &mut list);
@@ -80,8 +75,6 @@ mod test {
 
     #[test]
     fn king_moves_with_mask() {
-        init_all();
-
         let board = &Board::from_fen("1nbqkbn1/ppprpppp/8/8/8/3p4/5p2/RNBQKBNR w").unwrap();
         let mut list = MoveVec::new();
         king_moves::<MoveVec>(board, !BB::new(E2), &mut list);
@@ -91,8 +84,6 @@ mod test {
 
     #[test]
     fn knight_pushes() {
-        init_all();
-
         let board = &Board::from_fen(STARTING_POSITION_FEN).unwrap();
         let mut list = MoveVec::new();
         knight_moves::<MoveVec>(board, !EMPTY, !EMPTY, &mut list);
@@ -102,8 +93,6 @@ mod test {
 
     #[test]
     fn knight_captures() {
-        init_all();
-
         let board = &Board::from_fen("rnbqkbnr/pppppppp/P7/8/8/8/PPPPPPPP/RNBQKBNR b").unwrap();
         let mut list = MoveVec::new();
         knight_moves::<MoveVec>(board, !EMPTY, !EMPTY, &mut list);

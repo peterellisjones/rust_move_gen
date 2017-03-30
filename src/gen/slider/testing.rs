@@ -3,7 +3,6 @@
 
 use bb::*;
 use square::*;
-use unindent;
 use test;
 use gen::statics::{ROOK_DIRECTIONS, BISHOP_DIRECTIONS};
 
