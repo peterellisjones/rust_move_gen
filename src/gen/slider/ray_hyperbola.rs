@@ -30,7 +30,7 @@ pub fn rook_attacks_from_sq(from: Square, occupied: BB) -> BB {
 pub fn file_attacks_from_sq(from: Square, occupied: BB) -> BB {
     let source = BB::new(from);
 
-    let filemask = (FILE_A << from.col()) & !source;
+    let filemask = (FILE_A << from.col() as usize) & !source;
     let forward = filemask & occupied;
     let backward = forward.bswap();
     ((forward - source) ^ (backward - source.bswap()).bswap()) & filemask
@@ -38,8 +38,8 @@ pub fn file_attacks_from_sq(from: Square, occupied: BB) -> BB {
 
 #[inline]
 pub fn rank_attacks_from_sq(from: Square, occupied: BB) -> BB {
-    let rowx8 = from.rowx8();
-    let col = from.col();
+    let rowx8 = from.rowx8() as usize;
+    let col = from.col() as usize;
 
     let occupancy = (occupied >> (rowx8 + 1)).to_usize() & 63;
     unsafe {

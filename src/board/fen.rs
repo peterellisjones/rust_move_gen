@@ -1,6 +1,7 @@
 use super::State;
 use piece::*;
-use square::*;
+use square::Square;
+use square;
 use castling_rights::*;
 use side::*;
 
@@ -135,7 +136,7 @@ fn parse_row(row_str: &str, row: usize, grid: &mut [Option<Piece>; 64]) -> Optio
             }
             match Piece::parse(c) {
                 Ok(pc) => {
-                    let sq = Square::from(row, col);
+                    let sq = Square::from(row as square::Internal, col as square::Internal);
                     grid[sq.to_usize()] = Some(pc);
                 }
                 Err(err) => {

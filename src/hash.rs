@@ -2,6 +2,7 @@ use rand;
 use rand::Rng;
 use piece::*;
 use square::Square;
+use square;
 use castle::*;
 use board::State;
 use side::*;
@@ -116,7 +117,7 @@ impl Zobrist {
         let mut hash = 0u64;
 
         for (idx, &pc) in grid.iter().enumerate().filter(|&(_, &pc)| pc.is_some()) {
-            hash ^= self.piece_square(pc.unwrap(), Square::new(idx));
+            hash ^= self.piece_square(pc.unwrap(), Square::new(idx as square::Internal));
         }
 
         hash ^= self.castling_rights[state.castling_rights.to_usize()];
@@ -157,7 +158,7 @@ impl Zobrist {
     #[inline]
     fn ep_hash(&self, ep_square: Option<Square>) -> u64 {
         if ep_square.is_some() {
-            self.en_passant_file[ep_square.unwrap().col()]
+            self.en_passant_file[ep_square.unwrap().col() as usize]
         } else {
             0
         }

@@ -1,5 +1,6 @@
 use mv::Move;
 use square::Square;
+use square;
 use bb::{BB, END_ROWS};
 use castle::Castle;
 use piece::*;
@@ -83,7 +84,7 @@ impl MoveVec {
                                                             targets: BB,
                                                             f: F) {
         for (to, _) in targets.iter() {
-            let from = to.rotate_right(shift);
+            let from = to.rotate_right(shift as square::Internal);
             self.moves.push(f(from, to));
         }
     }
@@ -99,7 +100,7 @@ impl MoveVec {
                                                                    targets: BB,
                                                                    f: F) {
         for (to, _) in targets.iter() {
-            let from = to.rotate_right(shift);
+            let from = to.rotate_right(shift as square::Internal);
             self.moves.push(f(from, to, QUEEN));
             self.moves.push(f(from, to, KNIGHT));
             self.moves.push(f(from, to, BISHOP));

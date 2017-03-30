@@ -3,7 +3,7 @@ use std::fmt;
 #[cfg(test)]
 use rand;
 
-type Internal = usize;
+pub type Internal = usize;
 
 /// Represents a square on the chessboard
 #[derive(PartialEq, PartialOrd, Copy, Clone)]
@@ -174,13 +174,13 @@ impl Square {
     #[inline]
     #[allow(dead_code)]
     pub fn diagonal(&self) -> usize {
-        (self.row() - self.col()) & 15
+        ((self.row() - self.col()) & 15) as usize
     }
 
     #[inline]
     #[allow(dead_code)]
     pub fn anti_diagonal(&self) -> usize {
-        (self.row() + self.col()) & 7
+        ((self.row() + self.col()) & 7) as usize
     }
 
     #[inline]
@@ -199,17 +199,17 @@ impl Square {
     }
 
     #[inline]
-    pub fn rotate_right(&self, amount: usize) -> Square {
+    pub fn rotate_right(&self, amount: Internal) -> Square {
         Square((self.0 + (64 - amount)) & 63)
     }
 
     #[inline]
-    pub fn rotate_left(&self, amount: usize) -> Square {
+    pub fn rotate_left(&self, amount: Internal) -> Square {
         Square((self.0 + amount) & 63)
     }
 
     pub fn to_str(&self) -> &'static str {
-        NAMES[self.0]
+        NAMES[self.0 as usize]
     }
 
     pub fn to_string(&self) -> String {
@@ -262,11 +262,11 @@ impl Square {
             return Err("String too short".to_string());
         }
 
-        let col_char = s.chars().nth(0).unwrap();
-        let row_char = s.chars().nth(1).unwrap();
+        let col_char = s.chars().nth(0).unwrap() as Internal;
+        let row_char = s.chars().nth(1).unwrap() as Internal;
 
-        let col = col_char as usize - 'a' as Internal;
-        let row = row_char as usize - '1' as Internal;
+        let col = col_char - 'a' as Internal;
+        let row = row_char - '1' as Internal;
 
         if col > 7 {
             return Err(format!("Bad column identifier: {}", col_char));

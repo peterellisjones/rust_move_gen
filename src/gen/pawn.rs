@@ -4,6 +4,7 @@ use piece::*;
 use bb::*;
 use board::Board;
 use side::Side;
+use square;
 use super::slider::*;
 
 pub fn pawn_moves<L: MoveList>(board: &Board,
@@ -108,7 +109,7 @@ pub fn pawn_captures<L: MoveList>(board: &Board,
             let targets = movers.rot_left(shift as u32) & file_mask;
             let ep_captures = targets & BB::new(ep);
             for (to, to_bb) in ep_captures.iter() {
-                let from = to.rotate_right(shift);
+                let from = to.rotate_right(shift as square::Internal);
 
                 let capture_sq = from.along_row_with_col(to);
                 let capture_sq_bb = BB::new(capture_sq);

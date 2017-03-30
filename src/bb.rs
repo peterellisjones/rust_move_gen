@@ -1,5 +1,6 @@
 use std::fmt;
-use square::*;
+use square::Square;
+use square;
 use std::ops::*;
 use util::grid_to_string;
 
@@ -90,7 +91,7 @@ impl BB {
 
     #[inline]
     pub fn bitscan(&self) -> Square {
-        Square::new(self.0.trailing_zeros() as usize)
+        Square::new(self.0.trailing_zeros() as square::Internal)
     }
 
     #[inline]
@@ -524,6 +525,7 @@ impl fmt::Debug for BB {
 #[cfg(test)]
 pub mod test {
     use super::*;
+    use square::*;
     use unindent;
 
     #[test]

@@ -4,7 +4,6 @@ use chess_move_gen::*;
 
 #[test]
 fn basic_functionality() {
-    init_all();
     let mut counter = MoveCounter::new();
     let board = Board::from_fen(STARTING_POSITION_FEN).unwrap();
 

@@ -2,7 +2,8 @@ pub mod fen;
 pub mod make;
 
 use std::fmt;
-use square::*;
+use square::Square;
+use square;
 use side::Side;
 use piece::*;
 use bb::*;
@@ -74,7 +75,7 @@ impl Board {
 
         for (idx, pc_opt) in grid.iter().enumerate().filter(|&(_, &pc)| pc.is_some()) {
             let pc = pc_opt.unwrap();
-            let bb_mask = BB::new(Square::new(idx));
+            let bb_mask = BB::new(Square::new(idx as square::Internal));
             bb_sides[pc.side().raw()] |= bb_mask;
             bb_pieces[pc.to_usize()] |= bb_mask;
         }

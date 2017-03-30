@@ -3,6 +3,7 @@
 
 use bb::*;
 use square::*;
+use square;
 use test;
 use gen::statics::{ROOK_DIRECTIONS, BISHOP_DIRECTIONS};
 
@@ -82,7 +83,7 @@ fn random_occupancies_from_bb(size: isize) -> Vec<(BB, BB)> {
 fn random_occupancies_from_sq(size: usize) -> Vec<(Square, BB)> {
     let mut ret = Vec::new();
     for i in 0..size {
-        let from = Square(i % 64);
+        let from = Square((i % 64) as square::Internal);
         let occupied = BB::random(0.3) | BB::new(from);
         ret.push((from, occupied));
     }

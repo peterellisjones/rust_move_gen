@@ -1,4 +1,5 @@
 use square::Square;
+use square;
 use castle::Castle;
 use std::fmt;
 use piece::*;
@@ -40,12 +41,12 @@ pub struct Move {
 impl Move {
     #[inline]
     pub fn from(&self) -> Square {
-        Square::new((self.lower & 63) as usize)
+        Square::new((self.lower & 63) as square::Internal)
     }
 
     #[inline]
     pub fn to(&self) -> Square {
-        Square::new((self.upper & 63) as usize)
+        Square::new((self.upper & 63) as square::Internal)
     }
 
     #[inline]
