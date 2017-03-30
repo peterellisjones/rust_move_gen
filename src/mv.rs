@@ -53,7 +53,7 @@ impl Move {
     pub fn promote_to(&self) -> Kind {
         debug_assert!(!self.is_castle());
         debug_assert!(self.is_promotion());
-        Kind(((self.upper as usize) & (!63)) >> 6)
+        Kind(((self.upper as Internal) & (!63)) >> 6)
     }
 
     /// Returns the absolute distance moved. Eg for a push from square 8 to square 24: |24 - 8| = 16

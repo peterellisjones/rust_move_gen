@@ -1,11 +1,30 @@
 use std::fmt;
 use side::Side;
 
-pub type Internal = usize;
+pub type Internal = u8;
 
 /// Represents a piece for a particular side (eg black knight)
 #[derive(PartialEq, PartialOrd, Copy, Clone)]
 pub struct Piece(Internal);
+
+#[derive(PartialEq, PartialOrd, Copy, Clone)]
+pub struct OptionPiece(pub Piece);
+
+pub const NO_PIECE: OptionPiece = OptionPiece(Piece(13));
+
+impl OptionPiece {
+    pub fn is_some(&self) -> bool {
+        self.0 != NO_PIECE.0
+    }
+
+    pub fn is_none(&self) -> bool {
+        self.0 == NO_PIECE.0
+    }
+
+    pub fn unwrap(&self) -> Piece {
+        self.0
+    }
+}
 
 const CHARS: [char; 12] = ['B', 'b', 'Q', 'q', 'R', 'r', 'N', 'n', 'P', 'p', 'K', 'k'];
 // const SYMBOLS: [char; 14] = ['♙', '♟', '♘', '♞', '♗', '♝', '♖', '♜',

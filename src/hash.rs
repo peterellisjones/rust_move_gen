@@ -113,7 +113,7 @@ impl Zobrist {
     }
 
     /// Generates the hash of the entire board
-    pub fn board(&self, grid: &[Option<Piece>; 64], state: &State) -> u64 {
+    pub fn board(&self, grid: &[OptionPiece; 64], state: &State) -> u64 {
         let mut hash = 0u64;
 
         for (idx, &pc) in grid.iter().enumerate().filter(|&(_, &pc)| pc.is_some()) {
