@@ -5,7 +5,7 @@ use square;
 use castling_rights::*;
 use side::*;
 
-pub fn from_fen(fen: &str) -> Result<([OptionPiece; 64], State), String> {
+pub fn from_fen(fen: &str) -> Result<([Option<Piece>; 64], State), String> {
     let mut state = State {
         castling_rights: ALL_RIGHTS,
         ep_square: None,
@@ -50,7 +50,7 @@ pub fn from_fen(fen: &str) -> Result<([OptionPiece; 64], State), String> {
     Ok((grid, state))
 }
 
-pub fn to_fen(grid: &[OptionPiece; 64], state: &State) -> String {
+pub fn to_fen(grid: &[Option<Piece>; 64], state: &State) -> String {
     let mut fen = String::new();
 
     for row in 0..8 {
@@ -110,8 +110,8 @@ fn parse_castling_rights(s: &str) -> Result<CastlingRights, String> {
     Ok(rights)
 }
 
-fn parse_rows(fen: &str) -> Result<[OptionPiece; 64], String> {
-    let mut grid = [NO_PIECE; 64];
+fn parse_rows(fen: &str) -> Result<[Option<Piece>; 64], String> {
+    let mut grid = [None; 64];
 
     for (i, row) in fen.split('/').enumerate() {
         if i >= 8 {
@@ -125,7 +125,7 @@ fn parse_rows(fen: &str) -> Result<[OptionPiece; 64], String> {
     Ok(grid)
 }
 
-fn parse_row(row_str: &str, row: usize, grid: &mut [OptionPiece; 64]) -> Option<String> {
+fn parse_row(row_str: &str, row: usize, grid: &mut [Option<Piece>; 64]) -> Option<String> {
     let mut col = 0;
     for c in row_str.chars() {
         if c >= '1' && c <= '8' {
@@ -137,7 +137,7 @@ fn parse_row(row_str: &str, row: usize, grid: &mut [OptionPiece; 64]) -> Option<
             match Piece::parse(c) {
                 Ok(pc) => {
                     let sq = Square::from(row as square::Internal, col as square::Internal);
-                    grid[sq.to_usize()] = OptionPiece(pc);
+                    grid[sq.to_usize()] = Some(pc);
                 }
                 Err(err) => {
                     return Some(err);

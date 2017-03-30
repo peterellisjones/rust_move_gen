@@ -51,14 +51,11 @@ fn test_bitboards(board: &Board) -> Option<String> {
     for &side in &[WHITE, BLACK] {
         let bb = board.bb_side(side);
         for (sq, _) in bb.iter() {
-            if board.at(sq).is_some() {
-                let pc = board.at(sq).unwrap();
-                if pc.side() != side {
-                    return Some(format!("Expected {} piece at {} but found {}",
-                                        side.to_string(),
-                                        sq.to_string(),
-                                        board.at(sq).unwrap().to_string()));
-                }
+            if board.at(sq).map(|pc| pc.side()) != Some(side) {
+                return Some(format!("Expected {} piece at {} but found {}",
+                                    side.to_string(),
+                                    sq.to_string(),
+                                    board.at(sq).unwrap().to_string()));
             }
         }
     }
@@ -66,7 +63,7 @@ fn test_bitboards(board: &Board) -> Option<String> {
     for pc in Piece::iter() {
         let bb = board.bb_pc(pc);
         for (sq, _) in bb.iter() {
-            if board.at(sq) != OptionPiece(pc) {
+            if board.at(sq) != Some(pc) {
                 return Some(format!("Expected {} at {} but found {}",
                                     pc.to_string(),
                                     sq.to_string(),
@@ -81,7 +78,7 @@ fn test_bitboards(board: &Board) -> Option<String> {
 fn test_castling_rights(board: &Board) -> Option<String> {
     let rights = board.state().castling_rights;
     for &(side, king_square) in [(WHITE, E1), (BLACK, E8)].iter() {
-        if board.at(king_square) != OptionPiece(KING.pc(side)) {
+        if board.at(king_square) != Some(KING.pc(side)) {
             if rights.has(CastlingRights::from(QUEEN_SIDE, side)) {
                 return Some(format!("Error: {} cannot castle as king has moved",
                                     side.to_string()));
@@ -94,14 +91,14 @@ fn test_castling_rights(board: &Board) -> Option<String> {
     }
 
     for &(right, rook_square, side) in [(WHITE_QS, A1, WHITE), (BLACK_QS, A8, BLACK)].iter() {
-        if rights.has(right) && board.at(rook_square) != OptionPiece(ROOK.pc(side)) {
+        if rights.has(right) && board.at(rook_square) != Some(ROOK.pc(side)) {
             return Some(format!("Error: {} cannot castle queen-side as rook has moved",
                                 side.to_string()));
         }
     }
 
     for &(right, rook_square, side) in [(WHITE_KS, H1, WHITE), (BLACK_KS, H8, BLACK)].iter() {
-        if rights.has(right) && board.at(rook_square) != OptionPiece(ROOK.pc(side)) {
+        if rights.has(right) && board.at(rook_square) != Some(ROOK.pc(side)) {
             return Some(format!("Error: {} cannot castle king-side as rook has moved",
                                 side.to_string()));
         }
@@ -124,7 +121,7 @@ fn test_ep_square(board: &Board) -> Option<String> {
 
     let target_sq = sq.change_row(if stm == BLACK { 3 } else { 4 });
     let expected_target = PAWN.pc(stm.flip());
-    if board.at(target_sq) != OptionPiece(expected_target) {
+    if board.at(target_sq) != Some(expected_target) {
         return Some(format!("Error: en-passant square is {} but no {} at {}",
                             sq,
                             expected_target.to_string(),
