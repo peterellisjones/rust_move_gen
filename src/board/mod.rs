@@ -187,16 +187,19 @@ impl Board {
     }
 
     /// Get bitboard of pieces for a particular side
+    #[inline]
     pub fn bb_side(&self, side: Side) -> BB {
         unsafe { return *self.bb_sides.get_unchecked(side.to_usize() & 1) }
     }
 
     /// Get bitboard of pieces for a particular piece
+    #[inline]
     pub fn bb_pc(&self, pc: Piece) -> BB {
         unsafe { return *self.bb_pieces.get_unchecked(pc.to_usize()) }
     }
 
     /// Get bitboard of sliding pieces for a particular side
+    #[inline]
     pub fn bb_sliders(&self, side: Side) -> (BB, BB) {
         let queens = self.bb_pc(QUEEN.pc(side));
         let rooks = self.bb_pc(ROOK.pc(side));
@@ -205,11 +208,13 @@ impl Board {
     }
 
     /// Get bitboard of all occupied squares
+    #[inline]
     pub fn bb_occupied(&self) -> BB {
         self.bb_side(WHITE) | self.bb_side(BLACK)
     }
 
     /// Get bitboard of all empty squares
+    #[inline]
     pub fn bb_empty(&self) -> BB {
         !self.bb_occupied()
     }
