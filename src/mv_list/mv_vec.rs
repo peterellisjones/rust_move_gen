@@ -59,7 +59,7 @@ impl MoveList for MoveVec {
 impl MoveVec {
     #[inline]
     pub fn new() -> MoveVec {
-        MoveVec { moves: Vec::new() }
+        MoveVec { moves: Vec::with_capacity(60) }
     }
 
     pub fn to_string(&self) -> String {

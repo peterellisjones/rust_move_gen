@@ -32,8 +32,14 @@ pub fn legal_moves<L: MoveList>(board: &Board, list: &mut L) -> bool {
     king_moves(board, !attacked_squares, list);
 
     let king_sq = kings.bitscan();
-    let checkers = checks_to_sq(king_sq, stm.flip(), board);
-    let king_attacks_count = checkers.pop_count();
+
+    // Don't need to calculate checkers if no attacks on king
+    let (king_attacks_count, checkers) = if (attacked_squares & kings).any() {
+        let checkers = checks_to_sq(king_sq, stm.flip(), board);
+        (checkers.pop_count(), checkers)
+    } else {
+        (0, EMPTY)
+    };
 
     // capture_mask and push_mask represent squares our pieces are allowed to move to or capture,
     // respectively. The difference between the two is only important for pawn EP captures

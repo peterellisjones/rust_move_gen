@@ -106,19 +106,23 @@ pub const WHITE_KING: Piece = Piece(10);
 pub const BLACK_KING: Piece = Piece(11);
 
 impl Piece {
+    #[inline]
     pub fn to_usize(&self) -> usize {
         self.0 as usize
     }
 
+    #[inline]
     pub fn to_char(&self) -> char {
         CHARS[self.to_usize()]
     }
 
+    #[inline]
     pub fn kind(&self) -> Kind {
         Kind(self.0 >> 1)
     }
 
     // assumes piece present
+    #[inline]
     pub fn is_slider(&self) -> bool {
         self.0 <= BLACK_ROOK.0
     }
@@ -131,6 +135,7 @@ impl Piece {
         NAMES[self.to_usize()].to_string() + &"s"
     }
 
+    #[inline]
     pub fn side(&self) -> Side {
         Side(self.to_usize() & 1)
     }

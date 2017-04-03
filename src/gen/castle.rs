@@ -16,7 +16,6 @@ const KING_SAFE_SQUARES: [[BB; 2]; 2] = [[BB((1u64 << 2) + (1u64 << 3) + (1u64 <
                                           BB((1u64 << 60) + (1u64 << 61) + (1u64 << 62))]]; // BLACK KS = E8 + F8 + G8
 
 
-#[inline]
 pub fn castles<L: MoveList>(board: &Board, attacks: BB, list: &mut L) {
     let stm = board.state().stm;
     let rights = board.state().castling_rights;

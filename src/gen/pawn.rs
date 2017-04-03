@@ -49,7 +49,6 @@ fn pawn_double_push_targets(s: Side) -> BB {
     }
 }
 
-#[inline]
 pub fn pawn_pushes<L: MoveList>(board: &Board, to_mask: BB, from_mask: BB, list: &mut L) {
     // NOTE in the case of EP capture, mask is for the enemy piece taken
     let stm = board.state().stm;

@@ -15,6 +15,7 @@ const CASTLE_MASKS: [BB; 4] = [BB(1u64 | (1u64 << 4)), // WHITE QS: A1 + E1
 
 impl Board {
     /// Returns piece captured and square if any
+    #[inline]
     pub fn make(&mut self, mv: Move) -> Option<(Piece, Square)> {
         let stm = self.state.stm;
         let initial_state = self.state.clone();
@@ -87,6 +88,7 @@ impl Board {
         captured
     }
 
+    #[inline]
     pub fn unmake(&mut self,
                   mv: Move,
                   capture: Option<(Piece, Square)>,
@@ -120,7 +122,7 @@ impl Board {
         let (to, from) = castle_rook_squares(stm, castle);
         self.move_piece(from, to);
     }
-    
+
     #[inline]
     fn make_castle(&mut self, castle: Castle, stm: Side) {
         let (from, to) = castle_king_squares(stm, castle);
