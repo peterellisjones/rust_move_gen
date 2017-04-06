@@ -29,7 +29,7 @@ impl Tree {
     }
 
     pub fn board(&self) -> &Board {
-        self.board
+        &self.board
     }
 
     pub fn count_legal_moves(&self) -> (bool, MoveCounter) {
