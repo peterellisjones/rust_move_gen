@@ -29,6 +29,7 @@ mod side;
 mod square;
 mod util;
 mod hash;
+mod tree;
 
 #[cfg(target_feature = "sse3")]
 mod dbb;
@@ -40,6 +41,7 @@ extern crate unindent;
 extern crate test;
 
 pub use board::{Board, State, STARTING_POSITION_FEN};
+pub use tree::Tree;
 pub use gen::legal_moves;
 pub use castle::{Castle, KING_SIDE, QUEEN_SIDE};
 pub use castling_rights::{CastlingRights, BLACK_QS, BLACK_KS, WHITE_QS, WHITE_KS};
@@ -47,7 +49,7 @@ pub use mv::Move;
 pub use mv_list::{MoveList, MoveCounter, MoveVec};
 pub use side::{Side, WHITE, BLACK};
 pub use piece::*;
-pub use square::Square;
+pub use square::*;
 pub use bb::BB;
 
 #[cfg(target_feature = "sse3")]
