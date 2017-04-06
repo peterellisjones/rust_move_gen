@@ -28,6 +28,10 @@ impl Tree {
         }
     }
 
+    pub fn board(&self) -> &Board {
+        self.board
+    }
+
     pub fn count_legal_moves(&self) -> (bool, MoveCounter) {
         let mut move_counter = MoveCounter::new();
         let in_check = legal_moves(&self.board, &mut move_counter);
