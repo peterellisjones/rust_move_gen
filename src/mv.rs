@@ -118,7 +118,7 @@ impl Move {
     }
 
     #[inline]
-    pub fn new_push(from: Square, to: Square) -> Move {
+    pub const fn new_push(from: Square, to: Square) -> Move {
         Move {
             lower: from.to_u8(),
             upper: to.to_u8(),
@@ -126,7 +126,7 @@ impl Move {
     }
 
     #[inline]
-    pub fn new_capture(from: Square, to: Square) -> Move {
+    pub const fn new_capture(from: Square, to: Square) -> Move {
         Move {
             lower: from.to_u8() | CAPTURE_FLAG,
             upper: to.to_u8(),
@@ -134,7 +134,7 @@ impl Move {
     }
 
     #[inline]
-    pub fn new_castle(castle: Castle) -> Move {
+    pub const fn new_castle(castle: Castle) -> Move {
         Move {
             lower: 0,
             upper: CASTLE_FLAG | (castle.to_u8() << 6),
@@ -142,7 +142,7 @@ impl Move {
     }
 
     #[inline]
-    pub fn new_promotion(from: Square, to: Square, promote_to: Kind) -> Move {
+    pub const fn new_promotion(from: Square, to: Square, promote_to: Kind) -> Move {
         Move {
             lower: from.to_u8() | PROMOTION_FLAG,
             upper: to.to_u8() | (promote_to.to_u8() << 6),
@@ -150,7 +150,7 @@ impl Move {
     }
 
     #[inline]
-    pub fn new_capture_promotion(from: Square, to: Square, promote_to: Kind) -> Move {
+    pub const fn new_capture_promotion(from: Square, to: Square, promote_to: Kind) -> Move {
         Move {
             lower: from.to_u8() | PROMOTION_FLAG | CAPTURE_FLAG,
             upper: to.to_u8() | (promote_to.to_u8() << 6),
@@ -158,7 +158,7 @@ impl Move {
     }
 
     #[inline]
-    pub fn new_ep_capture(from: Square, to: Square) -> Move {
+    pub const fn new_ep_capture(from: Square, to: Square) -> Move {
         Move {
             lower: from.to_u8() | CAPTURE_FLAG,
             upper: to.to_u8() | EP_CAPTURE_FLAG,

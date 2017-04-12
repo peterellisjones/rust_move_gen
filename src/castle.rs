@@ -34,7 +34,7 @@ impl Castle {
     }
 
     #[inline]
-    pub fn to_u8(&self) -> u8 {
+    pub const fn to_u8(&self) -> u8 {
         self.0 as u8
     }
 
