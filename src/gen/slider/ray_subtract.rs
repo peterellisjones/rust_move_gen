@@ -6,7 +6,7 @@ use square::Square;
 use gen::statics::*;
 
 #[allow(dead_code)]
-fn rook_attacks_from_sq(from: Square, occupied: BB) -> BB {
+pub fn rook_attacks_from_sq(from: Square, occupied: BB) -> BB {
     let masks = unsafe { *ROOK_LINE_MASKS.get_unchecked(from.to_usize()) };
     let file_attacks = line_attacks(occupied, masks[0]);
     let rank_attacks = line_attacks(occupied, masks[1]);
@@ -14,7 +14,7 @@ fn rook_attacks_from_sq(from: Square, occupied: BB) -> BB {
 }
 
 #[allow(dead_code)]
-fn bishop_attacks_from_sq(from: Square, occupied: BB) -> BB {
+pub fn bishop_attacks_from_sq(from: Square, occupied: BB) -> BB {
     let masks = unsafe { *BISHOP_LINE_MASKS.get_unchecked(from.to_usize()) };
     let diag_attacks = line_attacks(occupied, masks[0]);
     let antidiag_attacks = line_attacks(occupied, masks[1]);
@@ -56,5 +56,25 @@ mod test {
     #[bench]
     fn bench_bishop_attacks_from_sq(b: &mut test::Bencher) {
         bench_attacks_from_sq(b, bishop_attacks_from_sq);
+    }
+
+    #[bench]
+    fn bench_rook_attacks_from_sq_low_density(b: &mut test::Bencher) {
+        bench_attacks_from_sq_low_density(b, rook_attacks_from_sq);
+    }
+
+    #[bench]
+    fn bench_bishop_attacks_from_sq_low_density(b: &mut test::Bencher) {
+        bench_attacks_from_sq_low_density(b, bishop_attacks_from_sq);
+    }
+
+    #[bench]
+    fn bench_rook_attacks_from_sq_high_density(b: &mut test::Bencher) {
+        bench_attacks_from_sq_high_density(b, rook_attacks_from_sq);
+    }
+
+    #[bench]
+    fn bench_bishop_attacks_from_sq_high_density(b: &mut test::Bencher) {
+        bench_attacks_from_sq_high_density(b, bishop_attacks_from_sq);
     }
 }

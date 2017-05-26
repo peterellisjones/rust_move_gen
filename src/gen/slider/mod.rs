@@ -11,7 +11,8 @@ pub use self::ray_kogge_stone::non_diag_pin_rays_including_attackers;
 pub use self::ray_kogge_stone::diag_pin_rays_including_attackers;
 pub use self::ray_kogge_stone::{pin_ray_non_diag, pin_ray_diag};
 pub use self::ray_kogge_stone::{rook_attacks, bishop_attacks};
-pub use self::ray_hyperbola::{rook_attacks_from_sq, bishop_attacks_from_sq, rank_attacks_from_sq};
+pub use self::ray_hyperbola::{rank_attacks_from_sq};
+pub use self::ray_magic::{rook_attacks_from_sq, bishop_attacks_from_sq};
 
 use mv_list::MoveList;
 use piece::{ROOK, QUEEN, BISHOP};

@@ -218,4 +218,24 @@ mod test {
     fn bench_bishop_attacks(b: &mut test::Bencher) {
         bench_attacks_from_bb(b, bishop_attacks);
     }
+
+    #[bench]
+    fn bench_rook_attacks_from_sq_low_density(b: &mut test::Bencher) {
+        bench_attacks_from_sq_low_density(b, rook_attacks_from_sq);
+    }
+
+    #[bench]
+    fn bench_bishop_attacks_from_sq_low_density(b: &mut test::Bencher) {
+        bench_attacks_from_sq_low_density(b, bishop_attacks_from_sq);
+    }
+
+    #[bench]
+    fn bench_rook_attacks_from_sq_high_density(b: &mut test::Bencher) {
+        bench_attacks_from_sq_high_density(b, rook_attacks_from_sq);
+    }
+
+    #[bench]
+    fn bench_bishop_attacks_from_sq_high_density(b: &mut test::Bencher) {
+        bench_attacks_from_sq_high_density(b, bishop_attacks_from_sq);
+    }
 }

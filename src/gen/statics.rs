@@ -14,9 +14,6 @@ pub struct LineMask {
     pub lower: BB,
 }
 
-
-
-
 pub const BISHOP_DIRECTIONS: [(u32, BB); 4] = [(9, BB(FILE_A.0 | ROW_1.0)), // up + right
                                                (7, BB(FILE_H.0 | ROW_1.0)), // up + left
                                                (64 - 9, BB(FILE_H.0 | ROW_8.0)), // down + left
@@ -26,218 +23,6 @@ pub const ROOK_DIRECTIONS: [(u32, BB); 4] = [(1, FILE_A), // right
                                              (8, ROW_1), // up
                                              (64 - 1, FILE_H), // left
                                              (64 - 8, ROW_8)]; // down
-
-// use square::Square;
-// const KNIGHT_DIRECTIONS: [(u32, BB); 8] =
-//     [(8 + 8 + 1, BB(FILE_A.0 | ROW_1.0 | ROW_2.0)), // up + up + right
-//      (8 + 1 + 1, BB(FILE_A.0 | FILE_B.0 | ROW_1.0)), // up + right + right
-//      ((-8 + 1 + 1) as u32, BB(FILE_A.0 | FILE_B.0 | ROW_8.0)), // down + right + right
-//      ((-8 - 8 + 1) as u32, BB(FILE_A.0 | ROW_8.0 | ROW_7.0)), // down + down + right
-//      ((-8 - 8 - 1) as u32, BB(FILE_H.0 | ROW_8.0 | ROW_7.0)), // down + down + left
-//      ((-8 - 1 - 1) as u32, BB(FILE_H.0 | FILE_G.0 | ROW_8.0)), // down + left + left
-//      (8 - 1 - 1, BB(FILE_H.0 | FILE_G.0 | ROW_1.0)), // up + left + left
-//      (8 + 8 - 1, BB(FILE_H.0 | ROW_1.0 | ROW_2.0))]; // up + up + left
-
-// The following static arrays are also included as consts below
-// Using static muts turned out to have a performance overhead vs consts
-// init_all is used to initialize the static arrays which can be then
-// be used as consts
-// static mut KING_MOVES_STATIC: [BB; 64] = [BB(0); 64];
-// static mut KNIGHT_MOVES_STATIC: [BB; 64] = [BB(0); 64];
-// #[cfg(not(target_feature = "sse3"))]
-// static mut DIAGONALS_STATIC: [BB; 64] = [BB(0); 64];
-// #[cfg(not(target_feature = "sse3"))]
-// static mut ANTI_DIAGONALS_STATIC: [BB; 64] = [BB(0); 64];
-// #[cfg(target_feature = "sse3")]
-// static mut BOTH_DIAGONALS_STATIC: [DBB; 64] = [DBB(u64x2::new(0, 0)); 64];
-
-// static mut BISHOP_LINE_MASKS_STATIC: [[LineMask; 2]; 64] = [[LineMask {
-//     upper: EMPTY,
-//     lower: EMPTY,
-// }; 2]; 64];
-
-// // file; rank
-// static mut ROOK_LINE_MASKS_STATIC: [[LineMask; 2]; 64] = [[LineMask {
-//     upper: EMPTY,
-//     lower: EMPTY,
-// }; 2]; 64];
-
-// #[allow(dead_code)]
-// fn init_all() {
-//     init_diagonals();
-//     init_rook_line_masks();
-//     init_bishop_line_masks();
-//     init_king_moves();
-//     init_knight_moves();
-// }
-
-// fn init_diagonals() {
-//     for i in 0..64 {
-//         let from = Square(i);
-//         let mut diag = EMPTY;
-//         let mut anti_diag = EMPTY;
-//         for (idx, &(shift, mask)) in BISHOP_DIRECTIONS.iter().enumerate() {
-//             let mut targets = BB::new(from).rot_left(shift);
-//             loop {
-//                 if (targets & mask).any() {
-//                     break;
-//                 }
-//                 if idx % 2 == 0 {
-//                     diag |= targets;
-//                 } else {
-//                     anti_diag |= targets;
-//                 }
-//                 targets |= targets.rot_left(shift);
-//             }
-//         }
-
-//         #[cfg(target_feature = "sse3")]
-//         unsafe {
-//             BOTH_DIAGONALS_STATIC[i] = DBB(u64x2::new(diag.0, anti_diag.0));
-//         }
-
-//         #[cfg(not(target_feature = "sse3"))]
-//         unsafe {
-//             DIAGONALS_STATIC[i] = diag;
-//         }
-
-//         #[cfg(not(target_feature = "sse3"))]
-//         unsafe {
-//             ANTI_DIAGONALS_STATIC[i] = anti_diag;
-//         }
-//     }
-// }
-
-// fn init_rook_line_masks() {
-//     for i in 0..64 {
-//         let from = Square(i);
-//         let mut ret = [BB(0); 4];
-//         for (idx, &(shift, mask)) in ROOK_DIRECTIONS.iter().enumerate() {
-//             let mut targets = BB::new(from).rot_left(shift);
-//             loop {
-//                 if (targets & mask).any() {
-//                     break;
-//                 }
-//                 ret[idx] |= targets;
-//                 targets |= targets.rot_left(shift);
-//             }
-//         }
-
-//         let file = LineMask {
-//             upper: ret[0],
-//             lower: ret[2],
-//         };
-//         let rank = LineMask {
-//             upper: ret[1],
-//             lower: ret[3],
-//         };
-//         unsafe {
-//             ROOK_LINE_MASKS[i] = [file, rank];
-//         }
-//     }
-// }
-
-// fn init_bishop_line_masks() {
-//     for i in 0..64 {
-//         let from = Square(i);
-//         let mut ret = [BB(0); 4];
-//         for (idx, &(shift, mask)) in BISHOP_DIRECTIONS.iter().enumerate() {
-//             let mut targets = BB::new(from).rot_left(shift);
-//             loop {
-//                 if (targets & mask).any() {
-//                     break;
-//                 }
-//                 ret[idx] |= targets;
-//                 targets |= targets.rot_left(shift);
-//             }
-//         }
-
-//         let anti_diag = LineMask {
-//             upper: ret[1],
-//             lower: ret[3],
-//         };
-
-//         let diag = LineMask {
-//             upper: ret[0],
-//             lower: ret[2],
-//         };
-
-//         unsafe {
-//             BISHOP_LINE_MASKS_STATIC[i] = [anti_diag, diag];
-//         }
-//     }
-// }
-
-// fn init_king_moves() {
-//     for i in 0..64 {
-//         let from = Square(i);
-//         let mut ret = BB(0);
-//         for &(shift, mask) in ROOK_DIRECTIONS.iter() {
-//             ret |= BB::new(from).rot_left(shift) & !mask;
-//         }
-//         for &(shift, mask) in BISHOP_DIRECTIONS.iter() {
-//             ret |= BB::new(from).rot_left(shift) & !mask;
-//         }
-
-//         unsafe {
-//             KING_MOVES_STATIC[i] = ret;
-//         }
-//     }
-// }
-
-// fn init_knight_moves() {
-//     for i in 0..64 {
-//         let from = Square(i);
-//         let mut ret = BB(0);
-//         for &(shift, mask) in KNIGHT_DIRECTIONS.iter() {
-//             ret |= BB::new(from).rot_left(shift) & !mask;
-//         }
-
-//         unsafe {
-//             KNIGHT_MOVES_STATIC[i] = ret;
-//         }
-//     }
-// }
-
-// #[cfg(test)]
-// mod test {
-//     use super::init_all;
-
-//     #[test]
-//     fn print_all_statics() {
-//         init_all();
-
-//         println!("{}", "pub const BISHOP_LINE_MASKS: [[LineMask; 2]; 64] = [");
-//         unsafe {
-//             for masks in super::BISHOP_LINE_MASKS.iter() {
-//                 println!("{}", "[LineMask {");
-//                 println!("upper: BB({}),", masks[0].upper.0);
-//                 println!("lower: BB({}),", masks[0].lower.0);
-//                 println!("{}", "},LineMask {");
-//                 println!("upper: BB({}),", masks[1].upper.0);
-//                 println!("lower: BB({}),", masks[1].lower.0);
-//                 println!("{}", "}],");
-//             }
-//         }
-//         println!("{}", "]");
-
-//         println!("{}", "pub const ROOK_LINE_MASKS: [[LineMask; 2]; 64] = [");
-//         unsafe {
-//             for masks in super::ROOK_LINE_MASKS.iter() {
-//                 println!("{}", "[LineMask {");
-//                 println!("upper: BB({}),", masks[0].upper.0);
-//                 println!("lower: BB({}),", masks[0].lower.0);
-//                 println!("{}", "},LineMask {");
-//                 println!("upper: BB({}),", masks[1].upper.0);
-//                 println!("lower: BB({}),", masks[1].lower.0);
-//                 println!("{}", "}],");
-//             }
-//         }
-//         println!("{}", "]");
-
-//         assert!(false);
-//     }
-// }
 
 pub const KING_MOVES: [BB; 64] = [BB(0x0000000000000302u64),
                                   BB(0x0000000000000705u64),
@@ -369,7 +154,6 @@ pub const KNIGHT_MOVES: [BB; 64] = [BB(0x0000000000020400u64),
                                     BB(0x0010A00000000000u64),
                                     BB(0x0020400000000000u64)];
 
-#[cfg(not(target_feature = "sse3"))]
 pub const DIAGONALS: [BB; 64] = [BB(0),
                                  BB(256),
                                  BB(66048),
@@ -435,8 +219,6 @@ pub const DIAGONALS: [BB; 64] = [BB(0),
                                  BB(36028797018963968),
                                  BB(0)];
 
-// 8 * 64 = 512 bytes
-#[cfg(not(target_feature = "sse3"))]
 pub const ANTI_DIAGONALS: [BB; 64] = [BB(9241421688590303744),
                                       BB(36099303471055872),
                                       BB(141012904183808),
@@ -1594,3 +1376,4 @@ pub const ROOK_LINE_MASKS: [[LineMask; 2]; 64] = [[LineMask {
                                                        upper: BB(0),
                                                        lower: BB(36170086419038336),
                                                    }]];
+

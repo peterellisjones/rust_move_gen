@@ -48,6 +48,11 @@ impl BB {
         self.0 != 0u64
     }
 
+    #[inline]
+    pub fn none(&self) -> bool {
+        self.0 == 0u64
+    }
+
     /// swaps bytes
     #[inline]
     pub fn bswap(&self) -> BB {
@@ -484,11 +489,12 @@ pub const FILE_H: BB = BB(FILE_A.0 << 7);
 pub const NOT_FILE_A: BB = BB(!FILE_A.0);
 pub const NOT_FILE_H: BB = BB(!FILE_H.0);
 pub const ROW_1: BB = BB(0xFFu64);
-pub const ROW_2: BB = BB(0xFFu64 << (8));
-pub const ROW_4: BB = BB(0xFFu64 << (3 * 8));
-pub const ROW_5: BB = BB(0xFFu64 << (4 * 8));
-pub const ROW_7: BB = BB(0xFFu64 << (6 * 8));
-pub const ROW_8: BB = BB(0xFFu64 << (7 * 8));
+pub const ROW_2: BB = BB(ROW_1.0 << (8));
+pub const ROW_4: BB = BB(ROW_1.0 << (3 * 8));
+pub const ROW_5: BB = BB(ROW_1.0 << (4 * 8));
+pub const ROW_7: BB = BB(ROW_1.0 << (6 * 8));
+pub const ROW_8: BB = BB(ROW_1.0 << (7 * 8));
+pub const EDGES: BB = BB(FILE_A.0 | FILE_H.0 | ROW_1.0 | ROW_8.0);
 
 /// `BBIterator` iterates over set bits in a bitboard, from low to high, returning a Square and the bit-board with that bit set
 pub struct BBIterator(BB);
