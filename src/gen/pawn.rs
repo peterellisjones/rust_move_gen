@@ -27,7 +27,7 @@ static PAWN_CAPTURE_FILE_MASKS: [[(usize, BB); 2]; 2] =
 #[inline]
 pub fn get_pawn_capture_file_masks<'a>(s: Side) -> &'a [(usize, BB); 2] {
     unsafe {
-        return PAWN_CAPTURE_FILE_MASKS.get_unchecked(s.to_usize());
+        PAWN_CAPTURE_FILE_MASKS.get_unchecked(s.to_usize())
     }
 }
 
@@ -36,7 +36,7 @@ static PUSH_SHIFTS: [usize; 2] = [8, 64 - 8];
 #[inline]
 fn pawn_push_shift(s: Side) -> usize {
     unsafe {
-        return *PUSH_SHIFTS.get_unchecked(s.to_usize());
+        *PUSH_SHIFTS.get_unchecked(s.to_usize())
     }
 }
 
@@ -45,7 +45,7 @@ static PAWN_DOUBLE_PUSH_TARGETS: [BB; 2] = [ROW_4, ROW_5];
 #[inline]
 fn pawn_double_push_targets(s: Side) -> BB {
     unsafe {
-        return *PAWN_DOUBLE_PUSH_TARGETS.get_unchecked(s.to_usize());
+        *PAWN_DOUBLE_PUSH_TARGETS.get_unchecked(s.to_usize())
     }
 }
 

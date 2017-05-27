@@ -5,7 +5,6 @@ pub mod slider;
 mod castle;
 mod attacks;
 mod pinned;
-mod statics;
 
 use self::pawn::*;
 use self::lookup::*;

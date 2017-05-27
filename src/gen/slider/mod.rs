@@ -2,6 +2,7 @@ mod ray_kogge_stone;
 mod ray_magic;
 mod ray_subtract;
 mod ray_hyperbola;
+mod ray_naive;
 
 #[cfg(test)]
 mod testing;
