@@ -8,7 +8,8 @@ use std::fmt;
 use std;
 use mv_list::MoveList;
 
-/// MoveCounter implements MoveList and collects moves in a vector. Use `iter` to access the moves once they have been added.
+/// MoveCounter implements MoveList and collects moves in a vector.
+/// Use `iter` to access the moves once they have been added.
 #[derive(Clone)]
 pub struct MoveVec {
     moves: Vec<Move>,

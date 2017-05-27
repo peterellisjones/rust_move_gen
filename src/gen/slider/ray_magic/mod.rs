@@ -17,7 +17,7 @@ pub struct Magic {
 pub fn bishop_attacks_from_sq(from: Square, occupied: BB) -> BB {
     let magic = unsafe { *consts::BISHOP_MAGICS.get_unchecked(from.to_usize()) };
     let mult = (occupied & magic.mask).to_u64().wrapping_mul(magic.magic_number);
-    let index = (mult >>55) as usize;
+    let index = (mult >> 55) as usize;
     let offset = index + (magic.offset as usize);
 
     unsafe { *consts::SHARED_ATTACKS.get_unchecked(offset) }
@@ -27,7 +27,7 @@ pub fn bishop_attacks_from_sq(from: Square, occupied: BB) -> BB {
 pub fn rook_attacks_from_sq(from: Square, occupied: BB) -> BB {
     let magic = unsafe { *consts::ROOK_MAGICS.get_unchecked(from.to_usize()) };
     let mult = (occupied & magic.mask).to_u64().wrapping_mul(magic.magic_number);
-    let index = (mult >>52) as usize;
+    let index = (mult >> 52) as usize;
     let offset = index + (magic.offset as usize);
 
     unsafe { *consts::SHARED_ATTACKS.get_unchecked(offset) }

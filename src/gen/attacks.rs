@@ -42,7 +42,7 @@ pub fn king_danger_squares(king: BB, attacker: Side, board: &Board) -> BB {
     attacked_squares |= king_moves_from_sq(kings.bitscan());
 
     let pawns = board.bb_pc(PAWN.pc(attacker));
-    for &(shift, file_mask) in get_pawn_capture_file_masks(attacker) {
+    for &(shift, file_mask) in PAWN_CAPTURE_FILE_MASKS[attacker.to_usize()].iter() {
         let targets = pawns.rot_left(shift as u32) & file_mask;
         attacked_squares |= targets;
     }
@@ -70,7 +70,7 @@ pub fn attacked_squares_ignoring_ep(attacker: Side, board: &Board) -> BB {
     }
 
     let pawns = board.bb_pc(PAWN.pc(attacker));
-    for &(shift, file_mask) in get_pawn_capture_file_masks(attacker) {
+    for &(shift, file_mask) in PAWN_CAPTURE_FILE_MASKS[attacker.to_usize()].iter() {
         let targets = pawns.rot_left(shift as u32) & file_mask;
         attacked_squares = attacked_squares | targets;
     }
@@ -88,7 +88,7 @@ pub fn checks_to_sq(sq: Square, attacker: Side, board: &Board) -> BB {
 
     let pawns = board.bb_pc(PAWN.pc(attacker));
     let sq_bb = BB::new(sq);
-    for &(shift, file_mask) in get_pawn_capture_file_masks(attacker.flip()) {
+    for &(shift, file_mask) in PAWN_CAPTURE_FILE_MASKS[attacker.flip().to_usize()].iter() {
         attackers |= sq_bb.rot_left(shift as u32) & file_mask & pawns;
     }
 

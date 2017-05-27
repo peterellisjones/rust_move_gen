@@ -116,7 +116,9 @@ fn random_occupancies_from_sq(size: usize, density: f64) -> Vec<(Square, BB)> {
     ret
 }
 
-fn generate_test_cases_from_sq<F: Fn(Square, BB) -> BB>(gen: F, density: f64) -> Vec<(Square, BB, BB)> {
+fn generate_test_cases_from_sq<F: Fn(Square, BB) -> BB>(gen: F,
+                                                        density: f64)
+                                                        -> Vec<(Square, BB, BB)> {
     let mut cases = Vec::new();
     for i in 0..64 {
         let from = Square::new(i);

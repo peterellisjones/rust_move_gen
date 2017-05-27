@@ -3,7 +3,7 @@ use mv_list::MoveList;
 use piece::*;
 use bb::*;
 use board::Board;
-use side::Side;
+use side::{Side, WHITE};
 use square;
 use super::slider::*;
 
@@ -21,33 +21,9 @@ pub fn pawn_moves<L: MoveList>(board: &Board,
 // black, left  = -9 remove FILE_H
 // black, right = -7 remove FILE_A
 // maps: side -> capture-direction -> shift amount + overflow mask
-static PAWN_CAPTURE_FILE_MASKS: [[(usize, BB); 2]; 2] =
+pub const PAWN_CAPTURE_FILE_MASKS: [[(usize, BB); 2]; 2] =
     [[(7, NOT_FILE_H), (9, NOT_FILE_A)], [(64 - 9, NOT_FILE_H), (64 - 7, NOT_FILE_A)]];
 
-#[inline]
-pub fn get_pawn_capture_file_masks<'a>(s: Side) -> &'a [(usize, BB); 2] {
-    unsafe {
-        PAWN_CAPTURE_FILE_MASKS.get_unchecked(s.to_usize())
-    }
-}
-
-static PUSH_SHIFTS: [usize; 2] = [8, 64 - 8];
-
-#[inline]
-fn pawn_push_shift(s: Side) -> usize {
-    unsafe {
-        *PUSH_SHIFTS.get_unchecked(s.to_usize())
-    }
-}
-
-static PAWN_DOUBLE_PUSH_TARGETS: [BB; 2] = [ROW_4, ROW_5];
-
-#[inline]
-fn pawn_double_push_targets(s: Side) -> BB {
-    unsafe {
-        *PAWN_DOUBLE_PUSH_TARGETS.get_unchecked(s.to_usize())
-    }
-}
 
 pub fn pawn_pushes<L: MoveList>(board: &Board, to_mask: BB, from_mask: BB, list: &mut L) {
     // NOTE in the case of EP capture, mask is for the enemy piece taken
@@ -59,7 +35,7 @@ pub fn pawn_pushes<L: MoveList>(board: &Board, to_mask: BB, from_mask: BB, list:
         return;
     }
 
-    let shift = pawn_push_shift(stm);
+    let shift = if stm == WHITE { 8 } else { 64 - 8 };
     let empty_squares = board.bb_empty();
 
     // Dont add mask here to avoid masking double pushes
@@ -67,8 +43,8 @@ pub fn pawn_pushes<L: MoveList>(board: &Board, to_mask: BB, from_mask: BB, list:
 
     list.add_pawn_pushes(shift, single_pushes & to_mask);
 
-    let double_pushes = single_pushes.rot_left(shift as u32) & empty_squares &
-                        pawn_double_push_targets(stm);
+    let mask = if stm == WHITE { ROW_4 } else { ROW_5 };
+    let double_pushes = single_pushes.rot_left(shift as u32) & empty_squares & mask;
 
     // DOUBLE PUSHES
     let double_push_shift = (shift * 2) % 64;
@@ -93,7 +69,7 @@ pub fn pawn_captures<L: MoveList>(board: &Board,
 
     if capture_mask != EMPTY {
         // CAPTURES
-        for &(shift, file_mask) in get_pawn_capture_file_masks(stm) {
+        for &(shift, file_mask) in PAWN_CAPTURE_FILE_MASKS[stm.to_usize()].iter() {
             let targets = movers.rot_left(shift as u32) & file_mask;
             let occupied_targets = targets & enemies & move_mask;
             list.add_pawn_captures(shift, occupied_targets);
@@ -103,7 +79,7 @@ pub fn pawn_captures<L: MoveList>(board: &Board,
     if board.state().ep_square.is_some() {
         let ep = board.state().ep_square.unwrap();
         // This is rare so worth duplicating work here to avoid doing it above
-        for &(shift, file_mask) in get_pawn_capture_file_masks(stm) {
+        for &(shift, file_mask) in PAWN_CAPTURE_FILE_MASKS[stm.to_usize()].iter() {
             // EN-PASSANT CAPTURES
             let targets = movers.rot_left(shift as u32) & file_mask;
             let ep_captures = targets & BB::new(ep);

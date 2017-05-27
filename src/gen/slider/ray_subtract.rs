@@ -1111,4 +1111,3 @@ pub const ROOK_LINE_MASKS: [[LineMask; 2]; 64] = [[LineMask {
                                                        upper: BB(0),
                                                        lower: BB(36170086419038336),
                                                    }]];
-

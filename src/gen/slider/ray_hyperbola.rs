@@ -43,10 +43,8 @@ pub fn rank_attacks_from_sq(from: Square, occupied: BB) -> BB {
     let col = from.col() as usize;
 
     let occupancy = (occupied >> (rowx8 + 1)).to_usize() & 63;
-    unsafe {
-        let attacks = *RANK_ATTACKS.get_unchecked(occupancy).get_unchecked(col);
-        return BB((attacks as u64) << rowx8);
-    }
+    let attacks = unsafe { *RANK_ATTACKS.get_unchecked(occupancy).get_unchecked(col) };
+    BB((attacks as u64) << rowx8)
 }
 
 #[inline]

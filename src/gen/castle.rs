@@ -4,19 +4,19 @@ use board::Board;
 use castle::Castle;
 use castling_rights::CastlingRights;
 
-const CASTLE_BLOCKING_SQUARES: [[BB; 2]; 2] = [[BB((1u64 << 1) + (1u64 << 2) + (1u64 << 3)), /* WHITE QS = B1 + C1 + D1 */
-                                                BB((1u64 << 57) + (1u64 << 58) + (1u64 << 59))], /* BLACK QS = B8 + C8 + D1 */
-                                               [BB((1u64 << 5) + (1u64 << 6)), // WHITE KS = F1 + G1
-                                                BB((1u64 << 61) + (1u64 << 62))]]; // BLACK KS = F8 + G8
-
-// squares that must be not attacked for a castle to take place
-const KING_SAFE_SQUARES: [[BB; 2]; 2] = [[BB((1u64 << 2) + (1u64 << 3) + (1u64 << 4)), /* WHITE QS = C1 + D1 + E1 */
-                                          BB((1u64 << 58) + (1u64 << 59) + (1u64 << 60))], /* BLACK QS = C8 + D8  + E8 */
-                                         [BB((1u64 << 4) + (1u64 << 5) + (1u64 << 6)), /* WHITE KS = E1 + F1 + G1 */
-                                          BB((1u64 << 60) + (1u64 << 61) + (1u64 << 62))]]; // BLACK KS = E8 + F8 + G8
-
-
 pub fn castles<L: MoveList>(board: &Board, attacks: BB, list: &mut L) {
+    const CASTLE_BLOCKING_SQUARES: [[BB; 2]; 2] = [[BB((1u64 << 1) + (1u64 << 2) + (1u64 << 3)), /* WHITE QS = B1 + C1 + D1 */
+                                                    BB((1u64 << 57) + (1u64 << 58) +
+                                                       (1u64 << 59))], /* BLACK QS = B8 + C8 + D1 */
+                                                   [BB((1u64 << 5) + (1u64 << 6)), // WHITE KS = F1 + G1
+                                                    BB((1u64 << 61) + (1u64 << 62))]]; // BLACK KS = F8 + G8
+
+    // squares that must be not attacked for a castle to take place
+    const KING_SAFE_SQUARES: [[BB; 2]; 2] = [[BB((1u64 << 2) + (1u64 << 3) + (1u64 << 4)), /* WHITE QS = C1 + D1 + E1 */
+                                              BB((1u64 << 58) + (1u64 << 59) + (1u64 << 60))], /* BLACK QS = C8 + D8  + E8 */
+                                             [BB((1u64 << 4) + (1u64 << 5) + (1u64 << 6)), /* WHITE KS = E1 + F1 + G1 */
+                                              BB((1u64 << 60) + (1u64 << 61) + (1u64 << 62))]]; // BLACK KS = E8 + F8 + G8
+
     let stm = board.state().stm;
     let rights = board.state().castling_rights;
     let occupied_squares = board.bb_occupied();

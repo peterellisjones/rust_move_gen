@@ -496,7 +496,8 @@ pub const ROW_7: BB = BB(ROW_1.0 << (6 * 8));
 pub const ROW_8: BB = BB(ROW_1.0 << (7 * 8));
 pub const EDGES: BB = BB(FILE_A.0 | FILE_H.0 | ROW_1.0 | ROW_8.0);
 
-/// `BBIterator` iterates over set bits in a bitboard, from low to high, returning a Square and the bit-board with that bit set
+/// `BBIterator` iterates over set bits in a bitboard, from low to high,
+/// returning a Square and the bit-board with that bit set
 pub struct BBIterator(BB);
 
 impl Iterator for BBIterator {
