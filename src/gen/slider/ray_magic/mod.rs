@@ -34,6 +34,7 @@ pub fn rook_attacks_from_sq(from: Square, occupied: BB) -> BB {
 }
 
 #[inline]
+#[allow(dead_code)]
 pub fn rook_attacks(from: BB, occupied: BB) -> BB {
     let mut attacks = EMPTY;
     for (sq, _) in from.iter() {
@@ -43,6 +44,7 @@ pub fn rook_attacks(from: BB, occupied: BB) -> BB {
 }
 
 #[inline]
+#[allow(dead_code)]
 pub fn bishop_attacks(from: BB, occupied: BB) -> BB {
     let mut attacks = EMPTY;
     for (sq, _) in from.iter() {

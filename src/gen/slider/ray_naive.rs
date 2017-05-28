@@ -1,6 +1,7 @@
 use bb::*;
 use square::Square;
 
+#[allow(dead_code)]
 pub fn rook_attacks_from_sq(from: Square, occupied: BB) -> BB {
     const ROOK_DIRECTIONS: [(u32, BB); 4] = [(1, FILE_A), // right
                                              (8, ROW_1), // up
@@ -22,7 +23,7 @@ pub fn rook_attacks_from_sq(from: Square, occupied: BB) -> BB {
     attacks
 }
 
-
+#[allow(dead_code)]
 pub fn bishop_attacks_from_sq(from: Square, occupied: BB) -> BB {
     const BISHOP_DIRECTIONS: [(u32, BB); 4] = [(9, BB(FILE_A.0 | ROW_1.0)), // up + right
                                                (7, BB(FILE_H.0 | ROW_1.0)), // up + left

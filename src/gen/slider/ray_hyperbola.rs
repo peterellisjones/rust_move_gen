@@ -23,6 +23,7 @@ pub fn rook_attacks(from: BB, occupied: BB) -> BB {
 }
 
 #[inline]
+#[allow(dead_code)]
 pub fn rook_attacks_from_sq(from: Square, occupied: BB) -> BB {
     file_attacks_from_sq(from, occupied) | rank_attacks_from_sq(from, occupied)
 }
