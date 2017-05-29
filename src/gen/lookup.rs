@@ -49,18 +49,15 @@ pub fn knight_moves_from_sq(sq: Square) -> BB {
 
 #[inline]
 pub fn knight_moves_from_bb(knights: BB) -> BB {
-    let attacks_up_two = knights.rot_left(16) & !(ROW_1 | ROW_2);
-    let attacks_up_one = knights.rot_left(8) & !ROW_1;
-    let attacks_down_one = knights.rot_left(56) & !ROW_8;
-    let attacks_down_two = knights.rot_left(48) & !(ROW_8 | ROW_7);
+    let attacks_right_one = (knights << 1) & !FILE_A;
+    let attacks_right_two = (knights << 2) & !(FILE_A | FILE_B);
+    let attacks_left_one = (knights >> 1) & !FILE_H;
+    let attacks_left_two = (knights >> 2) & !(FILE_H | FILE_G);
 
-    let attacks_left_one = (attacks_up_two | attacks_down_two).rot_left(63) & !FILE_H;
-    let attacks_left_two = (attacks_up_one | attacks_down_one).rot_left(62) & !(FILE_H | FILE_G);
+    let attacks_one = attacks_right_one | attacks_left_one;
+    let attacks_two = attacks_right_two | attacks_left_two;
 
-    let attacks_right_one = (attacks_up_two | attacks_down_two).rot_left(1) & !FILE_A;
-    let attacks_right_two = (attacks_up_one | attacks_down_one).rot_left(2) & !(FILE_A | FILE_B);
-
-    attacks_left_one | attacks_right_one | attacks_left_two | attacks_right_two
+    (attacks_one << 16) | (attacks_one >> 16) | (attacks_two << 8) | (attacks_two >> 8)
 }
 
 #[cfg(test)]
