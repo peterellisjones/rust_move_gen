@@ -116,6 +116,44 @@ pub fn anti_diagonals_from_sq(sq: Square) -> BB {
     }
 }
 
+#[cfg(test)]
+mod test {
+    use super::*;
+    use super::super::testing::*;
+    use test;
+
+    #[test]
+    fn t_rook_attacks() {
+        test_rook_attacks_from_sq(rook_attacks_from_sq);
+    }
+
+    #[test]
+    fn t_bishop_attacks() {
+        test_bishop_attacks_from_sq(bishop_attacks_from_sq);
+    }
+
+    #[bench]
+    fn bench_rook_attacks_from_sq(b: &mut test::Bencher) {
+        bench_attacks_from_sq(b, rook_attacks_from_sq);
+    }
+
+    #[bench]
+    fn bench_bishop_attacks_from_sq(b: &mut test::Bencher) {
+        bench_attacks_from_sq(b, bishop_attacks_from_sq);
+    }
+
+    #[bench]
+    fn bench_rook_attacks(b: &mut test::Bencher) {
+        bench_attacks_from_bb(b, rook_attacks);
+    }
+
+    #[bench]
+    fn bench_bishop_attacks(b: &mut test::Bencher) {
+        bench_attacks_from_bb(b, bishop_attacks);
+    }
+}
+
+
 /// Indexed by source square and 6-bit occupancy. 8 * 64 = 512 bytes
 const RANK_ATTACKS: [[u8; 8]; 64] = [[254, 253, 251, 247, 239, 223, 191, 127],
                                      [2, 253, 250, 246, 238, 222, 190, 126],
@@ -183,62 +221,6 @@ const RANK_ATTACKS: [[u8; 8]; 64] = [[254, 253, 251, 247, 239, 223, 191, 127],
                                      [2, 5, 10, 20, 40, 80, 160, 64]];
 
 
-#[cfg(test)]
-mod test {
-    use super::*;
-    use super::super::testing::*;
-    use test;
-
-    #[test]
-    fn t_rook_attacks() {
-        test_rook_attacks_from_sq(rook_attacks_from_sq);
-    }
-
-    #[test]
-    fn t_bishop_attacks() {
-        test_bishop_attacks_from_sq(bishop_attacks_from_sq);
-    }
-
-    #[bench]
-    fn bench_rook_attacks_from_sq(b: &mut test::Bencher) {
-        bench_attacks_from_sq(b, rook_attacks_from_sq);
-    }
-
-    #[bench]
-    fn bench_bishop_attacks_from_sq(b: &mut test::Bencher) {
-        bench_attacks_from_sq(b, bishop_attacks_from_sq);
-    }
-
-    #[bench]
-    fn bench_rook_attacks(b: &mut test::Bencher) {
-        bench_attacks_from_bb(b, rook_attacks);
-    }
-
-    #[bench]
-    fn bench_bishop_attacks(b: &mut test::Bencher) {
-        bench_attacks_from_bb(b, bishop_attacks);
-    }
-
-    #[bench]
-    fn bench_rook_attacks_from_sq_low_density(b: &mut test::Bencher) {
-        bench_attacks_from_sq_low_density(b, rook_attacks_from_sq);
-    }
-
-    #[bench]
-    fn bench_bishop_attacks_from_sq_low_density(b: &mut test::Bencher) {
-        bench_attacks_from_sq_low_density(b, bishop_attacks_from_sq);
-    }
-
-    #[bench]
-    fn bench_rook_attacks_from_sq_high_density(b: &mut test::Bencher) {
-        bench_attacks_from_sq_high_density(b, rook_attacks_from_sq);
-    }
-
-    #[bench]
-    fn bench_bishop_attacks_from_sq_high_density(b: &mut test::Bencher) {
-        bench_attacks_from_sq_high_density(b, bishop_attacks_from_sq);
-    }
-}
 
 #[cfg(not(target_feature = "sse3"))]
 pub const DIAGONALS: [BB; 64] = [BB(0),

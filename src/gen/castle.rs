@@ -4,6 +4,7 @@ use board::Board;
 use castle::Castle;
 use castling_rights::CastlingRights;
 
+#[inline]
 pub fn castles<L: MoveList>(board: &Board, attacks: BB, list: &mut L) {
     const CASTLE_BLOCKING_SQUARES: [[BB; 2]; 2] = [[BB((1u64 << 1) + (1u64 << 2) + (1u64 << 3)), /* WHITE QS = B1 + C1 + D1 */
                                                     BB((1u64 << 57) + (1u64 << 58) +

@@ -1,5 +1,6 @@
 use bb::*;
 use square::Square;
+use rand::{thread_rng, Rng};
 
 #[allow(dead_code)]
 pub fn rook_attacks_from_sq(from: Square, occupied: BB) -> BB {
@@ -10,10 +11,9 @@ pub fn rook_attacks_from_sq(from: Square, occupied: BB) -> BB {
 
     let mut attacks = EMPTY;
     for &(shift, mask) in ROOK_DIRECTIONS.iter() {
-        let mask_or_occupied = mask | occupied;
         let mut targets = BB::new(from).rot_left(shift);
         loop {
-            if (targets & mask_or_occupied).any() {
+            if (targets & (mask | occupied)).any() {
                 break;
             }
             targets |= targets.rot_left(shift);
@@ -52,6 +52,24 @@ mod test {
     use super::super::testing::*;
     use test;
 
+    // #[test]
+    // fn print_cases() {
+    //     let (mut cases, bishop_hash, rook_hash) = generate_all_test_cases(bishop_attacks_from_sq, rook_attacks_from_sq, 0.3);
+    //     println!("const TEST_CASES_BISHOP_HASH: BB = BB(0x{:X})", bishop_hash.to_u64());
+    //     println!("const TEST_CASES_ROOK_HASH: BB = BB(0x{:X})", rook_hash.to_u64());
+    //     println!("const TEST_CASES: [(Square, BB); 640] = [");
+
+    //     let mut rng = thread_rng();
+    //     rng.shuffle(&mut cases);
+
+    //     for &(sq, bb) in cases.iter() {
+    //         println!("({}, 0x{:X}),", sq.to_usize(), bb.to_u64());
+    //     }
+    //     println!("];");
+
+    //     assert!(false);
+    // }
+
     #[bench]
     fn bench_rook_attacks_from_sq(b: &mut test::Bencher) {
         bench_attacks_from_sq(b, rook_attacks_from_sq);
@@ -61,25 +79,4 @@ mod test {
     fn bench_bishop_attacks_from_sq(b: &mut test::Bencher) {
         bench_attacks_from_sq(b, bishop_attacks_from_sq);
     }
-
-    #[bench]
-    fn bench_rook_attacks_from_sq_low_density(b: &mut test::Bencher) {
-        bench_attacks_from_sq_low_density(b, rook_attacks_from_sq);
-    }
-
-    #[bench]
-    fn bench_bishop_attacks_from_sq_low_density(b: &mut test::Bencher) {
-        bench_attacks_from_sq_low_density(b, bishop_attacks_from_sq);
-    }
-
-    #[bench]
-    fn bench_rook_attacks_from_sq_high_density(b: &mut test::Bencher) {
-        bench_attacks_from_sq_high_density(b, rook_attacks_from_sq);
-    }
-
-    #[bench]
-    fn bench_bishop_attacks_from_sq_high_density(b: &mut test::Bencher) {
-        bench_attacks_from_sq_high_density(b, bishop_attacks_from_sq);
-    }
-
 }

@@ -33,9 +33,7 @@ pub fn king_danger_squares(king: BB, attacker: Side, board: &Board) -> BB {
     attacked_squares |= rook_attacks(non_diag_attackers, occupied_without_king);
 
     let knights = board.bb_pc(KNIGHT.pc(attacker));
-    for (to, _) in knights.iter() {
-        attacked_squares |= knight_moves_from_sq(to);
-    }
+    attacked_squares |= knight_moves_from_bb(knights);
 
     let kings = board.bb_pc(KING.pc(attacker));
     debug_assert_eq!(kings.pop_count(), 1);
@@ -60,14 +58,11 @@ pub fn attacked_squares_ignoring_ep(attacker: Side, board: &Board) -> BB {
     attacked_squares = attacked_squares | bishop_attacks(diag_attackers, occupied);
 
     let knights = board.bb_pc(KNIGHT.pc(attacker));
-    for (to, _) in knights.iter() {
-        attacked_squares = attacked_squares | knight_moves_from_sq(to);
-    }
+    attacked_squares |= knight_moves_from_bb(knights);
 
     let kings = board.bb_pc(KING.pc(attacker));
-    for (to, _) in kings.iter() {
-        attacked_squares = attacked_squares | king_moves_from_sq(to);
-    }
+    debug_assert_eq!(kings.pop_count(), 1);
+    attacked_squares |= king_moves_from_sq(kings.bitscan());
 
     let pawns = board.bb_pc(PAWN.pc(attacker));
     for &(shift, file_mask) in PAWN_CAPTURE_FILE_MASKS[attacker.to_usize()].iter() {

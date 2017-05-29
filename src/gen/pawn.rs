@@ -24,7 +24,6 @@ pub fn pawn_moves<L: MoveList>(board: &Board,
 pub const PAWN_CAPTURE_FILE_MASKS: [[(usize, BB); 2]; 2] =
     [[(7, NOT_FILE_H), (9, NOT_FILE_A)], [(64 - 9, NOT_FILE_H), (64 - 7, NOT_FILE_A)]];
 
-
 pub fn pawn_pushes<L: MoveList>(board: &Board, to_mask: BB, from_mask: BB, list: &mut L) {
     // NOTE in the case of EP capture, mask is for the enemy piece taken
     let stm = board.state().stm;

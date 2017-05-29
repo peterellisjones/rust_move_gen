@@ -42,8 +42,20 @@ pub fn test_rook_attacks_from_sq<F: Fn(Square, BB) -> BB>(gen: F) {
     }
 }
 
+pub fn bench_attacks_from_sq<F: Fn(Square, BB) -> BB>(b: &mut test::Bencher, gen: F) {
+    let cases = random_occupancies_from_sq(640, 0.3);
+
+    b.iter(|| -> BB {
+        let mut ret = EMPTY;
+        for &(sq, occupied) in cases.iter() {
+            ret ^= gen(sq, occupied);
+        }
+        ret
+    });
+}
+
 pub fn bench_attacks_from_bb<F: Fn(BB, BB) -> BB>(b: &mut test::Bencher, gen: F) {
-    let cases = random_occupancies_from_bb(100, 0.3);
+    let cases = random_occupancies_from_bb(640, 0.3);
     b.iter(|| -> BB {
         let mut ret = EMPTY;
 
@@ -55,46 +67,8 @@ pub fn bench_attacks_from_bb<F: Fn(BB, BB) -> BB>(b: &mut test::Bencher, gen: F)
     });
 }
 
-pub fn bench_attacks_from_sq<F: Fn(Square, BB) -> BB>(b: &mut test::Bencher, gen: F) {
-    let cases = random_occupancies_from_sq(100, 0.3);
-    b.iter(|| -> BB {
-        let mut ret = EMPTY;
-
-        for &(from, occupied) in cases.iter() {
-            ret ^= gen(from, occupied);
-        }
-
-        ret
-    });
-}
-
-pub fn bench_attacks_from_sq_low_density<F: Fn(Square, BB) -> BB>(b: &mut test::Bencher, gen: F) {
-    let cases = random_occupancies_from_sq(100, 0.1);
-    b.iter(|| -> BB {
-        let mut ret = EMPTY;
-
-        for &(from, occupied) in cases.iter() {
-            ret ^= gen(from, occupied);
-        }
-
-        ret
-    });
-}
-
-pub fn bench_attacks_from_sq_high_density<F: Fn(Square, BB) -> BB>(b: &mut test::Bencher, gen: F) {
-    let cases = random_occupancies_from_sq(100, 0.4);
-    b.iter(|| -> BB {
-        let mut ret = EMPTY;
-
-        for &(from, occupied) in cases.iter() {
-            ret ^= gen(from, occupied);
-        }
-
-        ret
-    });
-}
-
 fn random_occupancies_from_bb(size: isize, density: f64) -> Vec<(BB, BB)> {
+
     let mut ret = Vec::new();
     for _ in 0..size {
         let sq1 = Square::random();
@@ -116,9 +90,7 @@ fn random_occupancies_from_sq(size: usize, density: f64) -> Vec<(Square, BB)> {
     ret
 }
 
-fn generate_test_cases_from_sq<F: Fn(Square, BB) -> BB>(gen: F,
-                                                        density: f64)
-                                                        -> Vec<(Square, BB, BB)> {
+fn generate_test_cases_from_sq<F: Fn(Square, BB) -> BB>(gen: F, density: f64) -> Vec<(Square, BB, BB)> {
     let mut cases = Vec::new();
     for i in 0..64 {
         let from = Square::new(i);

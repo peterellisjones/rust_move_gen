@@ -4,6 +4,7 @@ use bb::*;
 use board::Board;
 use square::Square;
 
+#[inline]
 pub fn king_moves<L: MoveList>(board: &Board, to_mask: BB, list: &mut L) {
     let stm = board.state().stm;
     let piece = KING.pc(stm);
@@ -18,6 +19,7 @@ pub fn king_moves<L: MoveList>(board: &Board, to_mask: BB, list: &mut L) {
     list.add_moves(from, targets, enemy);
 }
 
+#[inline]
 pub fn knight_moves<L: MoveList>(board: &Board, to_mask: BB, from_mask: BB, list: &mut L) {
     let stm = board.state().stm;
     let piece = KNIGHT.pc(stm);
@@ -43,6 +45,22 @@ pub fn knight_moves_from_sq(sq: Square) -> BB {
     unsafe {
         return *KNIGHT_MOVES.get_unchecked(sq.to_usize());
     }
+}
+
+#[inline]
+pub fn knight_moves_from_bb(knights: BB) -> BB {
+    let attacks_up_two = knights.rot_left(16) & !(ROW_1 | ROW_2);
+    let attacks_up_one = knights.rot_left(8) & !ROW_1;
+    let attacks_down_one = knights.rot_left(56) & !ROW_8;
+    let attacks_down_two = knights.rot_left(48) & !(ROW_8 | ROW_7);
+
+    let attacks_left_one = (attacks_up_two | attacks_down_two).rot_left(63) & !FILE_H;
+    let attacks_left_two = (attacks_up_one | attacks_down_one).rot_left(62) & !(FILE_H | FILE_G);
+
+    let attacks_right_one = (attacks_up_two | attacks_down_two).rot_left(1) & !FILE_A;
+    let attacks_right_two = (attacks_up_one | attacks_down_one).rot_left(2) & !(FILE_A | FILE_B);
+
+    attacks_left_one | attacks_right_one | attacks_left_two | attacks_right_two
 }
 
 #[cfg(test)]
@@ -88,6 +106,15 @@ mod test {
         knight_moves::<MoveVec>(board, !EMPTY, !EMPTY, &mut list);
         assert_eq!(list.len(), 4);
         assert_list_includes_moves(&list, &["b1a3", "b1c3", "g1f3", "g1h3"]);
+    }
+
+    #[test]
+    fn test_knight_moves_from_bb() {
+        for i in 0..64 {
+            let bb = BB::new(Square::new(i));
+            let actual_moves = KNIGHT_MOVES[i];
+            assert_eq!(knight_moves_from_bb(bb), actual_moves);
+        }
     }
 
     #[test]
