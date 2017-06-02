@@ -6,8 +6,8 @@
 //! ```
 //! use chess_move_gen::*;
 //! let mut list = MoveVec::new();
-//! let board = &Board::from_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w QqKk - 0 1").unwrap();
-//! legal_moves::<MoveVec>(board, &mut list);
+//! let position = &Position::from_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w QqKk - 0 1").unwrap();
+//! legal_moves::<MoveVec>(position, &mut list);
 //! assert_eq!(list.len(), 20);
 //! ```
 
@@ -17,7 +17,7 @@
 #![feature(const_fn)]
 
 pub mod bb;
-mod board;
+mod position;
 mod castle;
 mod castling_rights;
 mod gen;
@@ -29,7 +29,7 @@ mod side;
 mod square;
 mod util;
 mod hash;
-mod tree;
+mod board;
 
 #[cfg(target_feature = "sse3")]
 mod dbb;
@@ -40,13 +40,13 @@ extern crate unindent;
 #[cfg(test)]
 extern crate test;
 
-pub use board::{Board, State, STARTING_POSITION_FEN};
-pub use tree::Tree;
-pub use gen::legal_moves;
+pub use position::{Position, State, STARTING_POSITION_FEN};
+pub use board::Board;
+pub use gen::{legal_moves, legal_captures};
 pub use castle::{Castle, KING_SIDE, QUEEN_SIDE};
 pub use castling_rights::{CastlingRights, BLACK_QS, BLACK_KS, WHITE_QS, WHITE_KS};
-pub use mv::Move;
-pub use mv_list::{MoveList, MoveCounter, MoveVec};
+pub use mv::{Move, NULL_MOVE};
+pub use mv_list::{MoveList, MoveCounter, MoveVec, MoveSlice};
 pub use side::{Side, WHITE, BLACK};
 pub use piece::*;
 pub use square::*;
@@ -56,25 +56,25 @@ pub use bb::BB;
 pub use dbb::*;
 
 #[cfg(test)]
-fn perft(board: &mut Board, depth: usize) -> usize {
+fn perft(position: &mut Position, depth: usize) -> usize {
     if depth == 0 {
         let mut counter = MoveCounter::new();
-        legal_moves(&board, &mut counter);
+        legal_moves(&position, &mut counter);
         return counter.moves as usize;
     }
 
     let mut moves = MoveVec::new();
-    legal_moves(&board, &mut moves);
+    legal_moves(&position, &mut moves);
 
-    let state = board.state().clone();
-    let key = board.hash_key();
+    let state = position.state().clone();
+    let key = position.hash_key();
     let mut count = 0;
     for &mv in moves.iter() {
-        let capture = board.make(mv);
+        let capture = position.make(mv);
 
-        count += perft(board, depth - 1);
+        count += perft(position, depth - 1);
 
-        board.unmake(mv, capture, &state, key);
+        position.unmake(mv, capture, &state, key);
     }
 
     count
@@ -82,14 +82,14 @@ fn perft(board: &mut Board, depth: usize) -> usize {
 
 #[test]
 fn perft_test() {
-    let mut board = Board::from_fen(STARTING_POSITION_FEN).unwrap();
+    let mut position = Position::from_fen(STARTING_POSITION_FEN).unwrap();
 
-    assert_eq!(perft(&mut board, 3), 197281);
+    assert_eq!(perft(&mut position, 3), 197281);
 }
 
 #[bench]
 fn perft_bench_starting_position(b: &mut test::Bencher) {
-    let mut board = Board::from_fen(STARTING_POSITION_FEN).unwrap();
+    let mut position = Position::from_fen(STARTING_POSITION_FEN).unwrap();
 
-    b.iter(|| -> usize { perft(&mut board, 2) });
+    b.iter(|| -> usize { perft(&mut position, 2) });
 }

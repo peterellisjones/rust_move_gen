@@ -28,9 +28,9 @@ pub struct State {
     pub half_move_clock: usize,
 }
 
-/// Board encodes all positional information and non-positional game state
-pub struct Board {
-    // grid is an array representation of board positions
+/// Position encodes all positional information and non-positional game state
+pub struct Position {
+    // grid is an array representation of position positions
     grid: [Option<Piece>; 64],
     // bb_sides represents a bitboard for each side
     bb_sides: [BB; 2],
@@ -43,9 +43,9 @@ pub struct Board {
     hash: &'static Zobrist,
 }
 
-impl std::clone::Clone for Board {
+impl std::clone::Clone for Position {
     fn clone(&self) -> Self {
-        Board {
+        Position {
             grid: self.grid,
             bb_sides: self.bb_sides.clone(),
             bb_pieces: self.bb_pieces.clone(),
@@ -56,20 +56,20 @@ impl std::clone::Clone for Board {
     }
 }
 
-impl fmt::Debug for Board {
+impl fmt::Debug for Position {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", self.to_string())
     }
 }
 
-impl fmt::Display for Board {
+impl fmt::Display for Position {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", self.to_string())
     }
 }
 
-impl Board {
-    pub fn new(grid: [Option<Piece>; 64], state: State) -> Board {
+impl Position {
+    pub fn new(grid: [Option<Piece>; 64], state: State) -> Position {
         let mut bb_pieces = [EMPTY; 12];
         let mut bb_sides = [EMPTY; 2];
 
@@ -81,9 +81,9 @@ impl Board {
         }
 
         let hash = &DEFAULT_ZOBRISH_HASH;
-        let key = hash.board(&grid, &state);
+        let key = hash.position(&grid, &state);
 
-        Board {
+        Position {
             grid: grid,
             bb_pieces: bb_pieces,
             bb_sides: bb_sides,
@@ -93,12 +93,12 @@ impl Board {
         }
     }
 
-    /// Construct a new board from a FEN string
-    pub fn from_fen(fen: &str) -> Result<Board, String> {
-        from_fen(fen).map(|(grid, state)| Board::new(grid, state))
+    /// Construct a new position from a FEN string
+    pub fn from_fen(fen: &str) -> Result<Position, String> {
+        from_fen(fen).map(|(grid, state)| Position::new(grid, state))
     }
 
-    // Convert board to FEN representation
+    // Convert position to FEN representation
     pub fn to_fen(&self) -> String {
         to_fen(&self.grid, &self.state)
     }
@@ -108,13 +108,13 @@ impl Board {
         self.key
     }
 
-    /// Get board non-positional state
+    /// Get position non-positional state
     #[inline]
     pub fn state(&self) -> &State {
         &self.state
     }
 
-    /// Get board position
+    /// Get position position
     #[inline]
     pub fn grid(&self) -> &[Option<Piece>; 64] {
         &self.grid
@@ -227,7 +227,7 @@ mod test {
 
     #[test]
     fn test_to_string() {
-        let board = &Board::from_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w").unwrap();
+        let position = &Position::from_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w").unwrap();
 
         let expected = unindent::unindent("
           ABCDEFGH
@@ -241,6 +241,6 @@ mod test {
         1|RNBQKBNR|1
           ABCDEFGH
         ");
-        assert_eq!(board.to_string(), expected);
+        assert_eq!(position.to_string(), expected);
     }
 }

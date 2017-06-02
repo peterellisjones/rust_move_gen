@@ -72,15 +72,15 @@ impl MoveList for MoveCounter {
 #[cfg(test)]
 mod test {
     use super::*;
-    use board::*;
+    use position::*;
     use gen::*;
 
     #[test]
     fn test_move_counter() {
-        let board = &Board::from_fen(STARTING_POSITION_FEN).unwrap();
+        let position = &Position::from_fen(STARTING_POSITION_FEN).unwrap();
         let mut counter = MoveCounter::new();
 
-        legal_moves(&board, &mut counter);
+        legal_moves(&position, &mut counter);
 
         assert_eq!(counter.moves, 20);
     }

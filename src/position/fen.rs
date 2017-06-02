@@ -152,7 +152,7 @@ fn parse_row(row_str: &str, row: usize, grid: &mut [Option<Piece>; 64]) -> Optio
 
 #[cfg(test)]
 mod test {
-    use board::*;
+    use position::*;
     use square::*;
     use castling_rights::*;
     use unindent;
@@ -160,12 +160,12 @@ mod test {
 
     #[test]
     fn parse_convert_to_fen_1() {
-        let result = Board::from_fen(STARTING_POSITION_FEN);
+        let result = Position::from_fen(STARTING_POSITION_FEN);
         assert!(result.is_ok());
 
-        let board = result.unwrap();
+        let position = result.unwrap();
 
-        let fen = board.to_fen();
+        let fen = position.to_fen();
         assert_eq!(fen, STARTING_POSITION_FEN);
     }
 
@@ -173,34 +173,34 @@ mod test {
     fn parse_convert_to_fen_2() {
         let initial_fen = "rnbqkbnr/pppppp2/6pp/8/8/PP5P/2PPPPP1/RNBQKBNR w \
                                                  QqKk - 0 1";
-        let result = Board::from_fen(initial_fen);
+        let result = Position::from_fen(initial_fen);
         assert!(result.is_ok());
 
-        let board = result.unwrap();
+        let position = result.unwrap();
 
-        let fen = board.to_fen();
+        let fen = position.to_fen();
         assert_eq!(fen, initial_fen);
     }
 
     #[test]
     fn parse_convert_to_fen_3() {
         let initial_fen = "r3k2r/1b4bq/8/8/8/8/7B/R4RK1 b qk - 0 1";
-        let result = Board::from_fen(initial_fen);
+        let result = Position::from_fen(initial_fen);
         assert!(result.is_ok());
 
-        let board = result.unwrap();
+        let position = result.unwrap();
 
-        let fen = board.to_fen();
+        let fen = position.to_fen();
         assert_eq!(fen, initial_fen);
     }
 
     #[test]
     fn parse_parse_with_starting_fen() {
         let fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR";
-        let result = Board::from_fen(fen);
+        let result = Position::from_fen(fen);
         assert!(result.is_ok());
 
-        let board = result.unwrap();
+        let position = result.unwrap();
 
         let expected = unindent::unindent("
           ABCDEFGH
@@ -214,29 +214,29 @@ mod test {
         1|RNBQKBNR|1
           ABCDEFGH
         ");
-        assert_eq!(board.to_string(), expected);
+        assert_eq!(position.to_string(), expected);
     }
 
     #[test]
     fn parse_with_default_state() {
         let fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR";
-        let result = Board::from_fen(fen);
+        let result = Position::from_fen(fen);
         assert!(result.is_ok());
 
-        let board = result.unwrap();
+        let position = result.unwrap();
 
-        assert_eq!(board.state().castling_rights, ALL_RIGHTS);
-        assert_eq!(board.state().half_move_clock, 0);
-        assert_eq!(board.state().full_move_number, 1);
+        assert_eq!(position.state().castling_rights, ALL_RIGHTS);
+        assert_eq!(position.state().half_move_clock, 0);
+        assert_eq!(position.state().full_move_number, 1);
     }
 
     #[test]
     fn parse_parse_with_random_fen() {
         let fen = "8/8/7p/3KNN1k/2p4p/8/3P2p1/8";
-        let result = Board::from_fen(fen);
+        let result = Position::from_fen(fen);
         assert!(result.is_ok());
 
-        let board = result.unwrap();
+        let position = result.unwrap();
 
         let expected = unindent::unindent("
               ABCDEFGH
@@ -251,115 +251,115 @@ mod test {
               ABCDEFGH
         ");
 
-        assert_eq!(board.to_string(), expected);
+        assert_eq!(position.to_string(), expected);
     }
 
     #[test]
     fn parse_with_stm_1() {
         let fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w";
-        let result = Board::from_fen(fen);
+        let result = Position::from_fen(fen);
         assert!(result.is_ok());
-        let board = result.unwrap();
-        assert_eq!(board.state().stm, WHITE);
+        let position = result.unwrap();
+        assert_eq!(position.state().stm, WHITE);
     }
 
     #[test]
     fn parse_with_stm_2() {
         let fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b";
-        let result = Board::from_fen(fen);
+        let result = Position::from_fen(fen);
         assert!(result.is_ok());
-        let board = result.unwrap();
-        assert_eq!(board.state().stm, BLACK);
+        let position = result.unwrap();
+        assert_eq!(position.state().stm, BLACK);
     }
 
     #[test]
     fn parse_with_ep_square_1() {
         let fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - -";
-        let result = Board::from_fen(fen);
+        let result = Position::from_fen(fen);
         assert!(result.is_ok());
-        let board = result.unwrap();
-        assert!(board.state().ep_square.is_none());
+        let position = result.unwrap();
+        assert!(position.state().ep_square.is_none());
     }
 
     #[test]
     fn parse_with_ep_square_2() {
         let fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - c3";
-        let result = Board::from_fen(fen);
+        let result = Position::from_fen(fen);
         assert!(result.is_ok());
-        let board = result.unwrap();
-        assert_eq!(board.state().ep_square.unwrap(), C3);
+        let position = result.unwrap();
+        assert_eq!(position.state().ep_square.unwrap(), C3);
     }
 
     #[test]
     fn parse_with_half_move_clock_1() {
         let fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - -";
-        let result = Board::from_fen(fen);
+        let result = Position::from_fen(fen);
         assert!(result.is_ok());
-        let board = result.unwrap();
-        assert_eq!(board.state().half_move_clock, 0);
+        let position = result.unwrap();
+        assert_eq!(position.state().half_move_clock, 0);
     }
 
     #[test]
     fn parse_with_half_move_clock_2() {
         let fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - - 23";
-        let result = Board::from_fen(fen);
+        let result = Position::from_fen(fen);
         assert!(result.is_ok());
-        let board = result.unwrap();
-        assert_eq!(board.state().half_move_clock, 23);
+        let position = result.unwrap();
+        assert_eq!(position.state().half_move_clock, 23);
     }
 
     #[test]
     fn parse_with_full_move_number_1() {
         let fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - - 0";
-        let result = Board::from_fen(fen);
+        let result = Position::from_fen(fen);
         assert!(result.is_ok());
-        let board = result.unwrap();
+        let position = result.unwrap();
 
-        assert_eq!(board.state().full_move_number, 1);
+        assert_eq!(position.state().full_move_number, 1);
     }
 
     #[test]
     fn parse_with_full_move_number_2() {
         let fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - - 0 45";
-        let result = Board::from_fen(fen);
+        let result = Position::from_fen(fen);
         assert!(result.is_ok());
-        let board = result.unwrap();
-        assert_eq!(board.state().full_move_number, 45);
+        let position = result.unwrap();
+        assert_eq!(position.state().full_move_number, 45);
     }
 
     #[test]
     fn parse_with_castling_rights_1() {
         let fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w -";
-        let result = Board::from_fen(fen);
+        let result = Position::from_fen(fen);
         assert!(result.is_ok());
-        let board = result.unwrap();
-        assert_eq!(board.state().castling_rights, NO_RIGHTS);
+        let position = result.unwrap();
+        assert_eq!(position.state().castling_rights, NO_RIGHTS);
     }
 
     #[test]
     fn parse_with_castling_rights_2() {
         let fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b Qk";
-        let result = Board::from_fen(fen);
+        let result = Position::from_fen(fen);
         assert!(result.is_ok());
-        let board = result.unwrap();
+        let position = result.unwrap();
         let mut expected_rights = WHITE_QS;
         expected_rights.add(KING_SIDE, BLACK);
-        assert_eq!(board.state().castling_rights, expected_rights);
+        assert_eq!(position.state().castling_rights, expected_rights);
     }
 
     #[test]
     fn parse_with_castling_rights_3() {
         let fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w QkKq";
-        let result = Board::from_fen(fen);
+        let result = Position::from_fen(fen);
         assert!(result.is_ok());
-        let board = result.unwrap();
-        assert_eq!(board.state().castling_rights, ALL_RIGHTS);
+        let position = result.unwrap();
+        assert_eq!(position.state().castling_rights, ALL_RIGHTS);
     }
 
     #[test]
     fn parse_with_castling_rights_4() {
         let fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b f";
-        let result = Board::from_fen(fen);
+        let result = Position::from_fen(fen);
         assert!(result.is_err());
         assert_eq!(result.err().unwrap(), "Invalid castle: f");
     }

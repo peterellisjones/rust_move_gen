@@ -1,7 +1,7 @@
 use mv::Move;
 use castle::*;
 use bb::*;
-use super::{Board, State};
+use super::{Position, State};
 use piece::*;
 use square::*;
 use castling_rights::*;
@@ -13,7 +13,7 @@ const CASTLE_MASKS: [BB; 4] = [BB(1u64 | (1u64 << 4)), // WHITE QS: A1 + E1
                                BB((1u64 << 4) | (1u64 << 7)), // WHITE KS: E1 + H1
                                BB(((1u64 << 4) | (1u64 << 7)) << 56) /* BLACK KS: E8 + H8 */];
 
-impl Board {
+impl Position {
     /// Returns piece captured and square if any
     #[inline]
     pub fn make(&mut self, mv: Move) -> Option<(Piece, Square)> {
@@ -134,7 +134,7 @@ impl Board {
 
 #[cfg(test)]
 mod test {
-    use board::Board;
+    use position::Position;
     use mv::Move;
     use integrity;
     use square::*;
@@ -142,43 +142,43 @@ mod test {
     use castle::*;
 
     fn test_make_unmake(initial_fen: &'static str, expected_fen: &'static str, mv: Move) {
-        let mut board = Board::from_fen(initial_fen).unwrap();
-        assert!(integrity::test(&board).is_none());
+        let mut position = Position::from_fen(initial_fen).unwrap();
+        assert!(integrity::test(&position).is_none());
 
-        let state = board.state().clone();
+        let state = position.state().clone();
 
-        let initial_key = board.hash_key();
+        let initial_key = position.hash_key();
 
-        let capture = board.make(mv);
-        assert_eq!(board.to_string(),
-                   Board::from_fen(expected_fen).unwrap().to_string());
+        let capture = position.make(mv);
+        assert_eq!(position.to_string(),
+                   Position::from_fen(expected_fen).unwrap().to_string());
 
-        assert!(integrity::test(&board).is_none());
+        assert!(integrity::test(&position).is_none());
 
-        board.unmake(mv, capture, &state, initial_key);
-        assert_eq!(board.to_string(),
-                   Board::from_fen(initial_fen).unwrap().to_string());
-        assert!(integrity::test(&board).is_none());
+        position.unmake(mv, capture, &state, initial_key);
+        assert_eq!(position.to_string(),
+                   Position::from_fen(initial_fen).unwrap().to_string());
+        assert!(integrity::test(&position).is_none());
     }
 
     #[test]
     fn test_hash() {
-        let mut board_1 = Board::from_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/R3KBNR w QqKk - 1 1")
+        let mut position_1 = Position::from_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/R3KBNR w QqKk - 1 1")
             .unwrap();
-        let mut board_2 = Board::from_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/R3KBNR w QqKk - 1 1")
+        let mut position_2 = Position::from_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/R3KBNR w QqKk - 1 1")
             .unwrap();
-        board_1.make(Move::new_push(D2, D4));
-        board_1.make(Move::new_push(B8, C6));
-        board_1.make(Move::new_castle(QUEEN_SIDE));
-        board_1.make(Move::new_capture(C6, D4));
+        position_1.make(Move::new_push(D2, D4));
+        position_1.make(Move::new_push(B8, C6));
+        position_1.make(Move::new_castle(QUEEN_SIDE));
+        position_1.make(Move::new_capture(C6, D4));
 
-        board_2.make(Move::new_castle(QUEEN_SIDE));
-        board_2.make(Move::new_push(B8, C6));
-        board_2.make(Move::new_push(D2, D4));
-        board_2.make(Move::new_capture(C6, D4));
+        position_2.make(Move::new_castle(QUEEN_SIDE));
+        position_2.make(Move::new_push(B8, C6));
+        position_2.make(Move::new_push(D2, D4));
+        position_2.make(Move::new_capture(C6, D4));
 
-        assert_eq!(board_1.to_fen(), board_2.to_fen());
-        assert_eq!(board_1.hash_key(), board_2.hash_key());
+        assert_eq!(position_1.to_fen(), position_2.to_fen());
+        assert_eq!(position_1.hash_key(), position_2.hash_key());
     }
 
     #[test]

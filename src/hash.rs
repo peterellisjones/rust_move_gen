@@ -4,7 +4,7 @@ use piece::*;
 use square::Square;
 use square;
 use castle::*;
-use board::State;
+use position::State;
 use side::*;
 
 /// Zobrist represents a set of keys for Zobrist hashing
@@ -112,8 +112,8 @@ impl Zobrist {
         keys
     }
 
-    /// Generates the hash of the entire board
-    pub fn board(&self, grid: &[Option<Piece>; 64], state: &State) -> u64 {
+    /// Generates the hash of the entire position
+    pub fn position(&self, grid: &[Option<Piece>; 64], state: &State) -> u64 {
         let mut hash = 0u64;
 
         for (idx, &pc) in grid.iter().enumerate().filter(|&(_, &pc)| pc.is_some()) {

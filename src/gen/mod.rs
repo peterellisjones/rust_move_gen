@@ -14,7 +14,7 @@ use self::castle::*;
 use self::pinned::*;
 use piece::*;
 
-use board::Board;
+use position::Position;
 use bb::EMPTY;
 use mv_list::MoveList;
 use piece::KING;
@@ -22,19 +22,19 @@ use piece::KING;
 pub use self::attacks::king_danger_squares;
 
 /// Adds legal moves to the provided MoveList. Returns true if mover is in check
-pub fn legal_moves<L: MoveList>(board: &Board, list: &mut L) -> bool {
-    let stm = board.state().stm;
-    let kings = board.bb_pc(KING.pc(stm));
+pub fn legal_moves<L: MoveList>(position: &Position, list: &mut L) -> bool {
+    let stm = position.state().stm;
+    let kings = position.bb_pc(KING.pc(stm));
 
     // We always need legal king moves
-    let attacked_squares = king_danger_squares(kings, stm.flip(), board);
-    king_moves(board, !attacked_squares, list);
+    let attacked_squares = king_danger_squares(kings, stm.flip(), position);
+    king_moves(position, !attacked_squares, list);
 
     let king_sq = kings.bitscan();
 
     // Don't need to calculate checkers if no attacks on king
     let (king_attacks_count, checkers) = if (attacked_squares & kings).any() {
-        let checkers = checks_to_sq(king_sq, stm.flip(), board);
+        let checkers = checks_to_sq(king_sq, stm.flip(), position);
         (checkers.pop_count(), checkers)
     } else {
         (0, EMPTY)
@@ -58,55 +58,117 @@ pub fn legal_moves<L: MoveList>(board: &Board, list: &mut L) -> bool {
         // If the piece giving check is a slider, we can additionally attempt
         // to block the sliding piece;
         let checker_sq = checkers.bitscan();
-        let checker = board.at(checker_sq).unwrap();
+        let checker = position.at(checker_sq).unwrap();
 
         if checker.is_slider() {
             // This branch is rare
             if checker.kind() != ROOK {
-                push_mask |= slider_diag_rays_to_squares(kings, checkers, board);
+                push_mask |= slider_diag_rays_to_squares(kings, checkers, position);
             }
             if checker.kind() != BISHOP {
-                push_mask |= slider_non_diag_rays_to_squares(kings, checkers, board);
+                push_mask |= slider_non_diag_rays_to_squares(kings, checkers, position);
             }
         }
     } else {
         // Not in check so can generate castles
         // impossible for castles to be affected by pins
         // so we don't need to consider pins here
-        castles(board, attacked_squares, list);
+        castles(position, attacked_squares, list);
     }
 
     let in_check = king_attacks_count > 0;
 
     // Generate rest of the moves, filtering movable squares
-    let pinned = pin_ray_moves(board, in_check, capture_mask, push_mask, stm, list);
+    let pinned = pin_ray_moves(position, in_check, capture_mask, push_mask, stm, list);
 
     let move_mask = capture_mask | push_mask;
 
     // generate moves for non-pinned pieces
-    slider_moves(board, move_mask, !pinned, list);
-    knight_moves(board, move_mask, !pinned, list);
-    pawn_moves(board, capture_mask, push_mask, !pinned, list);
+    slider_moves(position, move_mask, !pinned, list);
+    knight_moves(position, move_mask, !pinned, list);
+    pawn_moves(position, capture_mask, push_mask, !pinned, list);
 
     in_check
 }
+
+/// Adds captures moves to the provided MoveList. Returns true if mover is in check
+pub fn legal_captures<L: MoveList>(position: &Position, list: &mut L) -> bool {
+    let stm = position.state().stm;
+    let kings = position.bb_pc(KING.pc(stm));
+    let enemy = position.bb_side(stm.flip());
+
+    // We always need legal king moves
+    let attacked_squares = king_danger_squares(kings, stm.flip(), position);
+    king_moves(position, enemy & !attacked_squares, list);
+
+    let king_sq = kings.bitscan();
+
+    // Don't need to calculate checkers if no attacks on king
+    let (king_attacks_count, checkers) = if (attacked_squares & kings).any() {
+        let checkers = checks_to_sq(king_sq, stm.flip(), position);
+        (checkers.pop_count(), checkers)
+    } else {
+        (0, EMPTY)
+    };
+
+    // capture_mask and push_mask represent squares our pieces are allowed to move to or capture,
+    // respectively. The difference between the two is only important for pawn EP captures
+    let mut capture_mask = enemy;
+    let mut push_mask = !EMPTY;
+
+    if king_attacks_count > 1 {
+        // multiple attackers... only solutions are king moves
+        return true;
+    } else if king_attacks_count == 1 {
+        // if ony one attacker, we can try attacking the attacker with
+        // our other pieces.
+        capture_mask = checkers;
+        push_mask = EMPTY;
+        // If the piece giving check is a slider, we can additionally attempt
+        // to block the sliding piece;
+        let checker_sq = checkers.bitscan();
+        let checker = position.at(checker_sq).unwrap();
+
+        if checker.is_slider() {
+            // This branch is rare
+            if checker.kind() != ROOK {
+                push_mask |= slider_diag_rays_to_squares(kings, checkers, position);
+            }
+            if checker.kind() != BISHOP {
+                push_mask |= slider_non_diag_rays_to_squares(kings, checkers, position);
+            }
+        }
+    }
+    let in_check = king_attacks_count > 0;
+
+    // Generate rest of the moves, filtering movable squares
+    let pinned = pin_ray_captures(position, in_check, capture_mask, push_mask, stm, list);
+
+    // generate moves for non-pinned pieces
+    pawn_captures(position, capture_mask, push_mask, !pinned, list);
+    knight_moves(position, capture_mask, !pinned, list);
+    slider_moves(position, capture_mask, !pinned, list);
+
+    in_check
+}
+
 
 #[cfg(test)]
 mod test {
     use super::*;
     use mv_list::MoveVec;
-    use board::STARTING_POSITION_FEN;
+    use position::STARTING_POSITION_FEN;
 
     macro_rules! test_gen {
         ($name:ident, $moves:expr, $fen:expr) => {
             #[test]
             fn $name() {
                 let mut list = MoveVec::new();
-                let board = &Board::from_fen($fen).unwrap();
-                legal_moves::<MoveVec>(board, &mut list);
+                let position = &Position::from_fen($fen).unwrap();
+                legal_moves::<MoveVec>(position, &mut list);
                 if  list.len() != $moves {
                     println!("Moves missing: {}", list);
-                    println!("{}", board);
+                    println!("{}", position);
                 }
                 assert_eq!(list.len(), $moves);
             }

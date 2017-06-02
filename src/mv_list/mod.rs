@@ -4,9 +4,11 @@ use castle::Castle;
 
 mod mv_counter;
 mod mv_vec;
+mod mv_slice;
 
 pub use self::mv_counter::MoveCounter;
 pub use self::mv_vec::MoveVec;
+pub use self::mv_slice::MoveSlice;
 
 /// MoveList represents a way to collect moves from move generation functions. Use this if you want to collect or record moves in a way not supported by MoveVec or MoveCounter
 pub trait MoveList {
