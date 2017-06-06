@@ -73,6 +73,8 @@ pub const KNIGHT: Kind = Kind(3);
 pub const PAWN: Kind = Kind(4);
 #[allow(dead_code)]
 pub const KING: Kind = Kind(5);
+#[allow(dead_code)]
+pub const NULL_KIND: Kind = Kind(6);
 
 #[allow(dead_code)]
 pub const WHITE_BISHOP: Piece = Piece(0);
@@ -105,6 +107,9 @@ pub const WHITE_KING: Piece = Piece(10);
 #[allow(dead_code)]
 pub const BLACK_KING: Piece = Piece(11);
 
+#[allow(dead_code)]
+pub const NULL_PIECE: Piece = Piece(12);
+
 impl Piece {
     #[inline]
     pub fn to_usize(&self) -> usize {
@@ -119,6 +124,16 @@ impl Piece {
     #[inline]
     pub fn kind(&self) -> Kind {
         Kind(self.0 >> 1)
+    }
+
+    #[inline]
+    pub fn is_none(&self) -> bool {
+        *self == NULL_PIECE
+    }
+
+    #[inline]
+    pub fn is_some(&self) -> bool {
+        *self != NULL_PIECE
     }
 
     // assumes piece present

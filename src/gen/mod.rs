@@ -28,7 +28,6 @@ pub fn legal_moves<L: MoveList>(position: &Position, list: &mut L) -> bool {
 
     // We always need legal king moves
     let attacked_squares = king_danger_squares(kings, stm.flip(), position);
-    king_moves(position, !attacked_squares, list);
 
     let king_sq = kings.bitscan();
 
@@ -47,6 +46,7 @@ pub fn legal_moves<L: MoveList>(position: &Position, list: &mut L) -> bool {
 
     if king_attacks_count > 1 {
         // multiple attackers... only solutions are king moves
+        king_moves(position, !attacked_squares, list);
         return true;
     } else if king_attacks_count == 1 {
         // if ony one attacker, we can try attacking the attacker with
@@ -58,7 +58,8 @@ pub fn legal_moves<L: MoveList>(position: &Position, list: &mut L) -> bool {
         // If the piece giving check is a slider, we can additionally attempt
         // to block the sliding piece;
         let checker_sq = checkers.bitscan();
-        let checker = position.at(checker_sq).unwrap();
+        let checker = position.at(checker_sq);
+        debug_assert!(checker.is_some());
 
         if checker.is_slider() {
             // This branch is rare
@@ -84,70 +85,10 @@ pub fn legal_moves<L: MoveList>(position: &Position, list: &mut L) -> bool {
     let move_mask = capture_mask | push_mask;
 
     // generate moves for non-pinned pieces
-    slider_moves(position, move_mask, !pinned, list);
     knight_moves(position, move_mask, !pinned, list);
+    slider_moves(position, move_mask, !pinned, list);
     pawn_moves(position, capture_mask, push_mask, !pinned, list);
-
-    in_check
-}
-
-/// Adds captures moves to the provided MoveList. Returns true if mover is in check
-pub fn legal_captures<L: MoveList>(position: &Position, list: &mut L) -> bool {
-    let stm = position.state().stm;
-    let kings = position.bb_pc(KING.pc(stm));
-    let enemy = position.bb_side(stm.flip());
-
-    // We always need legal king moves
-    let attacked_squares = king_danger_squares(kings, stm.flip(), position);
-    king_moves(position, enemy & !attacked_squares, list);
-
-    let king_sq = kings.bitscan();
-
-    // Don't need to calculate checkers if no attacks on king
-    let (king_attacks_count, checkers) = if (attacked_squares & kings).any() {
-        let checkers = checks_to_sq(king_sq, stm.flip(), position);
-        (checkers.pop_count(), checkers)
-    } else {
-        (0, EMPTY)
-    };
-
-    // capture_mask and push_mask represent squares our pieces are allowed to move to or capture,
-    // respectively. The difference between the two is only important for pawn EP captures
-    let mut capture_mask = enemy;
-    let mut push_mask = !EMPTY;
-
-    if king_attacks_count > 1 {
-        // multiple attackers... only solutions are king moves
-        return true;
-    } else if king_attacks_count == 1 {
-        // if ony one attacker, we can try attacking the attacker with
-        // our other pieces.
-        capture_mask = checkers;
-        push_mask = EMPTY;
-        // If the piece giving check is a slider, we can additionally attempt
-        // to block the sliding piece;
-        let checker_sq = checkers.bitscan();
-        let checker = position.at(checker_sq).unwrap();
-
-        if checker.is_slider() {
-            // This branch is rare
-            if checker.kind() != ROOK {
-                push_mask |= slider_diag_rays_to_squares(kings, checkers, position);
-            }
-            if checker.kind() != BISHOP {
-                push_mask |= slider_non_diag_rays_to_squares(kings, checkers, position);
-            }
-        }
-    }
-    let in_check = king_attacks_count > 0;
-
-    // Generate rest of the moves, filtering movable squares
-    let pinned = pin_ray_captures(position, in_check, capture_mask, push_mask, stm, list);
-
-    // generate moves for non-pinned pieces
-    pawn_captures(position, capture_mask, push_mask, !pinned, list);
-    knight_moves(position, capture_mask, !pinned, list);
-    slider_moves(position, capture_mask, !pinned, list);
+    king_moves(position, !attacked_squares, list);
 
     in_check
 }

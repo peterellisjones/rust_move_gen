@@ -77,69 +77,6 @@ pub fn pin_ray_moves<L: MoveList>(position: &Position,
     pinned
 }
 
-// Generates captures along pin rays, and also returns bb of pinned pieces
-pub fn pin_ray_captures<L: MoveList>(position: &Position,
-                                  in_check: bool,
-                                  capture_mask: BB,
-                                  push_mask: BB,
-                                  stm: Side,
-                                  list: &mut L)
-                                  -> BB {
-    let king = position.bb_pc(KING.pc(stm));
-    let (enemy_diag, enemy_non_diag) = position.bb_sliders(stm.flip());
-
-    let empty = position.bb_empty();
-    let friendly = position.bb_side(stm);
-
-    let pinned = pinned_pieces(king, empty, enemy_diag, enemy_non_diag) & friendly;
-
-    // if in check pinned pieces cannot move
-    if pinned == EMPTY || in_check {
-        return pinned;
-    }
-
-    let (north_west_south_east, north_east_south_west) =
-        diag_pin_rays_including_attackers(king, empty | pinned, enemy_diag);
-
-    // sliders can never pass 'through' the king so we can calculate
-    // moves for sliders on opposite sides of the king together
-    if north_west_south_east != EMPTY {
-        diag_slider_moves(position,
-                          north_west_south_east & capture_mask,
-                          north_west_south_east,
-                          list);
-    }
-    if north_east_south_west != EMPTY {
-        diag_slider_moves(position,
-                          north_east_south_west & capture_mask,
-                          north_east_south_west,
-                          list);
-    }
-    let diag_rays = north_west_south_east | north_east_south_west;
-
-    // impossible for pawns to "cross" rays so can do all at once
-    if diag_rays & capture_mask != EMPTY {
-        pawn_captures(position,
-                      diag_rays & capture_mask,
-                      diag_rays & push_mask,
-                      diag_rays,
-                      list);
-    }
-
-    let (north_south, east_west) =
-        non_diag_pin_rays_including_attackers(king, empty | pinned, enemy_non_diag);
-
-
-    if north_south != EMPTY {
-        non_diag_slider_moves(position, north_south & capture_mask, north_south, list);
-    }
-    if east_west != EMPTY {
-        non_diag_slider_moves(position, east_west & capture_mask, east_west, list);
-    }
-
-    pinned
-}
-
 #[cfg(test)]
 mod test {
     use super::*;

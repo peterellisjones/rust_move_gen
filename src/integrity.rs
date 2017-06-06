@@ -13,8 +13,6 @@ use castling_rights::*;
     - pawns cannot be on rank 1 or 8 for both sides
     - en-passant square must be consistent with pawn locations
     - full move number >= 1
-
-    // TODO: castling rights shuld be invalidated when king in check
 */
 
 #[allow(dead_code)]
@@ -51,11 +49,11 @@ fn test_bitpositions(position: &Position) -> Option<String> {
     for &side in &[WHITE, BLACK] {
         let bb = position.bb_side(side);
         for (sq, _) in bb.iter() {
-            if position.at(sq).map(|pc| pc.side()) != Some(side) {
+            if position.at(sq) == NULL_PIECE || position.at(sq).side() != side {
                 return Some(format!("Expected {} piece at {} but found {}",
                                     side.to_string(),
                                     sq.to_string(),
-                                    position.at(sq).unwrap().to_string()));
+                                    position.at(sq).to_string()));
             }
         }
     }
@@ -63,11 +61,11 @@ fn test_bitpositions(position: &Position) -> Option<String> {
     for pc in Piece::iter() {
         let bb = position.bb_pc(pc);
         for (sq, _) in bb.iter() {
-            if position.at(sq) != Some(pc) {
+            if position.at(sq) != pc {
                 return Some(format!("Expected {} at {} but found {}",
                                     pc.to_string(),
                                     sq.to_string(),
-                                    position.at(sq).unwrap().to_string()));
+                                    position.at(sq).to_string()));
             }
         }
     }
@@ -78,7 +76,7 @@ fn test_bitpositions(position: &Position) -> Option<String> {
 fn test_castling_rights(position: &Position) -> Option<String> {
     let rights = position.state().castling_rights;
     for &(side, king_square) in [(WHITE, E1), (BLACK, E8)].iter() {
-        if position.at(king_square) != Some(KING.pc(side)) {
+        if position.at(king_square) != KING.pc(side) {
             if rights.has(CastlingRights::from(QUEEN_SIDE, side)) {
                 return Some(format!("Error: {} cannot castle as king has moved",
                                     side.to_string()));
@@ -91,14 +89,14 @@ fn test_castling_rights(position: &Position) -> Option<String> {
     }
 
     for &(right, rook_square, side) in [(WHITE_QS, A1, WHITE), (BLACK_QS, A8, BLACK)].iter() {
-        if rights.has(right) && position.at(rook_square) != Some(ROOK.pc(side)) {
+        if rights.has(right) && position.at(rook_square) != ROOK.pc(side) {
             return Some(format!("Error: {} cannot castle queen-side as rook has moved",
                                 side.to_string()));
         }
     }
 
     for &(right, rook_square, side) in [(WHITE_KS, H1, WHITE), (BLACK_KS, H8, BLACK)].iter() {
-        if rights.has(right) && position.at(rook_square) != Some(ROOK.pc(side)) {
+        if rights.has(right) && position.at(rook_square) != ROOK.pc(side) {
             return Some(format!("Error: {} cannot castle king-side as rook has moved",
                                 side.to_string()));
         }
@@ -121,7 +119,7 @@ fn test_ep_square(position: &Position) -> Option<String> {
 
     let target_sq = sq.change_row(if stm == BLACK { 3 } else { 4 });
     let expected_target = PAWN.pc(stm.flip());
-    if position.at(target_sq) != Some(expected_target) {
+    if position.at(target_sq) != expected_target {
         return Some(format!("Error: en-passant square is {} but no {} at {}",
                             sq,
                             expected_target.to_string(),

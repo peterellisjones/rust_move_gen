@@ -118,6 +118,13 @@ impl Move {
         s
     }
 
+    pub fn new_move(from: Square, to: Square, is_capture: bool) -> Move {
+         Move {
+            lower: from.to_u8() | if is_capture { CAPTURE_FLAG } else { 0 },
+            upper: to.to_u8(),
+        }
+    }
+
     #[inline]
     pub const fn new_push(from: Square, to: Square) -> Move {
         Move {

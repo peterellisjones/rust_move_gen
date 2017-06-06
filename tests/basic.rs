@@ -5,9 +5,9 @@ use chess_move_gen::*;
 #[test]
 fn basic_functionality() {
     let mut counter = MoveCounter::new();
-    let board = Board::from_fen(STARTING_POSITION_FEN).unwrap();
+    let position = Position::from_fen(STARTING_POSITION_FEN).unwrap();
 
-    let in_check = legal_moves(&board, &mut counter);
+    let in_check = legal_moves(&position, &mut counter);
     assert!(!in_check);
 
     assert_eq!(counter.moves, 20);

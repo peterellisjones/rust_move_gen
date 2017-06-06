@@ -113,11 +113,11 @@ impl Zobrist {
     }
 
     /// Generates the hash of the entire position
-    pub fn position(&self, grid: &[Option<Piece>; 64], state: &State) -> u64 {
+    pub fn position(&self, grid: &[Piece; 64], state: &State) -> u64 {
         let mut hash = 0u64;
 
         for (idx, &pc) in grid.iter().enumerate().filter(|&(_, &pc)| pc.is_some()) {
-            hash ^= self.piece_square(pc.unwrap(), Square::new(idx as square::Internal));
+            hash ^= self.piece_square(pc, Square::new(idx as square::Internal));
         }
 
         hash ^= self.castling_rights[state.castling_rights.to_usize()];

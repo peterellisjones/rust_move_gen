@@ -42,11 +42,11 @@ extern crate test;
 
 pub use position::{Position, State, STARTING_POSITION_FEN};
 pub use board::Board;
-pub use gen::{legal_moves, legal_captures};
+pub use gen::legal_moves;
 pub use castle::{Castle, KING_SIDE, QUEEN_SIDE};
 pub use castling_rights::{CastlingRights, BLACK_QS, BLACK_KS, WHITE_QS, WHITE_KS};
 pub use mv::{Move, NULL_MOVE};
-pub use mv_list::{MoveList, MoveCounter, MoveVec, MoveSlice};
+pub use mv_list::{MoveList, MoveCounter, MoveVec};
 pub use side::{Side, WHITE, BLACK};
 pub use piece::*;
 pub use square::*;

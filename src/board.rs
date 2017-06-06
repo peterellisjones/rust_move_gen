@@ -1,9 +1,7 @@
 use position::*;
 use piece::Piece;
 use square::*;
-use mv_list::*;
 use mv::Move;
-use gen::{legal_moves, legal_captures};
 
 pub struct Board {
     position: Position,
@@ -30,24 +28,6 @@ impl Board {
 
     pub fn position(&self) -> &Position {
         &self.position
-    }
-
-    pub fn generate_legal_captures_into_slice<'a> (&'a mut self, arr: &'a mut [Move]) -> (bool, usize) {
-        let mut move_slice = MoveSlice::new(arr);
-        let in_check = legal_captures(&self.position, &mut move_slice);
-        (in_check, move_slice.len())
-    }
-
-    pub fn generate_legal_moves_into_slice<'a> (&'a mut self, arr: &'a mut [Move]) -> (bool, usize) {
-        let mut move_slice = MoveSlice::new(arr);
-        let in_check = legal_moves(&self.position, &mut move_slice);
-        (in_check, move_slice.len())
-    }
-
-    pub fn generate_legal_moves(&mut self) -> (bool, MoveVec) {
-        let mut move_vec = MoveVec::new();
-        let in_check = legal_moves(&self.position, &mut move_vec);
-        (in_check, move_vec)
     }
 
     pub fn key(&self) -> u64 {

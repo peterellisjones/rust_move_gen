@@ -19,8 +19,8 @@ impl Position {
     pub fn make(&mut self, mv: Move) -> Option<(Piece, Square)> {
         let stm = self.state.stm;
         let initial_state = self.state.clone();
+        let mut move_resets_half_move_clock = false;
 
-        self.state.half_move_clock += 1;
         // increment full move clock if black moved
         self.state.full_move_number += self.state.stm.to_usize();
         self.state.stm = self.state.stm.flip();
@@ -41,15 +41,19 @@ impl Position {
             let to = mv.to();
 
             if mv.is_capture() {
+                // half move clock reset after all pawn moves and captures
+                move_resets_half_move_clock = true;
+
                 let capture_sq = if mv.is_ep_capture() {
                     from.along_row_with_col(to)
                 } else {
                     to
                 };
 
-                debug_assert!(self.at(capture_sq).is_some());
 
-                let captured_piece = self.at(capture_sq).unwrap();
+                let captured_piece = self.at(capture_sq);
+                debug_assert!(captured_piece.is_some());
+
                 self.remove_piece(capture_sq);
 
                 captured = Some((captured_piece, capture_sq));
@@ -57,13 +61,20 @@ impl Position {
                 xor_key ^= self.hash.capture(captured_piece, capture_sq);
             }
 
-            let mover = self.at(from).unwrap();
+            let mover = self.at(from);
+            debug_assert!(mover.is_some());
+
             let move_mask = self.move_piece(from, to);
             let mut updated_mover = mover;
 
-            // if double pawn push (pawn move that travels two rows), set ep square
-            if mover.kind() == PAWN && mv.distance() == 16 {
-                self.state.ep_square = Some(Square((to.raw() + from.raw()) >> 1));
+            // half move clock reset after all pawn moves and captures
+            if mover.kind() == PAWN {
+                move_resets_half_move_clock = true;
+
+                // if double pawn push (pawn move that travels two rows), set ep square
+                if mv.distance() == 16 {
+                    self.state.ep_square = Some(Square((to.raw() + from.raw()) >> 1));
+                }
             }
 
             if mv.is_promotion() {
@@ -80,6 +91,11 @@ impl Position {
             }
         }
 
+        if move_resets_half_move_clock {
+            self.state.half_move_clock = 0;
+        } else {
+            self.state.half_move_clock += 1;
+        }
 
         xor_key ^= self.hash.state(&initial_state, &self.state);
 
@@ -191,7 +207,7 @@ mod test {
     #[test]
     fn test_make_unmake_double_pawn_push() {
         test_make_unmake("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR",
-                         "rnbqkbnr/pppppppp/8/8/3P4/8/PPP1PPPP/RNBQKBNR b QqKk d3 1 1",
+                         "rnbqkbnr/pppppppp/8/8/3P4/8/PPP1PPPP/RNBQKBNR b QqKk d3 0 1",
                          Move::new_push(D2, D4));
     }
 
@@ -206,43 +222,43 @@ mod test {
     #[test]
     fn test_make_unmake_promotion() {
         test_make_unmake("rnbqkbnr/ppppppp1/8/8/8/8/PPPPPPPp/RNBQKBN1 b Qqk",
-                         "rnbqkbnr/ppppppp1/8/8/8/8/PPPPPPP1/RNBQKBNq w Qqk - 1 2",
+                         "rnbqkbnr/ppppppp1/8/8/8/8/PPPPPPP1/RNBQKBNq w Qqk - 0 2",
                          Move::new_promotion(H2, H1, QUEEN));
     }
 
     #[test]
     fn test_make_unmake_capture_promotion() {
         test_make_unmake("rnbqkbnr/pPpppppp/8/8/8/8/P1PPPPPP/RNBQKBNR w QKqk",
-                         "Nnbqkbnr/p1pppppp/8/8/8/8/P1PPPPPP/RNBQKBNR b QKk - 1 1",
+                         "Nnbqkbnr/p1pppppp/8/8/8/8/P1PPPPPP/RNBQKBNR b QKk - 0 1",
                          Move::new_capture_promotion(B7, A8, KNIGHT));
     }
 
     #[test]
     fn test_make_unmake_ep_capture() {
         test_make_unmake("rnbqkbnr/pppp1ppp/8/3Pp3/8/8/PPP1PPPP/RNBQKBNR w QqKk e6",
-                         "rnbqkbnr/pppp1ppp/4P3/8/8/8/PPP1PPPP/RNBQKBNR b QqKk - 1 1",
+                         "rnbqkbnr/pppp1ppp/4P3/8/8/8/PPP1PPPP/RNBQKBNR b QqKk - 0 1",
                          Move::new_ep_capture(D5, E6));
     }
 
 
     #[test]
     fn test_make_unmake_castle() {
-        test_make_unmake("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/R3KBNR",
-                         "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/2KR1BNR b qk - 1 1",
+        test_make_unmake("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/R3KBNR w qkQK - 20 10",
+                         "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/2KR1BNR b qk - 21 10",
                          Move::new_castle(QUEEN_SIDE));
     }
 
     #[test]
     fn test_make_unmake_double_push() {
         test_make_unmake("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b",
-                         "rnbqkbnr/ppp1pppp/8/3p4/8/8/PPPPPPPP/RNBQKBNR w QqKk d6 1 2",
+                         "rnbqkbnr/ppp1pppp/8/3p4/8/8/PPPPPPPP/RNBQKBNR w QqKk d6 0 2",
                          Move::new_push(D7, D5));
     }
 
     #[test]
     fn test_make_unmake_capture() {
         test_make_unmake("rnbqkbnr/pppppppp/7P/8/8/8/PPPPPPP1/RNBQKBNR",
-                         "rnbqkbnr/ppppppPp/8/8/8/8/PPPPPPP1/RNBQKBNR b QqKk - 1 1",
+                         "rnbqkbnr/ppppppPp/8/8/8/8/PPPPPPP1/RNBQKBNR b QqKk - 0 1",
                          Move::new_capture(H6, G7));
     }
 }

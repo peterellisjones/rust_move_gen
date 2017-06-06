@@ -1,4 +1,5 @@
 use std::fmt;
+use side::{Side, BLACK};
 
 #[cfg(test)]
 use rand;
@@ -191,6 +192,13 @@ impl Square {
     #[inline]
     pub fn to_usize(&self) -> usize {
         self.0 as usize
+    }
+
+    // Gives square from perspective of side
+    // ie, flips if black
+    #[inline]
+    pub fn from_side(&self, side: Side) -> Square {
+        Square(self.0 ^ if side == BLACK { 56 } else { 0 })
     }
 
     #[inline]

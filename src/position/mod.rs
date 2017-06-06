@@ -30,8 +30,8 @@ pub struct State {
 
 /// Position encodes all positional information and non-positional game state
 pub struct Position {
-    // grid is an array representation of position positions
-    grid: [Option<Piece>; 64],
+    // grid is an array representation of position
+    grid: [Piece; 64],
     // bb_sides represents a bitboard for each side
     bb_sides: [BB; 2],
     // bb_pieces represents a bitboard for each piece
@@ -69,12 +69,11 @@ impl fmt::Display for Position {
 }
 
 impl Position {
-    pub fn new(grid: [Option<Piece>; 64], state: State) -> Position {
+    pub fn new(grid: [Piece; 64], state: State) -> Position {
         let mut bb_pieces = [EMPTY; 12];
         let mut bb_sides = [EMPTY; 2];
 
-        for (idx, pc_opt) in grid.iter().enumerate().filter(|&(_, &pc)| pc.is_some()) {
-            let pc = pc_opt.unwrap();
+        for (idx, pc) in grid.iter().enumerate().filter(|&(_, &pc)| pc.is_some()) {
             let bb_mask = BB::new(Square::new(idx as square::Internal));
             bb_sides[pc.side().raw()] |= bb_mask;
             bb_pieces[pc.to_usize()] |= bb_mask;
@@ -116,13 +115,13 @@ impl Position {
 
     /// Get position position
     #[inline]
-    pub fn grid(&self) -> &[Option<Piece>; 64] {
+    pub fn grid(&self) -> &[Piece; 64] {
         &self.grid
     }
 
     /// Get piece at square
     #[inline]
-    pub fn at(&self, sq: Square) -> Option<Piece> {
+    pub fn at(&self, sq: Square) -> Piece {
         unsafe { return *self.grid.get_unchecked(sq.to_usize()) }
     }
 
@@ -134,14 +133,21 @@ impl Position {
                          (" half-move clock", self.state.half_move_clock.to_string()),
                          ("full-move number", self.state.full_move_number.to_string()),
                          ("             FEN", self.to_fen())];
-        grid_to_string_with_props(|sq: Square| -> char { self.at(sq).map_or('.', |sq| sq.to_char()) },
-                                  props.as_slice())
+        grid_to_string_with_props(|sq: Square| -> char {
+            let pc = self.at(sq);
+            if pc.is_none() {
+                '.'
+            } else {
+                pc.to_char()
+            }
+        },
+        props.as_slice())
     }
 
     #[inline]
     fn put_piece(&mut self, pc: Piece, sq: Square) {
         debug_assert!(self.at(sq).is_none());
-        self.grid[sq.to_usize()] = Some(pc);
+        self.grid[sq.to_usize()] = pc;
         let bb_mask = BB::new(sq);
         let idx = pc.to_usize();
         self.bb_sides[idx & 1] |= bb_mask;
@@ -151,8 +157,9 @@ impl Position {
     #[inline]
     fn remove_piece(&mut self, sq: Square) {
         debug_assert!(self.at(sq).is_some());
-        let pc = self.grid[sq.to_usize()].unwrap();
-        self.grid[sq.to_usize()] = None;
+
+        let pc = self.grid[sq.to_usize()];
+        self.grid[sq.to_usize()] = NULL_PIECE;
         let bb_mask = !BB::new(sq);
         let idx = pc.to_usize();
         self.bb_sides[idx & 1] &= bb_mask;
@@ -163,10 +170,11 @@ impl Position {
     fn move_piece(&mut self, from: Square, to: Square) -> BB {
         debug_assert!(self.at(from).is_some());
         debug_assert!(self.at(to).is_none());
-        let pc = self.grid[from.to_usize()].unwrap();
 
-        self.grid[from.to_usize()] = None;
-        self.grid[to.to_usize()] = Some(pc);
+        let pc = self.grid[from.to_usize()];
+
+        self.grid[from.to_usize()] = NULL_PIECE;
+        self.grid[to.to_usize()] = pc;
 
         let bb_mask = BB::new(from) | BB::new(to);
         let idx = pc.to_usize();
@@ -177,9 +185,10 @@ impl Position {
     }
 
     fn change_piece(&mut self, sq: Square, new_pc: Piece) {
-        debug_assert!(self.at(sq).is_some());
-        let old_pc = self.at(sq).unwrap();
-        self.grid[sq.to_usize()] = Some(new_pc);
+        let old_pc = self.at(sq);
+        debug_assert!(old_pc.is_some());
+
+        self.grid[sq.to_usize()] = new_pc;
 
         let bb_mask = BB::new(sq);
         self.bb_pieces[old_pc.to_usize()] ^= bb_mask;
