@@ -6,13 +6,27 @@ use position::Position;
 use std::sync::mpsc::channel;
 use threadpool::ThreadPool;
 
-pub fn perft(position: &mut Position, depth: usize) -> usize {
+pub fn perft(
+  position: &mut Position,
+  depth: usize,
+  multi_threading_enabled: bool,
+  cache_bytes_per_thread: usize,
+) -> usize {
   if depth == 0 {
     return 1;
   }
 
-  if depth <= 2 {
+  if depth <= 3 {
     return perft_inner(position, depth);
+  }
+
+  if !multi_threading_enabled {
+    if cache_bytes_per_thread > 0 {
+      let mut cache = Cache::new(cache_bytes_per_thread).unwrap();
+      return perft_with_cache_inner(position, depth, &mut cache);
+    } else {
+      return perft_inner(position, depth);
+    }
   }
 
   let pool = ThreadPool::new(num_cpus::get());
@@ -28,8 +42,16 @@ pub fn perft(position: &mut Position, depth: usize) -> usize {
 
     pool.execute(move || {
       position_local.make(mv);
-      tx.send(perft_inner(&mut position_local, depth - 1))
-        .unwrap();
+
+      let count: usize;
+      if cache_bytes_per_thread > 0 {
+        let mut cache = Cache::new(cache_bytes_per_thread).unwrap();
+        count = perft_with_cache_inner(&mut position_local, depth - 1, &mut cache);
+      } else {
+        count = perft_inner(&mut position_local, depth - 1);
+      }
+
+      tx.send(count).unwrap();
     });
   }
 
@@ -78,28 +100,27 @@ fn perft_with_cache_inner(position: &mut Position, depth: usize, cache: &mut Cac
     return ret.unwrap();
   }
 
+  let mut count = 0;
   if depth == 1 {
     let mut counter = MoveCounter::new();
     legal_moves(&position, &mut counter);
-    let count = counter.moves as usize;
-    cache.save(key, count, depth as i16);
+    count = counter.moves as usize;
+  } else {
+    let mut moves = MoveVec::new();
+    legal_moves(&position, &mut moves);
 
-    return count;
+    let state = position.state().clone();
+    let key = position.hash_key();
+    for &mv in moves.iter() {
+      let capture = position.make(mv);
+
+      count += perft_with_cache_inner(position, depth - 1, cache);
+
+      position.unmake(mv, capture, &state, key);
+    }
   }
 
-  let mut moves = MoveVec::new();
-  legal_moves(&position, &mut moves);
-
-  let state = position.state().clone();
-  let key = position.hash_key();
-  let mut count = 0;
-  for &mv in moves.iter() {
-    let capture = position.make(mv);
-
-    count += perft_with_cache_inner(position, depth - 1, cache);
-
-    position.unmake(mv, capture, &state, key);
-  }
+  cache.save(key, count, depth as i16);
 
   count
 }
@@ -114,14 +135,14 @@ mod test {
   fn perft_test_3() {
     let mut position = Position::from_fen(STARTING_POSITION_FEN).unwrap();
 
-    assert_eq!(perft(&mut position, 3), 8902);
+    assert_eq!(perft(&mut position, 3, false, 0), 8902);
   }
 
   #[test]
   fn perft_test_4() {
     let mut position = Position::from_fen(STARTING_POSITION_FEN).unwrap();
 
-    assert_eq!(perft(&mut position, 4), 197281);
+    assert_eq!(perft(&mut position, 4, false, 0), 197281);
   }
 
   #[test]
@@ -142,6 +163,6 @@ mod test {
   fn perft_bench_starting_position(b: &mut test::Bencher) {
     let mut position = Position::from_fen(STARTING_POSITION_FEN).unwrap();
 
-    b.iter(|| -> usize { perft(&mut position, 2) });
+    b.iter(|| -> usize { perft(&mut position, 2, false, 0) });
   }
 }
