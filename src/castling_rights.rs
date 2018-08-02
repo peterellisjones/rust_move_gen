@@ -1,6 +1,6 @@
+use castle::*;
 use side::Side;
 use std::fmt;
-use castle::*;
 
 type Internal = usize;
 
@@ -83,7 +83,6 @@ impl CastlingRights {
 
     #[inline]
     pub fn from(castle: Castle, side: Side) -> CastlingRights {
-
         CastlingRights(1 << (castle.to_usize() * 2 + side.0))
     }
 
@@ -97,7 +96,6 @@ impl CastlingRights {
     }
 }
 
-
 impl fmt::Display for CastlingRights {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", self.to_string())
@@ -109,7 +107,6 @@ impl fmt::Debug for CastlingRights {
         write!(f, "{}", self.to_string())
     }
 }
-
 
 #[cfg(test)]
 mod test {
@@ -206,7 +203,6 @@ mod test {
         assert_eq!(CastlingRights::from(KING_SIDE, WHITE).any(), true);
         assert_eq!(NO_RIGHTS.any(), false);
     }
-
 
     #[test]
     fn char_1() {

@@ -1,5 +1,5 @@
-use std::fmt;
 use side::Side;
+use std::fmt;
 
 pub type Internal = usize;
 
@@ -10,18 +10,20 @@ pub struct Piece(Internal);
 const CHARS: [char; 12] = ['B', 'b', 'Q', 'q', 'R', 'r', 'N', 'n', 'P', 'p', 'K', 'k'];
 // const SYMBOLS: [char; 14] = ['♙', '♟', '♘', '♞', '♗', '♝', '♖', '♜',
 //                             '♕', '♛', '♔', '♚', '.'];
-const NAMES: [&'static str; 12] = ["white bishop",
-                                   "black bishop",
-                                   "white queen",
-                                   "black queen",
-                                   "white rook",
-                                   "black rook",
-                                   "white knight",
-                                   "black knight",
-                                   "white pawn",
-                                   "black pawn",
-                                   "white king",
-                                   "black king"];
+const NAMES: [&'static str; 12] = [
+    "white bishop",
+    "black bishop",
+    "white queen",
+    "black queen",
+    "white rook",
+    "black rook",
+    "white knight",
+    "black knight",
+    "white pawn",
+    "black pawn",
+    "white king",
+    "black king",
+];
 
 /// Represents a kind of piece (eg knight)
 #[derive(PartialEq, PartialOrd, Copy, Clone)]
@@ -60,7 +62,6 @@ impl fmt::Display for Kind {
     }
 }
 
-
 #[allow(dead_code)]
 pub const BISHOP: Kind = Kind(0);
 #[allow(dead_code)]
@@ -90,7 +91,6 @@ pub const BLACK_QUEEN: Piece = Piece(3);
 pub const WHITE_ROOK: Piece = Piece(4);
 #[allow(dead_code)]
 pub const BLACK_ROOK: Piece = Piece(5);
-
 
 #[allow(dead_code)]
 pub const WHITE_KNIGHT: Piece = Piece(6);

@@ -1,6 +1,6 @@
-use square::Square;
 use bb::BB;
 use castle::Castle;
+use square::Square;
 
 mod mv_counter;
 mod mv_vec;

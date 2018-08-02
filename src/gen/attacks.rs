@@ -1,11 +1,11 @@
-use position::Position;
-use bb::{BB, EMPTY};
-use side::Side;
-use piece::*;
-use square::Square;
-use super::slider::*;
-use super::pawn::*;
 use super::lookup::*;
+use super::pawn::*;
+use super::slider::*;
+use bb::{BB, EMPTY};
+use piece::*;
+use position::Position;
+use side::Side;
+use square::Square;
 
 #[inline]
 pub fn slider_non_diag_rays_to_squares(source: BB, attacker: BB, position: &Position) -> BB {
@@ -98,17 +98,19 @@ pub fn checks_to_sq(sq: Square, attacker: Side, position: &Position) -> BB {
 #[cfg(test)]
 mod test {
     use super::*;
-    use square::*;
-    use side::*;
     use bb::*;
+    use side::*;
+    use square::*;
     use unindent;
 
     #[test]
     fn test_checks_to_sq() {
-        let position = &Position::from_fen("rnbqkbnr/pppppp1p/8/8/8/8/PPPPPPPP/RNB1KBNR w").unwrap();
+        let position =
+            &Position::from_fen("rnbqkbnr/pppppp1p/8/8/8/8/PPPPPPPP/RNB1KBNR w").unwrap();
         let attacks = checks_to_sq(C6, BLACK, position);
 
-        let expected = unindent::unindent("
+        let expected = unindent::unindent(
+            "
               ABCDEFGH
             8|.#......|8
             7|.#.#....|7
@@ -119,16 +121,19 @@ mod test {
             2|........|2
             1|........|1
               ABCDEFGH
-            ");
+            ",
+        );
         assert_eq!(attacks.to_string(), expected);
     }
 
     #[test]
     fn test_slider_rays_to_square() {
-        let position = &Position::from_fen("rnbqk1nr/pppppppp/8/6b2/8/8/PPPPPPPP/RNBQKBNR w").unwrap();
+        let position =
+            &Position::from_fen("rnbqk1nr/pppppppp/8/6b2/8/8/PPPPPPPP/RNBQKBNR w").unwrap();
         let attacks = slider_diag_rays_to_squares(BB::new(D2), BB::new(G5), position);
 
-        let expected = unindent::unindent("
+        let expected = unindent::unindent(
+            "
               ABCDEFGH
             8|........|8
             7|........|7
@@ -139,7 +144,8 @@ mod test {
             2|........|2
             1|........|1
               ABCDEFGH
-            ");
+            ",
+        );
 
         assert_eq!(attacks.to_string(), expected);
     }

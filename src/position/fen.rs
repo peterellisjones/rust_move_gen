@@ -1,9 +1,9 @@
 use super::State;
-use piece::*;
-use square::Square;
-use square;
 use castling_rights::*;
+use piece::*;
 use side::*;
+use square;
+use square::Square;
 
 pub fn from_fen(fen: &str) -> Result<([Piece; 64], State), String> {
     let mut state = State {
@@ -74,7 +74,6 @@ pub fn to_fen(grid: &[Piece; 64], state: &State) -> String {
             fen.push('/')
         }
     }
-
 
     fen.push(' ');
     fen.push(state.stm.to_char());
@@ -152,11 +151,11 @@ fn parse_row(row_str: &str, row: usize, grid: &mut [Piece; 64]) -> Option<String
 
 #[cfg(test)]
 mod test {
+    use castle::*;
+    use castling_rights::*;
     use position::*;
     use square::*;
-    use castling_rights::*;
     use unindent;
-    use castle::*;
 
     #[test]
     fn parse_convert_to_fen_1() {
@@ -172,7 +171,7 @@ mod test {
     #[test]
     fn parse_convert_to_fen_2() {
         let initial_fen = "rnbqkbnr/pppppp2/6pp/8/8/PP5P/2PPPPP1/RNBQKBNR w \
-                                                 QqKk - 0 1";
+                           QqKk - 0 1";
         let result = Position::from_fen(initial_fen);
         assert!(result.is_ok());
 
@@ -202,7 +201,8 @@ mod test {
 
         let position = result.unwrap();
 
-        let expected = unindent::unindent("
+        let expected = unindent::unindent(
+            "
           ABCDEFGH
         8|rnbqkbnr|8     side to move: white
         7|pppppppp|7  castling rights: QqKk
@@ -213,7 +213,8 @@ mod test {
         2|PPPPPPPP|2
         1|RNBQKBNR|1
           ABCDEFGH
-        ");
+        ",
+        );
         assert_eq!(position.to_string(), expected);
     }
 
@@ -238,7 +239,8 @@ mod test {
 
         let position = result.unwrap();
 
-        let expected = unindent::unindent("
+        let expected = unindent::unindent(
+            "
               ABCDEFGH
             8|........|8     side to move: white
             7|........|7  castling rights: QqKk
@@ -249,7 +251,8 @@ mod test {
             2|...P..p.|2
             1|........|1
               ABCDEFGH
-        ");
+        ",
+        );
 
         assert_eq!(position.to_string(), expected);
     }

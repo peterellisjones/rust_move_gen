@@ -10,8 +10,8 @@ use dbb::*;
 /// calculates the bitboard of pinned pieces
 #[inline]
 pub fn pinned_pieces(king: BB, empty: BB, enemy_diag: BB, enemy_non_diag: BB) -> BB {
-    diag_pinned_pieces(king, empty, enemy_diag) |
-    non_diag_pinned_pieces(king, empty, enemy_non_diag)
+    diag_pinned_pieces(king, empty, enemy_diag)
+        | non_diag_pinned_pieces(king, empty, enemy_non_diag)
 }
 
 #[cfg(not(target_feature = "sse3"))]
@@ -43,10 +43,10 @@ fn diag_pinned_pieces(king_bb: BB, empty_bb: BB, enemy_bishops_bb: BB) -> BB {
     let enemy_bishop_and_king = DBB::new(enemy_bishops_bb, king_bb);
     let empty = DBB::splat(empty_bb);
 
-    let nw_and_se = king_and_enemy_bishops.north_west_attacks(empty) &
-                    enemy_bishop_and_king.south_east_attacks(empty);
-    let ne_and_sw = king_and_enemy_bishops.north_east_attacks(empty) &
-                    enemy_bishop_and_king.south_west_attacks(empty);
+    let nw_and_se = king_and_enemy_bishops.north_west_attacks(empty)
+        & enemy_bishop_and_king.south_east_attacks(empty);
+    let ne_and_sw = king_and_enemy_bishops.north_east_attacks(empty)
+        & enemy_bishop_and_king.south_west_attacks(empty);
 
     let (north, south) = (nw_and_se | ne_and_sw).extract();
 
@@ -60,10 +60,10 @@ fn non_diag_pinned_pieces(king_bb: BB, empty_bb: BB, enemy_rooks: BB) -> BB {
     let enemy_rooks_and_king = DBB::new(enemy_rooks, king_bb);
     let empty = DBB::splat(empty_bb);
 
-    let n_and_s = king_and_enemy_rooks.north_attacks(empty) &
-                  enemy_rooks_and_king.south_attacks(empty);
-    let e_and_w = king_and_enemy_rooks.east_attacks(empty) &
-                  enemy_rooks_and_king.west_attacks(empty);
+    let n_and_s =
+        king_and_enemy_rooks.north_attacks(empty) & enemy_rooks_and_king.south_attacks(empty);
+    let e_and_w =
+        king_and_enemy_rooks.east_attacks(empty) & enemy_rooks_and_king.west_attacks(empty);
 
     let (pos, neg) = (n_and_s | e_and_w).extract();
 
@@ -73,33 +73,34 @@ fn non_diag_pinned_pieces(king_bb: BB, empty_bb: BB, enemy_rooks: BB) -> BB {
 #[cfg(not(target_feature = "sse3"))]
 #[inline]
 pub fn diag_pin_rays_including_attackers(source: BB, empty: BB, enemy_diag_pieces: BB) -> (BB, BB) {
-    let north_west = source.north_west_attacks(empty) &
-                     enemy_diag_pieces.occluded_south_east_fill(empty);
-    let south_west = source.south_west_attacks(empty) &
-                     enemy_diag_pieces.occluded_north_east_fill(empty);
-    let north_east = source.north_east_attacks(empty) &
-                     enemy_diag_pieces.occluded_south_west_fill(empty);
-    let south_east = source.south_east_attacks(empty) &
-                     enemy_diag_pieces.occluded_north_west_fill(empty);
+    let north_west =
+        source.north_west_attacks(empty) & enemy_diag_pieces.occluded_south_east_fill(empty);
+    let south_west =
+        source.south_west_attacks(empty) & enemy_diag_pieces.occluded_north_east_fill(empty);
+    let north_east =
+        source.north_east_attacks(empty) & enemy_diag_pieces.occluded_south_west_fill(empty);
+    let south_east =
+        source.south_east_attacks(empty) & enemy_diag_pieces.occluded_north_west_fill(empty);
 
     (north_east | south_west, north_west | south_east)
 }
 
 #[cfg(target_feature = "sse3")]
 #[inline]
-pub fn diag_pin_rays_including_attackers(source_bb: BB,
-                                         empty_bb: BB,
-                                         enemy_diag_bb: BB)
-                                         -> (BB, BB) {
+pub fn diag_pin_rays_including_attackers(
+    source_bb: BB,
+    empty_bb: BB,
+    enemy_diag_bb: BB,
+) -> (BB, BB) {
     let source_and_diag = DBB::new(source_bb, enemy_diag_bb);
     let diag_and_source = DBB::new(enemy_diag_bb, source_bb);
     let empty = DBB::splat(empty_bb);
 
-    let ne_and_sw = source_and_diag.occluded_north_east_fill_with_occluders(empty) &
-                    diag_and_source.occluded_south_west_fill_with_occluders(empty);
+    let ne_and_sw = source_and_diag.occluded_north_east_fill_with_occluders(empty)
+        & diag_and_source.occluded_south_west_fill_with_occluders(empty);
 
-    let nw_and_se = source_and_diag.occluded_north_west_fill_with_occluders(empty) &
-                    diag_and_source.occluded_south_east_fill_with_occluders(empty);
+    let nw_and_se = source_and_diag.occluded_north_west_fill_with_occluders(empty)
+        & diag_and_source.occluded_south_east_fill_with_occluders(empty);
 
     let (north_east, south_west) = ne_and_sw.extract();
     let (north_west, south_east) = nw_and_se.extract();
@@ -109,10 +110,11 @@ pub fn diag_pin_rays_including_attackers(source_bb: BB,
 
 #[cfg(not(target_feature = "sse3"))]
 #[inline]
-pub fn non_diag_pin_rays_including_attackers(source: BB,
-                                             empty: BB,
-                                             enemy_non_diag_pieces: BB)
-                                             -> (BB, BB) {
+pub fn non_diag_pin_rays_including_attackers(
+    source: BB,
+    empty: BB,
+    enemy_non_diag_pieces: BB,
+) -> (BB, BB) {
     let north = source.north_attacks(empty) & enemy_non_diag_pieces.occluded_south_fill(empty);
     let south = source.south_attacks(empty) & enemy_non_diag_pieces.occluded_north_fill(empty);
     let east = source.east_attacks(empty) & enemy_non_diag_pieces.occluded_west_fill(empty);
@@ -123,19 +125,20 @@ pub fn non_diag_pin_rays_including_attackers(source: BB,
 
 #[cfg(target_feature = "sse3")]
 #[inline]
-pub fn non_diag_pin_rays_including_attackers(source_bb: BB,
-                                             empty_bb: BB,
-                                             enemy_non_diag_bb: BB)
-                                             -> (BB, BB) {
+pub fn non_diag_pin_rays_including_attackers(
+    source_bb: BB,
+    empty_bb: BB,
+    enemy_non_diag_bb: BB,
+) -> (BB, BB) {
     let source_and_non_diag = DBB::new(source_bb, enemy_non_diag_bb);
     let non_diag_and_source = DBB::new(enemy_non_diag_bb, source_bb);
     let empty = DBB::splat(empty_bb);
 
-    let n_and_s = source_and_non_diag.occluded_north_fill_with_occluders(empty) &
-                  non_diag_and_source.occluded_south_fill_with_occluders(empty);
+    let n_and_s = source_and_non_diag.occluded_north_fill_with_occluders(empty)
+        & non_diag_and_source.occluded_south_fill_with_occluders(empty);
 
-    let w_and_e = source_and_non_diag.occluded_west_fill_with_occluders(empty) &
-                  non_diag_and_source.occluded_east_fill_with_occluders(empty);
+    let w_and_e = source_and_non_diag.occluded_west_fill_with_occluders(empty)
+        & non_diag_and_source.occluded_east_fill_with_occluders(empty);
 
     let (north, south) = n_and_s.extract();
     let (west, east) = w_and_e.extract();
@@ -146,14 +149,14 @@ pub fn non_diag_pin_rays_including_attackers(source_bb: BB,
 #[cfg(not(target_feature = "sse3"))]
 #[inline]
 pub fn pin_ray_diag(source: BB, empty: BB, enemy_diag_pieces: BB) -> BB {
-    let north_west = source.occluded_north_west_fill(empty) &
-                     enemy_diag_pieces.occluded_south_east_fill(empty);
-    let south_west = source.occluded_south_west_fill(empty) &
-                     enemy_diag_pieces.occluded_north_east_fill(empty);
-    let north_east = source.occluded_north_east_fill(empty) &
-                     enemy_diag_pieces.occluded_south_west_fill(empty);
-    let south_east = source.occluded_south_east_fill(empty) &
-                     enemy_diag_pieces.occluded_north_west_fill(empty);
+    let north_west =
+        source.occluded_north_west_fill(empty) & enemy_diag_pieces.occluded_south_east_fill(empty);
+    let south_west =
+        source.occluded_south_west_fill(empty) & enemy_diag_pieces.occluded_north_east_fill(empty);
+    let north_east =
+        source.occluded_north_east_fill(empty) & enemy_diag_pieces.occluded_south_west_fill(empty);
+    let south_east =
+        source.occluded_south_east_fill(empty) & enemy_diag_pieces.occluded_north_west_fill(empty);
 
     north_east | north_west | south_east | south_west
 }
@@ -161,10 +164,10 @@ pub fn pin_ray_diag(source: BB, empty: BB, enemy_diag_pieces: BB) -> BB {
 #[cfg(not(target_feature = "sse3"))]
 #[inline]
 pub fn pin_ray_non_diag(source: BB, empty: BB, enemy_non_diag_pieces: BB) -> BB {
-    let north = source.occluded_north_fill(empty) &
-                enemy_non_diag_pieces.occluded_south_fill(empty);
-    let south = source.occluded_south_fill(empty) &
-                enemy_non_diag_pieces.occluded_north_fill(empty);
+    let north =
+        source.occluded_north_fill(empty) & enemy_non_diag_pieces.occluded_south_fill(empty);
+    let south =
+        source.occluded_south_fill(empty) & enemy_non_diag_pieces.occluded_north_fill(empty);
     let east = source.occluded_east_fill(empty) & enemy_non_diag_pieces.occluded_west_fill(empty);
     let west = source.occluded_west_fill(empty) & enemy_non_diag_pieces.occluded_east_fill(empty);
 
@@ -178,11 +181,11 @@ pub fn pin_ray_diag(source_bb: BB, empty_bb: BB, enemy_diag_bb: BB) -> BB {
     let diag_and_source = DBB::new(enemy_diag_bb, source_bb);
     let empty = DBB::splat(empty_bb);
 
-    let ne_and_sw = source_and_diag.occluded_north_east_fill(empty) &
-                    diag_and_source.occluded_south_west_fill(empty);
+    let ne_and_sw = source_and_diag.occluded_north_east_fill(empty)
+        & diag_and_source.occluded_south_west_fill(empty);
 
-    let nw_and_se = source_and_diag.occluded_north_west_fill(empty) &
-                    diag_and_source.occluded_south_east_fill(empty);
+    let nw_and_se = source_and_diag.occluded_north_west_fill(empty)
+        & diag_and_source.occluded_south_east_fill(empty);
 
     let (north, south) = (ne_and_sw | nw_and_se).extract();
 
@@ -196,11 +199,11 @@ pub fn pin_ray_non_diag(source_bb: BB, empty_bb: BB, enemy_non_diag_bb: BB) -> B
     let non_diag_and_source = DBB::new(enemy_non_diag_bb, source_bb);
     let empty = DBB::splat(empty_bb);
 
-    let n_and_s = source_and_non_diag.occluded_north_fill(empty) &
-                  non_diag_and_source.occluded_south_fill(empty);
+    let n_and_s = source_and_non_diag.occluded_north_fill(empty)
+        & non_diag_and_source.occluded_south_fill(empty);
 
-    let w_and_e = source_and_non_diag.occluded_west_fill(empty) &
-                  non_diag_and_source.occluded_east_fill(empty);
+    let w_and_e = source_and_non_diag.occluded_west_fill(empty)
+        & non_diag_and_source.occluded_east_fill(empty);
 
     let (pos, neg) = (n_and_s | w_and_e).extract();
 
@@ -222,21 +225,25 @@ pub fn bishop_attacks_from_sq(from: Square, occupied: BB) -> BB {
 #[inline]
 pub fn rook_attacks(from: BB, occupied: BB) -> BB {
     let empty = !occupied;
-    from.east_attacks(empty) | from.north_attacks(empty) | from.south_attacks(empty) |
-    from.west_attacks(empty)
+    from.east_attacks(empty)
+        | from.north_attacks(empty)
+        | from.south_attacks(empty)
+        | from.west_attacks(empty)
 }
 
 #[inline]
 pub fn bishop_attacks(from: BB, occupied: BB) -> BB {
     let empty = !occupied;
-    from.north_east_attacks(empty) | from.north_west_attacks(empty) |
-    from.south_east_attacks(empty) | from.south_west_attacks(empty)
+    from.north_east_attacks(empty)
+        | from.north_west_attacks(empty)
+        | from.south_east_attacks(empty)
+        | from.south_west_attacks(empty)
 }
 
 #[cfg(test)]
 mod test {
-    use super::*;
     use super::super::testing::*;
+    use super::*;
     use test;
 
     #[test]

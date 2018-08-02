@@ -1,10 +1,10 @@
 #![cfg(test)]
 
-use bb::*;
-use square::*;
-use square;
-use test;
 use super::ray_naive::{bishop_attacks_from_sq, rook_attacks_from_sq};
+use bb::*;
+use square;
+use square::*;
+use test;
 
 pub fn test_bishop_attacks_from_bb<F: Fn(BB, BB) -> BB>(gen: F) {
     let cases = generate_test_cases_from_bb(bishop_attacks_from_sq, 0.3);
@@ -68,7 +68,6 @@ pub fn bench_attacks_from_bb<F: Fn(BB, BB) -> BB>(b: &mut test::Bencher, gen: F)
 }
 
 fn random_occupancies_from_bb(size: isize, density: f64) -> Vec<(BB, BB)> {
-
     let mut ret = Vec::new();
     for _ in 0..size {
         let sq1 = Square::random();
@@ -90,7 +89,10 @@ fn random_occupancies_from_sq(size: usize, density: f64) -> Vec<(Square, BB)> {
     ret
 }
 
-fn generate_test_cases_from_sq<F: Fn(Square, BB) -> BB>(gen: F, density: f64) -> Vec<(Square, BB, BB)> {
+fn generate_test_cases_from_sq<F: Fn(Square, BB) -> BB>(
+    gen: F,
+    density: f64,
+) -> Vec<(Square, BB, BB)> {
     let mut cases = Vec::new();
     for i in 0..64 {
         let from = Square::new(i);

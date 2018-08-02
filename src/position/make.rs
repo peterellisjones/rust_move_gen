@@ -1,17 +1,19 @@
-use mv::Move;
-use castle::*;
-use bb::*;
 use super::{Position, State};
-use piece::*;
-use square::*;
+use bb::*;
+use castle::*;
 use castling_rights::*;
+use mv::Move;
+use piece::*;
 use side::Side;
+use square::*;
 
 // If move intersects this mask, then remove castling right
-const CASTLE_MASKS: [BB; 4] = [BB(1u64 | (1u64 << 4)), // WHITE QS: A1 + E1
-                               BB((1u64 | (1u64 << 4)) << 56), // BLACK QS: A8 + E8
-                               BB((1u64 << 4) | (1u64 << 7)), // WHITE KS: E1 + H1
-                               BB(((1u64 << 4) | (1u64 << 7)) << 56) /* BLACK KS: E8 + H8 */];
+const CASTLE_MASKS: [BB; 4] = [
+    BB(1u64 | (1u64 << 4)),                // WHITE QS: A1 + E1
+    BB((1u64 | (1u64 << 4)) << 56),        // BLACK QS: A8 + E8
+    BB((1u64 << 4) | (1u64 << 7)),         // WHITE KS: E1 + H1
+    BB(((1u64 << 4) | (1u64 << 7)) << 56), /* BLACK KS: E8 + H8 */
+];
 
 impl Position {
     /// Returns piece captured and square if any
@@ -49,7 +51,6 @@ impl Position {
                 } else {
                     to
                 };
-
 
                 let captured_piece = self.at(capture_sq);
                 debug_assert!(captured_piece.is_some());
@@ -105,11 +106,13 @@ impl Position {
     }
 
     #[inline]
-    pub fn unmake(&mut self,
-                  mv: Move,
-                  capture: Option<(Piece, Square)>,
-                  original_state: &State,
-                  original_hash_key: u64) {
+    pub fn unmake(
+        &mut self,
+        mv: Move,
+        capture: Option<(Piece, Square)>,
+        original_state: &State,
+        original_hash_key: u64,
+    ) {
         self.state = original_state.clone();
         self.key = original_hash_key;
 
@@ -150,12 +153,12 @@ impl Position {
 
 #[cfg(test)]
 mod test {
-    use position::Position;
-    use mv::Move;
-    use integrity;
-    use square::*;
-    use piece::*;
     use castle::*;
+    use integrity;
+    use mv::Move;
+    use piece::*;
+    use position::Position;
+    use square::*;
 
     fn test_make_unmake(initial_fen: &'static str, expected_fen: &'static str, mv: Move) {
         let mut position = Position::from_fen(initial_fen).unwrap();
@@ -166,23 +169,27 @@ mod test {
         let initial_key = position.hash_key();
 
         let capture = position.make(mv);
-        assert_eq!(position.to_string(),
-                   Position::from_fen(expected_fen).unwrap().to_string());
+        assert_eq!(
+            position.to_string(),
+            Position::from_fen(expected_fen).unwrap().to_string()
+        );
 
         assert!(integrity::test(&position).is_none());
 
         position.unmake(mv, capture, &state, initial_key);
-        assert_eq!(position.to_string(),
-                   Position::from_fen(initial_fen).unwrap().to_string());
+        assert_eq!(
+            position.to_string(),
+            Position::from_fen(initial_fen).unwrap().to_string()
+        );
         assert!(integrity::test(&position).is_none());
     }
 
     #[test]
     fn test_hash() {
-        let mut position_1 = Position::from_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/R3KBNR w QqKk - 1 1")
-            .unwrap();
-        let mut position_2 = Position::from_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/R3KBNR w QqKk - 1 1")
-            .unwrap();
+        let mut position_1 =
+            Position::from_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/R3KBNR w QqKk - 1 1").unwrap();
+        let mut position_2 =
+            Position::from_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/R3KBNR w QqKk - 1 1").unwrap();
         position_1.make(Move::new_push(D2, D4));
         position_1.make(Move::new_push(B8, C6));
         position_1.make(Move::new_castle(QUEEN_SIDE));
@@ -199,66 +206,82 @@ mod test {
 
     #[test]
     fn test_make_unmake_simple_push() {
-        test_make_unmake("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR",
-                         "rnbqkbnr/pppppppp/8/8/8/2N5/PPPPPPPP/R1BQKBNR b QqKk - 1 1",
-                         Move::new_push(B1, C3));
+        test_make_unmake(
+            "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR",
+            "rnbqkbnr/pppppppp/8/8/8/2N5/PPPPPPPP/R1BQKBNR b QqKk - 1 1",
+            Move::new_push(B1, C3),
+        );
     }
 
     #[test]
     fn test_make_unmake_double_pawn_push() {
-        test_make_unmake("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR",
-                         "rnbqkbnr/pppppppp/8/8/3P4/8/PPP1PPPP/RNBQKBNR b QqKk d3 0 1",
-                         Move::new_push(D2, D4));
+        test_make_unmake(
+            "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR",
+            "rnbqkbnr/pppppppp/8/8/3P4/8/PPP1PPPP/RNBQKBNR b QqKk d3 0 1",
+            Move::new_push(D2, D4),
+        );
     }
-
 
     #[test]
     fn test_make_unmake_push_with_castle_invalidation() {
-        test_make_unmake("rnbqkbnr/1ppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR",
-                         "1nbqkbnr/rppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b QKk - 1 1",
-                         Move::new_push(A8, A7));
+        test_make_unmake(
+            "rnbqkbnr/1ppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR",
+            "1nbqkbnr/rppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b QKk - 1 1",
+            Move::new_push(A8, A7),
+        );
     }
 
     #[test]
     fn test_make_unmake_promotion() {
-        test_make_unmake("rnbqkbnr/ppppppp1/8/8/8/8/PPPPPPPp/RNBQKBN1 b Qqk",
-                         "rnbqkbnr/ppppppp1/8/8/8/8/PPPPPPP1/RNBQKBNq w Qqk - 0 2",
-                         Move::new_promotion(H2, H1, QUEEN));
+        test_make_unmake(
+            "rnbqkbnr/ppppppp1/8/8/8/8/PPPPPPPp/RNBQKBN1 b Qqk",
+            "rnbqkbnr/ppppppp1/8/8/8/8/PPPPPPP1/RNBQKBNq w Qqk - 0 2",
+            Move::new_promotion(H2, H1, QUEEN),
+        );
     }
 
     #[test]
     fn test_make_unmake_capture_promotion() {
-        test_make_unmake("rnbqkbnr/pPpppppp/8/8/8/8/P1PPPPPP/RNBQKBNR w QKqk",
-                         "Nnbqkbnr/p1pppppp/8/8/8/8/P1PPPPPP/RNBQKBNR b QKk - 0 1",
-                         Move::new_capture_promotion(B7, A8, KNIGHT));
+        test_make_unmake(
+            "rnbqkbnr/pPpppppp/8/8/8/8/P1PPPPPP/RNBQKBNR w QKqk",
+            "Nnbqkbnr/p1pppppp/8/8/8/8/P1PPPPPP/RNBQKBNR b QKk - 0 1",
+            Move::new_capture_promotion(B7, A8, KNIGHT),
+        );
     }
 
     #[test]
     fn test_make_unmake_ep_capture() {
-        test_make_unmake("rnbqkbnr/pppp1ppp/8/3Pp3/8/8/PPP1PPPP/RNBQKBNR w QqKk e6",
-                         "rnbqkbnr/pppp1ppp/4P3/8/8/8/PPP1PPPP/RNBQKBNR b QqKk - 0 1",
-                         Move::new_ep_capture(D5, E6));
+        test_make_unmake(
+            "rnbqkbnr/pppp1ppp/8/3Pp3/8/8/PPP1PPPP/RNBQKBNR w QqKk e6",
+            "rnbqkbnr/pppp1ppp/4P3/8/8/8/PPP1PPPP/RNBQKBNR b QqKk - 0 1",
+            Move::new_ep_capture(D5, E6),
+        );
     }
-
 
     #[test]
     fn test_make_unmake_castle() {
-        test_make_unmake("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/R3KBNR w qkQK - 20 10",
-                         "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/2KR1BNR b qk - 21 10",
-                         Move::new_castle(QUEEN_SIDE));
+        test_make_unmake(
+            "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/R3KBNR w qkQK - 20 10",
+            "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/2KR1BNR b qk - 21 10",
+            Move::new_castle(QUEEN_SIDE),
+        );
     }
 
     #[test]
     fn test_make_unmake_double_push() {
-        test_make_unmake("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b",
-                         "rnbqkbnr/ppp1pppp/8/3p4/8/8/PPPPPPPP/RNBQKBNR w QqKk d6 0 2",
-                         Move::new_push(D7, D5));
+        test_make_unmake(
+            "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b",
+            "rnbqkbnr/ppp1pppp/8/3p4/8/8/PPPPPPPP/RNBQKBNR w QqKk d6 0 2",
+            Move::new_push(D7, D5),
+        );
     }
 
     #[test]
     fn test_make_unmake_capture() {
-        test_make_unmake("rnbqkbnr/pppppppp/7P/8/8/8/PPPPPPP1/RNBQKBNR",
-                         "rnbqkbnr/ppppppPp/8/8/8/8/PPPPPPP1/RNBQKBNR b QqKk - 0 1",
-                         Move::new_capture(H6, G7));
+        test_make_unmake(
+            "rnbqkbnr/pppppppp/7P/8/8/8/PPPPPPP1/RNBQKBNR",
+            "rnbqkbnr/ppppppPp/8/8/8/8/PPPPPPP1/RNBQKBNR b QqKk - 0 1",
+            Move::new_capture(H6, G7),
+        );
     }
 }

@@ -1,24 +1,24 @@
+mod ray_hyperbola;
 mod ray_kogge_stone;
 mod ray_magic;
-mod ray_subtract;
-mod ray_hyperbola;
 mod ray_naive;
+mod ray_subtract;
 
 #[cfg(test)]
 mod testing;
 
-pub use self::ray_kogge_stone::pinned_pieces;
-pub use self::ray_kogge_stone::non_diag_pin_rays_including_attackers;
-pub use self::ray_kogge_stone::diag_pin_rays_including_attackers;
-pub use self::ray_kogge_stone::{pin_ray_non_diag, pin_ray_diag};
-pub use self::ray_kogge_stone::{rook_attacks, bishop_attacks};
 pub use self::ray_hyperbola::rank_attacks_from_sq;
-pub use self::ray_magic::{rook_attacks_from_sq, bishop_attacks_from_sq};
+pub use self::ray_kogge_stone::diag_pin_rays_including_attackers;
+pub use self::ray_kogge_stone::non_diag_pin_rays_including_attackers;
+pub use self::ray_kogge_stone::pinned_pieces;
+pub use self::ray_kogge_stone::{bishop_attacks, rook_attacks};
+pub use self::ray_kogge_stone::{pin_ray_diag, pin_ray_non_diag};
+pub use self::ray_magic::{bishop_attacks_from_sq, rook_attacks_from_sq};
 
-use mv_list::MoveList;
-use piece::{ROOK, QUEEN, BISHOP};
-use position::Position;
 use bb::BB;
+use mv_list::MoveList;
+use piece::{BISHOP, QUEEN, ROOK};
+use position::Position;
 
 pub fn slider_moves<L: MoveList>(position: &Position, to_mask: BB, from_mask: BB, list: &mut L) {
     let stm = position.state().stm;
@@ -43,10 +43,12 @@ pub fn slider_moves<L: MoveList>(position: &Position, to_mask: BB, from_mask: BB
     }
 }
 
-pub fn non_diag_slider_moves<L: MoveList>(position: &Position,
-                                          to_mask: BB,
-                                          from_mask: BB,
-                                          list: &mut L) {
+pub fn non_diag_slider_moves<L: MoveList>(
+    position: &Position,
+    to_mask: BB,
+    from_mask: BB,
+    list: &mut L,
+) {
     let stm = position.state().stm;
     let occupied = position.bb_occupied();
     let not_friendly = !position.bb_side(stm);
@@ -61,7 +63,12 @@ pub fn non_diag_slider_moves<L: MoveList>(position: &Position,
     }
 }
 
-pub fn diag_slider_moves<L: MoveList>(position: &Position, to_mask: BB, from_mask: BB, list: &mut L) {
+pub fn diag_slider_moves<L: MoveList>(
+    position: &Position,
+    to_mask: BB,
+    from_mask: BB,
+    list: &mut L,
+) {
     let stm = position.state().stm;
     let occupied = position.bb_occupied();
     let queens = position.bb_pc(QUEEN.pc(stm));
@@ -76,17 +83,17 @@ pub fn diag_slider_moves<L: MoveList>(position: &Position, to_mask: BB, from_mas
     }
 }
 
-
 #[cfg(test)]
 mod test {
-    use bb::EMPTY;
     use super::*;
+    use bb::EMPTY;
     use gen::util::assert_list_includes_moves;
     use mv_list::MoveVec;
 
     #[test]
     fn test_rook_moves() {
-        let position = &Position::from_fen("rnbqkbnr/pppppppp/8/8/8/8/1PPPPPPP/RNB1KBNR w").unwrap();
+        let position =
+            &Position::from_fen("rnbqkbnr/pppppppp/8/8/8/8/1PPPPPPP/RNB1KBNR w").unwrap();
         let mut list = MoveVec::new();
         slider_moves::<MoveVec>(position, !EMPTY, !EMPTY, &mut list);
         assert_list_includes_moves(&list, &["a1xa7", "a1a2", "a1a3", "a1a4", "a1a5", "a1a6"]);
@@ -102,7 +109,8 @@ mod test {
 
     #[test]
     fn test_queen_moves() {
-        let position = &Position::from_fen("rnbqkbnr/pppppppp/8/8/8/8/PPP1PPPP/RNBQKBNR w").unwrap();
+        let position =
+            &Position::from_fen("rnbqkbnr/pppppppp/8/8/8/8/PPP1PPPP/RNBQKBNR w").unwrap();
         let mut list = MoveVec::new();
         slider_moves::<MoveVec>(position, !EMPTY, !EMPTY, &mut list);
         assert_list_includes_moves(&list, &["d1xd7", "d1d2", "d1d3", "d1d4", "d1d5", "d1d6"]);

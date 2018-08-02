@@ -1,9 +1,9 @@
-use side::*;
-use piece::*;
-use position::Position;
-use square::*;
 use castle::*;
 use castling_rights::*;
+use piece::*;
+use position::Position;
+use side::*;
+use square::*;
 
 /*
     CHECKS:
@@ -38,8 +38,10 @@ pub fn test(position: &Position) -> Option<String> {
     }
 
     if position.state().full_move_number < 1 {
-        return Some(format!("Error: full move number cannot be less than 1 ({})",
-                            position.state().full_move_number));
+        return Some(format!(
+            "Error: full move number cannot be less than 1 ({})",
+            position.state().full_move_number
+        ));
     }
 
     None
@@ -50,10 +52,12 @@ fn test_bitpositions(position: &Position) -> Option<String> {
         let bb = position.bb_side(side);
         for (sq, _) in bb.iter() {
             if position.at(sq) == NULL_PIECE || position.at(sq).side() != side {
-                return Some(format!("Expected {} piece at {} but found {}",
-                                    side.to_string(),
-                                    sq.to_string(),
-                                    position.at(sq).to_string()));
+                return Some(format!(
+                    "Expected {} piece at {} but found {}",
+                    side.to_string(),
+                    sq.to_string(),
+                    position.at(sq).to_string()
+                ));
             }
         }
     }
@@ -62,10 +66,12 @@ fn test_bitpositions(position: &Position) -> Option<String> {
         let bb = position.bb_pc(pc);
         for (sq, _) in bb.iter() {
             if position.at(sq) != pc {
-                return Some(format!("Expected {} at {} but found {}",
-                                    pc.to_string(),
-                                    sq.to_string(),
-                                    position.at(sq).to_string()));
+                return Some(format!(
+                    "Expected {} at {} but found {}",
+                    pc.to_string(),
+                    sq.to_string(),
+                    position.at(sq).to_string()
+                ));
             }
         }
     }
@@ -78,27 +84,35 @@ fn test_castling_rights(position: &Position) -> Option<String> {
     for &(side, king_square) in [(WHITE, E1), (BLACK, E8)].iter() {
         if position.at(king_square) != KING.pc(side) {
             if rights.has(CastlingRights::from(QUEEN_SIDE, side)) {
-                return Some(format!("Error: {} cannot castle as king has moved",
-                                    side.to_string()));
+                return Some(format!(
+                    "Error: {} cannot castle as king has moved",
+                    side.to_string()
+                ));
             }
             if rights.has(CastlingRights::from(KING_SIDE, side)) {
-                return Some(format!("Error: {} cannot castle as king has moved",
-                                    side.to_string()));
+                return Some(format!(
+                    "Error: {} cannot castle as king has moved",
+                    side.to_string()
+                ));
             }
         }
     }
 
     for &(right, rook_square, side) in [(WHITE_QS, A1, WHITE), (BLACK_QS, A8, BLACK)].iter() {
         if rights.has(right) && position.at(rook_square) != ROOK.pc(side) {
-            return Some(format!("Error: {} cannot castle queen-side as rook has moved",
-                                side.to_string()));
+            return Some(format!(
+                "Error: {} cannot castle queen-side as rook has moved",
+                side.to_string()
+            ));
         }
     }
 
     for &(right, rook_square, side) in [(WHITE_KS, H1, WHITE), (BLACK_KS, H8, BLACK)].iter() {
         if rights.has(right) && position.at(rook_square) != ROOK.pc(side) {
-            return Some(format!("Error: {} cannot castle king-side as rook has moved",
-                                side.to_string()));
+            return Some(format!(
+                "Error: {} cannot castle king-side as rook has moved",
+                side.to_string()
+            ));
         }
     }
     None
@@ -112,18 +126,22 @@ fn test_ep_square(position: &Position) -> Option<String> {
 
     let stm = position.state().stm;
     if (stm == BLACK && sq.row() != 2) || (stm == WHITE && sq.row() != 5) {
-        return Some(format!("Error: en-passant square is {} but side to move is {}",
-                            sq,
-                            stm.to_string()));
+        return Some(format!(
+            "Error: en-passant square is {} but side to move is {}",
+            sq,
+            stm.to_string()
+        ));
     }
 
     let target_sq = sq.change_row(if stm == BLACK { 3 } else { 4 });
     let expected_target = PAWN.pc(stm.flip());
     if position.at(target_sq) != expected_target {
-        return Some(format!("Error: en-passant square is {} but no {} at {}",
-                            sq,
-                            expected_target.to_string(),
-                            target_sq));
+        return Some(format!(
+            "Error: en-passant square is {} but no {} at {}",
+            sq,
+            expected_target.to_string(),
+            target_sq
+        ));
     }
 
     None
@@ -135,9 +153,11 @@ fn test_pawn_invalid_rows(position: &Position) -> Option<String> {
         let bb = position.bb_pc(piece);
         for row in [0, 7].iter() {
             if !bb.row_empty(*row as usize) {
-                return Some(format!("Error: {} in invalid position: {:?}",
-                                    piece.to_string(),
-                                    bb.square_list()));
+                return Some(format!(
+                    "Error: {} in invalid position: {:?}",
+                    piece.to_string(),
+                    bb.square_list()
+                ));
             }
         }
     }
@@ -151,15 +171,19 @@ fn test_piece_counts(position: &Position) -> Option<String> {
             let piece = kind.pc(side);
             let count = position.bb_pc(piece).pop_count();
             if count < min {
-                return Some(format!("Error: too few {}: found {} (min: {})",
-                                    piece.string_plural(),
-                                    count,
-                                    min));
+                return Some(format!(
+                    "Error: too few {}: found {} (min: {})",
+                    piece.string_plural(),
+                    count,
+                    min
+                ));
             } else if count > max {
-                return Some(format!("Error: too many {}: found {} (max: {})",
-                                    piece.string_plural(),
-                                    count,
-                                    max));
+                return Some(format!(
+                    "Error: too many {}: found {} (max: {})",
+                    piece.string_plural(),
+                    count,
+                    max
+                ));
             }
         }
 
@@ -171,10 +195,12 @@ fn test_piece_counts(position: &Position) -> Option<String> {
             let count = position.bb_pc(piece).pop_count();
             let actual_max = max - pawn_count;
             if count > actual_max {
-                return Some(format!("Error: too many {}: found {} (max: {})",
-                                    piece.string_plural(),
-                                    count,
-                                    actual_max));
+                return Some(format!(
+                    "Error: too many {}: found {} (max: {})",
+                    piece.string_plural(),
+                    count,
+                    actual_max
+                ));
             }
         }
     }
@@ -189,110 +215,138 @@ mod test {
 
     #[test]
     fn checks_castling_rights_king_position_1() {
-        let position = Position::from_fen("rnbq1bnr/ppppkppp/8/8/8/8/PPPPPPPP/RNBQKBNR w q").unwrap();
-        assert_eq!(test(&position).unwrap(),
-                   "Error: black cannot castle as king has moved");
+        let position =
+            Position::from_fen("rnbq1bnr/ppppkppp/8/8/8/8/PPPPPPPP/RNBQKBNR w q").unwrap();
+        assert_eq!(
+            test(&position).unwrap(),
+            "Error: black cannot castle as king has moved"
+        );
     }
 
     #[test]
     fn checks_castling_rights_king_position_2() {
-        let position = Position::from_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBKQBNR w qK").unwrap();
-        assert_eq!(test(&position).unwrap(),
-                   "Error: white cannot castle as king has moved");
+        let position =
+            Position::from_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBKQBNR w qK").unwrap();
+        assert_eq!(
+            test(&position).unwrap(),
+            "Error: white cannot castle as king has moved"
+        );
     }
 
     #[test]
     fn checks_castling_rights_rook_position_1() {
-        let position = Position::from_fen("1nbqkbnr/rppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w q").unwrap();
-        assert_eq!(test(&position).unwrap(),
-                   "Error: black cannot castle queen-side as rook has moved");
+        let position =
+            Position::from_fen("1nbqkbnr/rppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w q").unwrap();
+        assert_eq!(
+            test(&position).unwrap(),
+            "Error: black cannot castle queen-side as rook has moved"
+        );
     }
 
     #[test]
     fn checks_castling_rights_rook_position_2() {
-        let position = Position::from_fen("rnbqkbr1/pppppppp/8/8/8/8/PPPPPPPP/RNBKQBNR w k").unwrap();
-        assert_eq!(test(&position).unwrap(),
-                   "Error: black cannot castle king-side as rook has moved");
+        let position =
+            Position::from_fen("rnbqkbr1/pppppppp/8/8/8/8/PPPPPPPP/RNBKQBNR w k").unwrap();
+        assert_eq!(
+            test(&position).unwrap(),
+            "Error: black cannot castle king-side as rook has moved"
+        );
     }
 
     #[test]
     fn checks_castling_rights_rook_position_3() {
-        let position = Position::from_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/1RBQKBNR w Q").unwrap();
-        assert_eq!(test(&position).unwrap(),
-                   "Error: white cannot castle queen-side as rook has moved");
+        let position =
+            Position::from_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/1RBQKBNR w Q").unwrap();
+        assert_eq!(
+            test(&position).unwrap(),
+            "Error: white cannot castle queen-side as rook has moved"
+        );
     }
 
     #[test]
     fn checks_castling_rights_rook_position_4() {
-        let position = Position::from_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKB1N w K").unwrap();
-        assert_eq!(test(&position).unwrap(),
-                   "Error: white cannot castle king-side as rook has moved");
+        let position =
+            Position::from_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKB1N w K").unwrap();
+        assert_eq!(
+            test(&position).unwrap(),
+            "Error: white cannot castle king-side as rook has moved"
+        );
     }
 
     #[test]
     fn checks_ep_square_wrong_attacking_side_1() {
         // wrong attacking side: black
-        let position = Position::from_fen("rnbqkbnr/pppppppp/8/8/2P5/8/PP1PPPPP/RNBQKBNR w - c3")
-            .unwrap();
-        assert_eq!(test(&position).unwrap(),
-                   "Error: en-passant square is c3 but side to move is white");
+        let position =
+            Position::from_fen("rnbqkbnr/pppppppp/8/8/2P5/8/PP1PPPPP/RNBQKBNR w - c3").unwrap();
+        assert_eq!(
+            test(&position).unwrap(),
+            "Error: en-passant square is c3 but side to move is white"
+        );
     }
 
     #[test]
     fn checks_ep_square_wrong_attacking_side_2() {
-
-        let position = Position::from_fen("rnbqkbnr/pppppppp/8/8/2P5/8/PP1PPPPP/RNBQKBNR b - c3")
-            .unwrap();
+        let position =
+            Position::from_fen("rnbqkbnr/pppppppp/8/8/2P5/8/PP1PPPPP/RNBQKBNR b - c3").unwrap();
         assert!(test(&position).is_none());
     }
 
     #[test]
     fn checks_ep_square_wrong_attacking_side_3() {
-
         // wrong attacking side: white
-        let position = Position::from_fen("rnbqkbnr/pp1ppppp/8/2p5/8/8/PPPPPPPP/RNBQKBNR b - c6")
-            .unwrap();
-        assert_eq!(test(&position).unwrap(),
-                   "Error: en-passant square is c6 but side to move is black");
+        let position =
+            Position::from_fen("rnbqkbnr/pp1ppppp/8/2p5/8/8/PPPPPPPP/RNBQKBNR b - c6").unwrap();
+        assert_eq!(
+            test(&position).unwrap(),
+            "Error: en-passant square is c6 but side to move is black"
+        );
     }
 
     #[test]
     fn checks_ep_square_wrong_attacking_side_4() {
-
-        let position = Position::from_fen("rnbqkbnr/pp1ppppp/8/2p5/8/8/PPPPPPPP/RNBQKBNR w - c6")
-            .unwrap();
+        let position =
+            Position::from_fen("rnbqkbnr/pp1ppppp/8/2p5/8/8/PPPPPPPP/RNBQKBNR w - c6").unwrap();
         assert!(test(&position).is_none());
     }
 
     #[test]
     fn checks_ep_square_no_target_1() {
         // No target white pawn
-        let position = Position::from_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b - c3").unwrap();
-        assert_eq!(test(&position).unwrap(),
-                   "Error: en-passant square is c3 but no white pawn at c4");
+        let position =
+            Position::from_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b - c3").unwrap();
+        assert_eq!(
+            test(&position).unwrap(),
+            "Error: en-passant square is c3 but no white pawn at c4"
+        );
     }
 
     #[test]
     fn checks_ep_square_no_target_2() {
         // No target black pawn
-        let position = Position::from_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - c6").unwrap();
-        assert_eq!(test(&position).unwrap(),
-                   "Error: en-passant square is c6 but no black pawn at c5");
+        let position =
+            Position::from_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - c6").unwrap();
+        assert_eq!(
+            test(&position).unwrap(),
+            "Error: en-passant square is c6 but no black pawn at c5"
+        );
     }
 
     #[test]
     fn checks_pawn_invalid_rows_1() {
         let position = Position::from_fen("rnbqkbnr/8/p7/8/8/8/8/RNBQKBNP w -").unwrap();
-        assert_eq!(test(&position).unwrap(),
-                   "Error: white pawn in invalid position: [h1]");
+        assert_eq!(
+            test(&position).unwrap(),
+            "Error: white pawn in invalid position: [h1]"
+        );
     }
 
     #[test]
     fn checks_pawn_invalid_rows_2() {
-
         let position = Position::from_fen("rnPqkbnr/8/8/8/8/8/8/RNBQKBNR").unwrap();
-        assert_eq!(test(&position).unwrap(),
-                   "Error: white pawn in invalid position: [c8]");
+        assert_eq!(
+            test(&position).unwrap(),
+            "Error: white pawn in invalid position: [c8]"
+        );
     }
 
     #[test]
@@ -304,57 +358,72 @@ mod test {
     #[test]
     fn checks_pawn_count() {
         let position = Position::from_fen("rnbqkbnr/pppppppp/p7/8/8/8/PPPPPPPP/RNBQKBNR").unwrap();
-        assert_eq!(test(&position).unwrap(),
-                   "Error: too many black pawns: found 9 (max: 8)");
+        assert_eq!(
+            test(&position).unwrap(),
+            "Error: too many black pawns: found 9 (max: 8)"
+        );
     }
 
     #[test]
     fn checks_king_count_1() {
         let position = Position::from_fen("rnbqkknr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR").unwrap();
-        assert_eq!(test(&position).unwrap(),
-                   "Error: too many black kings: found 2 (max: 1)");
+        assert_eq!(
+            test(&position).unwrap(),
+            "Error: too many black kings: found 2 (max: 1)"
+        );
     }
 
     #[test]
     fn checks_king_count_2() {
-
         let position = Position::from_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQQBNR").unwrap();
-        assert_eq!(test(&position).unwrap(),
-                   "Error: too few white kings: found 0 (min: 1)");
+        assert_eq!(
+            test(&position).unwrap(),
+            "Error: too few white kings: found 0 (min: 1)"
+        );
     }
 
     #[test]
     fn checks_queen_count_1() {
         let position = Position::from_fen("rnbqkbnr/pppppppp/8/8/8/7Q/QQQQQQQQ/RNBQKBNR").unwrap();
-        assert_eq!(test(&position).unwrap(),
-                   "Error: too many white queens: found 10 (max: 9)");
+        assert_eq!(
+            test(&position).unwrap(),
+            "Error: too many white queens: found 10 (max: 9)"
+        );
     }
 
     #[test]
     fn checks_queen_count_2() {
         let position = Position::from_fen("rnbqkbnr/pppppppp/8/8/8/7Q/PPPPPPPP/RNBQKBNR").unwrap();
-        assert_eq!(test(&position).unwrap(),
-                   "Error: too many white queens: found 2 (max: 1)");
+        assert_eq!(
+            test(&position).unwrap(),
+            "Error: too many white queens: found 2 (max: 1)"
+        );
     }
 
     #[test]
     fn checks_knights_count_2() {
         let position = Position::from_fen("rnbqkbnr/ppppnnnn/n7/8/8/8/PPPPPPPP/RNBQKBNR").unwrap();
-        assert_eq!(test(&position).unwrap(),
-                   "Error: too many black knights: found 7 (max: 6)");
+        assert_eq!(
+            test(&position).unwrap(),
+            "Error: too many black knights: found 7 (max: 6)"
+        );
     }
 
     #[test]
     fn checks_bishops_count_2() {
         let position = Position::from_fen("rnbqkbnr/pppppppp/8/8/8/7B/PBBBBBBB/RNBQKBNR").unwrap();
-        assert_eq!(test(&position).unwrap(),
-                   "Error: too many white bishops: found 10 (max: 9)");
+        assert_eq!(
+            test(&position).unwrap(),
+            "Error: too many white bishops: found 10 (max: 9)"
+        );
     }
 
     #[test]
     fn checks_rooks_count_2() {
         let position = Position::from_fen("rnbqkbnr/pppppppp/8/8/8/7R/PPPRRRRR/RNBQKBNR").unwrap();
-        assert_eq!(test(&position).unwrap(),
-                   "Error: too many white rooks: found 8 (max: 7)");
+        assert_eq!(
+            test(&position).unwrap(),
+            "Error: too many white rooks: found 8 (max: 7)"
+        );
     }
 }

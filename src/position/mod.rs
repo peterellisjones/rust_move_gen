@@ -1,17 +1,17 @@
 pub mod fen;
 pub mod make;
 
-use std::fmt;
-use square::Square;
-use square;
-use side::Side;
-use piece::*;
+use self::fen::*;
+use super::util::grid_to_string_with_props;
 use bb::*;
 use castling_rights::*;
-use side::*;
-use super::util::grid_to_string_with_props;
-use self::fen::*;
 use hash::{Zobrist, DEFAULT_ZOBRISH_HASH};
+use piece::*;
+use side::Side;
+use side::*;
+use square;
+use square::Square;
+use std::fmt;
 
 use std;
 
@@ -126,22 +126,30 @@ impl Position {
     }
 
     pub fn to_string(&self) -> String {
-        let props = vec![("    side to move", self.state.stm.to_string()),
-                         (" castling rights", self.state.castling_rights.to_string()),
-                         ("      en-passant",
-                          self.state.ep_square.map_or("-".to_string(), |s| s.to_string())),
-                         (" half-move clock", self.state.half_move_clock.to_string()),
-                         ("full-move number", self.state.full_move_number.to_string()),
-                         ("             FEN", self.to_fen())];
-        grid_to_string_with_props(|sq: Square| -> char {
-            let pc = self.at(sq);
-            if pc.is_none() {
-                '.'
-            } else {
-                pc.to_char()
-            }
-        },
-        props.as_slice())
+        let props = vec![
+            ("    side to move", self.state.stm.to_string()),
+            (" castling rights", self.state.castling_rights.to_string()),
+            (
+                "      en-passant",
+                self.state
+                    .ep_square
+                    .map_or("-".to_string(), |s| s.to_string()),
+            ),
+            (" half-move clock", self.state.half_move_clock.to_string()),
+            ("full-move number", self.state.full_move_number.to_string()),
+            ("             FEN", self.to_fen()),
+        ];
+        grid_to_string_with_props(
+            |sq: Square| -> char {
+                let pc = self.at(sq);
+                if pc.is_none() {
+                    '.'
+                } else {
+                    pc.to_char()
+                }
+            },
+            props.as_slice(),
+        )
     }
 
     #[inline]
@@ -236,9 +244,11 @@ mod test {
 
     #[test]
     fn test_to_string() {
-        let position = &Position::from_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w").unwrap();
+        let position =
+            &Position::from_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w").unwrap();
 
-        let expected = unindent::unindent("
+        let expected = unindent::unindent(
+            "
           ABCDEFGH
         8|rnbqkbnr|8     side to move: white
         7|pppppppp|7  castling rights: QqKk
@@ -249,7 +259,8 @@ mod test {
         2|PPPPPPPP|2
         1|RNBQKBNR|1
           ABCDEFGH
-        ");
+        ",
+        );
         assert_eq!(position.to_string(), expected);
     }
 }

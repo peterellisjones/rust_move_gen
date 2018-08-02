@@ -1,8 +1,8 @@
-use square::Square;
-use square;
 use castle::Castle;
-use std::fmt;
 use piece::*;
+use square;
+use square::Square;
+use std::fmt;
 
 // super compress move representation
 // 0-5: from
@@ -30,7 +30,7 @@ const CASTLE_FLAG: u8 = 128;
 const CAPTURE_FLAG: u8 = 64;
 const PROMOTION_FLAG: u8 = 128;
 const EP_CAPTURE_FLAG: u8 = 64;
-pub const NULL_MOVE: Move = Move{ upper: 0, lower: 0 };
+pub const NULL_MOVE: Move = Move { upper: 0, lower: 0 };
 
 /// Represents a move on the chess position. Uses a compact 16 bit representation
 #[derive(Copy, Clone, PartialEq)]
@@ -119,7 +119,7 @@ impl Move {
     }
 
     pub fn new_move(from: Square, to: Square, is_capture: bool) -> Move {
-         Move {
+        Move {
             lower: from.to_u8() | if is_capture { CAPTURE_FLAG } else { 0 },
             upper: to.to_u8(),
         }
@@ -186,12 +186,11 @@ impl fmt::Debug for Move {
     }
 }
 
-
 #[cfg(test)]
 mod test {
     use super::*;
-    use square::*;
     use castle::*;
+    use square::*;
     use std::mem;
 
     #[test]
@@ -287,8 +286,10 @@ mod test {
         assert_eq!(Move::new_capture(B2, B3).to_string(), "b2xb3");
 
         assert_eq!(Move::new_promotion(B7, B8, QUEEN).to_string(), "b7b8=Q");
-        assert_eq!(Move::new_capture_promotion(C7, B8, QUEEN).to_string(),
-                   "c7xb8=Q");
+        assert_eq!(
+            Move::new_capture_promotion(C7, B8, QUEEN).to_string(),
+            "c7xb8=Q"
+        );
 
         assert_eq!(Move::new_ep_capture(D4, C3).to_string(), "d4xc3e.p.");
     }

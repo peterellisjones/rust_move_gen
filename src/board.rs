@@ -1,7 +1,7 @@
-use position::*;
-use piece::Piece;
-use square::*;
 use mv::Move;
+use piece::Piece;
+use position::*;
+use square::*;
 
 pub struct Board {
     position: Position,
@@ -53,7 +53,8 @@ impl Board {
 
     pub fn unmake(&mut self) {
         let elem = self.stack.pop().unwrap();
-        self.position.unmake(elem.mv, elem.captured, &elem.state, elem.key);
+        self.position
+            .unmake(elem.mv, elem.captured, &elem.state, elem.key);
     }
 }
 

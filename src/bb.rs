@@ -1,6 +1,6 @@
-use std::fmt;
-use square::Square;
 use square;
+use square::Square;
+use std::fmt;
 use std::ops::*;
 use util::grid_to_string;
 
@@ -86,7 +86,15 @@ impl BB {
     }
 
     pub fn to_string(&self) -> String {
-        grid_to_string(|sq: Square| -> char { if self.is_set(sq) { '#' } else { '.' } })
+        let fun = |sq: Square| -> char {
+            if self.is_set(sq) {
+                '#'
+            } else {
+                '.'
+            }
+        };
+
+        grid_to_string(fun)
     }
 
     #[inline]
@@ -351,7 +359,6 @@ impl BB {
     }
 }
 
-
 impl Shr<usize> for BB {
     type Output = BB;
 
@@ -394,7 +401,6 @@ impl BitOrAssign for BB {
         self.0 |= other.0
     }
 }
-
 
 impl BitXor for BB {
     type Output = BB;
@@ -464,7 +470,6 @@ impl Neg for BB {
     }
 }
 
-
 #[allow(dead_code)]
 pub const BB_A1: BB = BB(1u64 << 1);
 #[allow(dead_code)]
@@ -528,7 +533,6 @@ impl fmt::Debug for BB {
     }
 }
 
-
 #[cfg(test)]
 pub mod test {
     use super::*;
@@ -537,7 +541,8 @@ pub mod test {
 
     #[test]
     fn test_occluded_east_fill() {
-        let expected = unindent::unindent("
+        let expected = unindent::unindent(
+            "
               ABCDEFGH
             8|........|8
             7|........|7
@@ -548,7 +553,8 @@ pub mod test {
             2|........|2
             1|........|1
               ABCDEFGH
-            ");
+            ",
+        );
         let source = BB::new(C3) | BB::new(D6);
         let empty = source | BB::new(F3).not();
         assert_eq!(source.occluded_east_fill(empty).to_string(), expected);
@@ -556,7 +562,8 @@ pub mod test {
 
     #[test]
     fn test_east_attacks() {
-        let expected = unindent::unindent("
+        let expected = unindent::unindent(
+            "
               ABCDEFGH
             8|........|8
             7|........|7
@@ -567,7 +574,8 @@ pub mod test {
             2|........|2
             1|........|1
               ABCDEFGH
-            ");
+            ",
+        );
         let source = BB::new(C3) | BB::new(D6);
         let empty = source | BB::new(F3).not();
         assert_eq!(source.east_attacks(empty).to_string(), expected);
@@ -575,7 +583,8 @@ pub mod test {
 
     #[test]
     fn consts_1() {
-        let expected = unindent::unindent("
+        let expected = unindent::unindent(
+            "
               ABCDEFGH
             8|#.......|8
             7|#.......|7
@@ -586,13 +595,15 @@ pub mod test {
             2|#.......|2
             1|#.......|1
               ABCDEFGH
-            ");
+            ",
+        );
         assert_eq!(FILE_A.to_string(), expected);
     }
 
     #[test]
     fn consts_2() {
-        let expected = unindent::unindent("
+        let expected = unindent::unindent(
+            "
               ABCDEFGH
             8|.......#|8
             7|.......#|7
@@ -603,14 +614,15 @@ pub mod test {
             2|.......#|2
             1|.......#|1
               ABCDEFGH
-            ");
+            ",
+        );
         assert_eq!(FILE_H.to_string(), expected);
     }
 
-
     #[test]
     fn consts_4() {
-        let expected = unindent::unindent("
+        let expected = unindent::unindent(
+            "
               ABCDEFGH
             8|########|8
             7|........|7
@@ -621,7 +633,8 @@ pub mod test {
             2|........|2
             1|########|1
               ABCDEFGH
-            ");
+            ",
+        );
         assert_eq!(END_ROWS.to_string(), expected);
     }
 }

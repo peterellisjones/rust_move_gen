@@ -1,6 +1,6 @@
-use std::fmt;
-use square::*;
 use side::Side;
+use square::*;
+use std::fmt;
 
 /// Represents a castleove
 #[derive(PartialEq, PartialOrd, Copy, Clone)]
@@ -40,7 +40,11 @@ impl Castle {
 
     /// Convert to PGN string eg "O-O-O" or "O-O"
     pub fn pgn_string(&self) -> &'static str {
-        if *self == QUEEN_SIDE { "O-O-O" } else { "O-O" }
+        if *self == QUEEN_SIDE {
+            "O-O-O"
+        } else {
+            "O-O"
+        }
     }
 
     #[inline]

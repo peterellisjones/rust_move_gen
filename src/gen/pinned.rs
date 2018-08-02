@@ -1,19 +1,20 @@
-use side::Side;
-use position::Position;
-use bb::*;
-use piece::*;
-use super::slider::*;
 use super::pawn::*;
+use super::slider::*;
+use bb::*;
 use mv_list::MoveList;
+use piece::*;
+use position::Position;
+use side::Side;
 
 // Generates moves along pin rays, and also returns bb of pinned pieces
-pub fn pin_ray_moves<L: MoveList>(position: &Position,
-                                  in_check: bool,
-                                  capture_mask: BB,
-                                  push_mask: BB,
-                                  stm: Side,
-                                  list: &mut L)
-                                  -> BB {
+pub fn pin_ray_moves<L: MoveList>(
+    position: &Position,
+    in_check: bool,
+    capture_mask: BB,
+    push_mask: BB,
+    stm: Side,
+    list: &mut L,
+) -> BB {
     let move_mask = capture_mask | push_mask;
     let king = position.bb_pc(KING.pc(stm));
     let (enemy_diag, enemy_non_diag) = position.bb_sliders(stm.flip());
@@ -34,31 +35,36 @@ pub fn pin_ray_moves<L: MoveList>(position: &Position,
     // sliders can never pass 'through' the king so we can calculate
     // moves for sliders on opposite sides of the king together
     if north_west_south_east != EMPTY {
-        diag_slider_moves(position,
-                          north_west_south_east & move_mask,
-                          north_west_south_east,
-                          list);
+        diag_slider_moves(
+            position,
+            north_west_south_east & move_mask,
+            north_west_south_east,
+            list,
+        );
     }
     if north_east_south_west != EMPTY {
-        diag_slider_moves(position,
-                          north_east_south_west & move_mask,
-                          north_east_south_west,
-                          list);
+        diag_slider_moves(
+            position,
+            north_east_south_west & move_mask,
+            north_east_south_west,
+            list,
+        );
     }
     let diag_rays = north_west_south_east | north_east_south_west;
 
     // impossible for pawns to "cross" rays so can do all at once
     if diag_rays & capture_mask != EMPTY {
-        pawn_captures(position,
-                      diag_rays & capture_mask,
-                      diag_rays & push_mask,
-                      diag_rays,
-                      list);
+        pawn_captures(
+            position,
+            diag_rays & capture_mask,
+            diag_rays & push_mask,
+            diag_rays,
+            list,
+        );
     }
 
     let (north_south, east_west) =
         non_diag_pin_rays_including_attackers(king, empty | pinned, enemy_non_diag);
-
 
     if north_south != EMPTY {
         non_diag_slider_moves(position, north_south & move_mask, north_south, list);
@@ -80,19 +86,21 @@ pub fn pin_ray_moves<L: MoveList>(position: &Position,
 #[cfg(test)]
 mod test {
     use super::*;
+    use mv_list::MoveVec;
     use position::Position;
     use side::*;
-    use mv_list::MoveVec;
     use unindent;
 
     #[test]
     fn test_pin_ray_moves() {
-        let position = Position::from_fen("rnb2k1r/pp1Pbppp/2p5/q7/2B5/8/PPPQNnPP/RNB1K2R w QK - 3 9")
-            .unwrap();
+        let position =
+            Position::from_fen("rnb2k1r/pp1Pbppp/2p5/q7/2B5/8/PPPQNnPP/RNB1K2R w QK - 3 9")
+                .unwrap();
 
         let mut list = MoveVec::new();
         let pinned_pieces = pin_ray_moves(&position, false, !EMPTY, !EMPTY, WHITE, &mut list);
-        let expected = unindent::unindent("
+        let expected = unindent::unindent(
+            "
           ABCDEFGH
         8|........|8
         7|........|7
@@ -103,7 +111,8 @@ mod test {
         2|...#....|2
         1|........|1
           ABCDEFGH
-        ");
+        ",
+        );
 
         assert_eq!(pinned_pieces.to_string(), expected);
     }
@@ -114,7 +123,8 @@ mod test {
 
         let mut list = MoveVec::new();
         let pinned_pieces = pin_ray_moves(&position, false, !EMPTY, !EMPTY, WHITE, &mut list);
-        let expected = unindent::unindent("
+        let expected = unindent::unindent(
+            "
           ABCDEFGH
         8|........|8
         7|........|7
@@ -125,7 +135,8 @@ mod test {
         2|........|2
         1|........|1
           ABCDEFGH
-        ");
+        ",
+        );
 
         assert_eq!(pinned_pieces.to_string(), expected);
         assert_eq!(list.len(), 3);

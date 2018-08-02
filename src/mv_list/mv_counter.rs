@@ -1,7 +1,7 @@
-use square::Square;
 use bb::{BB, END_ROWS};
 use castle::Castle;
 use mv_list::MoveList;
+use square::Square;
 
 /// MoveCounter implements MoveList and keeps a count of different types of moves added to it. It can count at most 256 moves since it uses `u8` internally
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -72,8 +72,8 @@ impl MoveList for MoveCounter {
 #[cfg(test)]
 mod test {
     use super::*;
-    use position::*;
     use gen::*;
+    use position::*;
 
     #[test]
     fn test_move_counter() {

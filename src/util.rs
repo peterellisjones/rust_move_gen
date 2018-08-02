@@ -1,9 +1,10 @@
-use square::Square;
 use square;
+use square::Square;
 
-pub fn grid_to_string_with_props<F: Fn(Square) -> char>(char_at: F,
-                                                        props: &[(&str, String)])
-                                                        -> String {
+pub fn grid_to_string_with_props<F: Fn(Square) -> char>(
+    char_at: F,
+    props: &[(&str, String)],
+) -> String {
     let mut string = "  ABCDEFGH\n".to_string();
 
     let row_chars = ['1', '2', '3', '4', '5', '6', '7', '8'];
@@ -14,10 +15,12 @@ pub fn grid_to_string_with_props<F: Fn(Square) -> char>(char_at: F,
             string.push(char_at(Square::from(row as square::Internal, col)));
         }
         if props.len() > (7 - row) {
-            string += &format!("|{} {}: {}\n",
-                               row_chars[row],
-                               props[(7 - row)].0,
-                               props[(7 - row)].1);
+            string += &format!(
+                "|{} {}: {}\n",
+                row_chars[row],
+                props[(7 - row)].0,
+                props[(7 - row)].1
+            );
         } else {
             string += &format!("|{}\n", row_chars[row]);
         }

@@ -1,22 +1,33 @@
-use mv_list::MoveList;
 use bb::*;
-use position::Position;
 use castle::Castle;
 use castling_rights::CastlingRights;
+use mv_list::MoveList;
+use position::Position;
 
 #[inline]
 pub fn castles<L: MoveList>(position: &Position, attacks: BB, list: &mut L) {
-    const CASTLE_BLOCKING_SQUARES: [[BB; 2]; 2] = [[BB((1u64 << 1) + (1u64 << 2) + (1u64 << 3)), /* WHITE QS = B1 + C1 + D1 */
-                                                    BB((1u64 << 57) + (1u64 << 58) +
-                                                       (1u64 << 59))], /* BLACK QS = B8 + C8 + D1 */
-                                                   [BB((1u64 << 5) + (1u64 << 6)), // WHITE KS = F1 + G1
-                                                    BB((1u64 << 61) + (1u64 << 62))]]; // BLACK KS = F8 + G8
+    const CASTLE_BLOCKING_SQUARES: [[BB; 2]; 2] = [
+        [
+            BB((1u64 << 1) + (1u64 << 2) + (1u64 << 3)), /* WHITE QS = B1 + C1 + D1 */
+            BB((1u64 << 57) + (1u64 << 58) + (1u64 << 59)),
+        ], /* BLACK QS = B8 + C8 + D1 */
+        [
+            BB((1u64 << 5) + (1u64 << 6)), // WHITE KS = F1 + G1
+            BB((1u64 << 61) + (1u64 << 62)),
+        ],
+    ]; // BLACK KS = F8 + G8
 
     // squares that must be not attacked for a castle to take place
-    const KING_SAFE_SQUARES: [[BB; 2]; 2] = [[BB((1u64 << 2) + (1u64 << 3) + (1u64 << 4)), /* WHITE QS = C1 + D1 + E1 */
-                                              BB((1u64 << 58) + (1u64 << 59) + (1u64 << 60))], /* BLACK QS = C8 + D8  + E8 */
-                                             [BB((1u64 << 4) + (1u64 << 5) + (1u64 << 6)), /* WHITE KS = E1 + F1 + G1 */
-                                              BB((1u64 << 60) + (1u64 << 61) + (1u64 << 62))]]; // BLACK KS = E8 + F8 + G8
+    const KING_SAFE_SQUARES: [[BB; 2]; 2] = [
+        [
+            BB((1u64 << 2) + (1u64 << 3) + (1u64 << 4)), /* WHITE QS = C1 + D1 + E1 */
+            BB((1u64 << 58) + (1u64 << 59) + (1u64 << 60)),
+        ], /* BLACK QS = C8 + D8  + E8 */
+        [
+            BB((1u64 << 4) + (1u64 << 5) + (1u64 << 6)), /* WHITE KS = E1 + F1 + G1 */
+            BB((1u64 << 60) + (1u64 << 61) + (1u64 << 62)),
+        ],
+    ]; // BLACK KS = E8 + F8 + G8
 
     let stm = position.state().stm;
     let rights = position.state().castling_rights;
@@ -39,10 +50,10 @@ pub fn castles<L: MoveList>(position: &Position, attacks: BB, list: &mut L) {
 
 #[cfg(test)]
 mod test {
-    use gen::util::assert_list_includes_moves;
     use super::*;
-    use mv_list::MoveVec;
     use gen::attacked_squares_ignoring_ep;
+    use gen::util::assert_list_includes_moves;
+    use mv_list::MoveVec;
 
     #[test]
     fn no_castles() {
@@ -99,7 +110,6 @@ mod test {
         castles::<MoveVec>(position, attacks, &mut list);
         assert_eq!(list.len(), 0);
     }
-
 
     #[test]
     fn cant_castle_when_king_passes_through_attack_2() {

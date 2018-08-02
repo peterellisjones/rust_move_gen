@@ -4,14 +4,14 @@ use std::ops::*;
 #[cfg(target_feature = "sse3")]
 extern crate simd;
 #[cfg(target_feature = "sse3")]
-use self::simd::x86::sse2::*;
-#[cfg(target_feature = "sse3")]
 use self::simd::u8x16;
+#[cfg(target_feature = "sse3")]
+use self::simd::x86::sse2::*;
 #[cfg(target_feature = "sse3")]
 use self::simd::x86::ssse3::Ssse3U8x16;
 
-use std::mem::transmute;
 use bb::BB;
+use std::mem::transmute;
 
 /// Double bitboard used with SSE3 intrinsics
 #[derive(Copy, Clone)]
@@ -63,8 +63,10 @@ impl Shl<usize> for DBB {
 }
 
 const NOT_FILE_A: DBB = DBB(u64x2::new(!0x0101010101010101u64, !0x0101010101010101u64));
-const NOT_FILE_H: DBB = DBB(u64x2::new(!(0x0101010101010101u64 << 7),
-                                       !(0x0101010101010101u64 << 7)));
+const NOT_FILE_H: DBB = DBB(u64x2::new(
+    !(0x0101010101010101u64 << 7),
+    !(0x0101010101010101u64 << 7),
+));
 
 impl DBB {
     #[inline]

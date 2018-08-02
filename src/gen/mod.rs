@@ -1,23 +1,23 @@
-mod pawn;
-mod lookup;
-mod util;
-pub mod slider;
-mod castle;
 mod attacks;
+mod castle;
+mod lookup;
+mod pawn;
 mod pinned;
+pub mod slider;
+mod util;
 
-use self::pawn::*;
-use self::lookup::*;
-use self::slider::*;
 use self::attacks::*;
 use self::castle::*;
+use self::lookup::*;
+use self::pawn::*;
 use self::pinned::*;
+use self::slider::*;
 use piece::*;
 
-use position::Position;
 use bb::EMPTY;
 use mv_list::MoveList;
 use piece::KING;
+use position::Position;
 
 pub use self::attacks::king_danger_squares;
 
@@ -93,7 +93,6 @@ pub fn legal_moves<L: MoveList>(position: &Position, list: &mut L) -> bool {
     in_check
 }
 
-
 #[cfg(test)]
 mod test {
     use super::*;
@@ -107,30 +106,38 @@ mod test {
                 let mut list = MoveVec::new();
                 let position = &Position::from_fen($fen).unwrap();
                 legal_moves::<MoveVec>(position, &mut list);
-                if  list.len() != $moves {
+                if list.len() != $moves {
                     println!("Moves missing: {}", list);
                     println!("{}", position);
                 }
                 assert_eq!(list.len(), $moves);
             }
-        }
+        };
     }
 
     test_gen!(test_starting_position, 20, STARTING_POSITION_FEN);
     test_gen!(test_debug_1, 8, "r6r/1b2k1bq/8/8/7B/8/8/R3K2R b QK - 3 2");
     test_gen!(test_debug_2, 8, "8/8/8/2k5/2pP4/8/B7/4K3 b - d3 5 3");
-    test_gen!(test_debug_3,
-              19,
-              "r1bqkbnr/pppppppp/n7/8/8/P7/1PPPPPPP/RNBQKBNR w QqKk - 2 2");
-    test_gen!(test_debug_4,
-              5,
-              "r3k2r/p1pp1pb1/bn2Qnp1/2qPN3/1p2P3/2N5/PPPBBPPP/R3K2R b QqKk - 3 2");
-    test_gen!(test_debug_5,
-              44,
-              "2kr3r/p1ppqpb1/bn2Qnp1/3PN3/1p2P3/2N5/PPPBBPPP/R3K2R b QK - 3 2");
-    test_gen!(test_debug_6,
-              39,
-              "rnb2k1r/pp1Pbppp/2p5/q7/2B5/8/PPPQNnPP/RNB1K2R w QK - 3 9");
+    test_gen!(
+        test_debug_3,
+        19,
+        "r1bqkbnr/pppppppp/n7/8/8/P7/1PPPPPPP/RNBQKBNR w QqKk - 2 2"
+    );
+    test_gen!(
+        test_debug_4,
+        5,
+        "r3k2r/p1pp1pb1/bn2Qnp1/2qPN3/1p2P3/2N5/PPPBBPPP/R3K2R b QqKk - 3 2"
+    );
+    test_gen!(
+        test_debug_5,
+        44,
+        "2kr3r/p1ppqpb1/bn2Qnp1/3PN3/1p2P3/2N5/PPPBBPPP/R3K2R b QK - 3 2"
+    );
+    test_gen!(
+        test_debug_6,
+        39,
+        "rnb2k1r/pp1Pbppp/2p5/q7/2B5/8/PPPQNnPP/RNB1K2R w QK - 3 9"
+    );
 
     test_gen!(test_debug_7, 8, "5k2/8/8/q7/8/2Q5/8/4K3 w - -");
 

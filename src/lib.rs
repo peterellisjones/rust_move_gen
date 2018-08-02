@@ -12,45 +12,44 @@
 //! ```
 
 #![feature(test)]
-#![feature(cfg_target_feature)]
 #![feature(platform_intrinsics)]
 #![feature(const_fn)]
 
 pub mod bb;
-mod position;
+mod board;
 mod castle;
 mod castling_rights;
 mod gen;
+mod hash;
 mod integrity;
 mod mv;
 mod mv_list;
 mod piece;
+mod position;
 mod side;
 mod square;
 mod util;
-mod hash;
-mod board;
 
 #[cfg(target_feature = "sse3")]
 mod dbb;
 
 extern crate rand;
 #[cfg(test)]
-extern crate unindent;
-#[cfg(test)]
 extern crate test;
+#[cfg(test)]
+extern crate unindent;
 
-pub use position::{Position, State, STARTING_POSITION_FEN};
-pub use board::Board;
-pub use gen::legal_moves;
-pub use castle::{Castle, KING_SIDE, QUEEN_SIDE};
-pub use castling_rights::{CastlingRights, BLACK_QS, BLACK_KS, WHITE_QS, WHITE_KS};
-pub use mv::{Move, NULL_MOVE};
-pub use mv_list::{MoveList, MoveCounter, MoveVec};
-pub use side::{Side, WHITE, BLACK};
-pub use piece::*;
-pub use square::*;
 pub use bb::BB;
+pub use board::Board;
+pub use castle::{Castle, KING_SIDE, QUEEN_SIDE};
+pub use castling_rights::{CastlingRights, BLACK_KS, BLACK_QS, WHITE_KS, WHITE_QS};
+pub use gen::legal_moves;
+pub use mv::{Move, NULL_MOVE};
+pub use mv_list::{MoveCounter, MoveList, MoveVec};
+pub use piece::*;
+pub use position::{Position, State, STARTING_POSITION_FEN};
+pub use side::{Side, BLACK, WHITE};
+pub use square::*;
 
 #[cfg(target_feature = "sse3")]
 pub use dbb::*;

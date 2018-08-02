@@ -1,14 +1,14 @@
-use mv::Move;
-use square::Square;
-use square;
 use bb::{BB, END_ROWS};
 use castle::Castle;
-use piece::*;
-use std::fmt;
-use std;
+use mv::Move;
 use mv_list::MoveList;
+use piece::*;
+use square;
+use square::Square;
+use std;
+use std::fmt;
 
-/// MoveCounter implements MoveList and collects moves in a vector.
+/// MoveVec implements MoveList and collects moves in a vector.
 /// Use `iter` to access the moves once they have been added.
 #[derive(Clone)]
 pub struct MoveVec {
@@ -46,25 +46,30 @@ impl MoveList for MoveVec {
 
     #[inline]
     fn add_pawn_pushes(&mut self, shift: usize, targets: BB) {
-        self.insert_promos_by_shift(shift, (targets & END_ROWS), Move::new_promotion);
-        self.insert_moves_by_shift(shift, (targets & !END_ROWS), Move::new_push);
+        self.insert_promos_by_shift(shift, targets & END_ROWS, Move::new_promotion);
+        self.insert_moves_by_shift(shift, targets & !END_ROWS, Move::new_push);
     }
 
     #[inline]
     fn add_pawn_captures(&mut self, shift: usize, targets: BB) {
-        self.insert_promos_by_shift(shift, (targets & END_ROWS), Move::new_capture_promotion);
-        self.insert_moves_by_shift(shift, (targets & !END_ROWS), Move::new_capture);
+        self.insert_promos_by_shift(shift, targets & END_ROWS, Move::new_capture_promotion);
+        self.insert_moves_by_shift(shift, targets & !END_ROWS, Move::new_capture);
     }
 }
 
 impl MoveVec {
     #[inline]
     pub fn new() -> MoveVec {
-        MoveVec { moves: Vec::with_capacity(60) }
+        MoveVec {
+            moves: Vec::with_capacity(60),
+        }
     }
 
     pub fn to_string(&self) -> String {
-        self.iter().map(|mv: &Move| mv.to_string()).collect::<Vec<String>>().join(",")
+        self.iter()
+            .map(|mv: &Move| mv.to_string())
+            .collect::<Vec<String>>()
+            .join(",")
     }
 
     #[inline]
@@ -80,10 +85,12 @@ impl MoveVec {
     }
 
     #[inline]
-    fn insert_moves_by_shift<F: Fn(Square, Square) -> Move>(&mut self,
-                                                            shift: usize,
-                                                            targets: BB,
-                                                            f: F) {
+    fn insert_moves_by_shift<F: Fn(Square, Square) -> Move>(
+        &mut self,
+        shift: usize,
+        targets: BB,
+        f: F,
+    ) {
         for (to, _) in targets.iter() {
             let from = to.rotate_right(shift as square::Internal);
             self.moves.push(f(from, to));
@@ -96,10 +103,12 @@ impl MoveVec {
     }
 
     #[inline]
-    fn insert_promos_by_shift<F: Fn(Square, Square, Kind) -> Move>(&mut self,
-                                                                   shift: usize,
-                                                                   targets: BB,
-                                                                   f: F) {
+    fn insert_promos_by_shift<F: Fn(Square, Square, Kind) -> Move>(
+        &mut self,
+        shift: usize,
+        targets: BB,
+        f: F,
+    ) {
         for (to, _) in targets.iter() {
             let from = to.rotate_right(shift as square::Internal);
             self.moves.push(f(from, to, QUEEN));
@@ -113,8 +122,8 @@ impl MoveVec {
 #[cfg(test)]
 mod test {
     use super::*;
-    use position::*;
     use gen::*;
+    use position::*;
 
     #[test]
     fn test_move_vec() {
