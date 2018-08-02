@@ -1,5 +1,3 @@
-extern crate chess_move_gen;
-
 use chess_move_gen::*;
 
 #[test]
