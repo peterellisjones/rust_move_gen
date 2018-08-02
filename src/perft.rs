@@ -1,14 +1,39 @@
 use cache::Cache;
 use gen::legal_moves;
 use mv_list::{MoveCounter, MoveVec};
+use num_cpus;
 use position::Position;
+use std::sync::mpsc::channel;
+use threadpool::ThreadPool;
 
 pub fn perft(position: &mut Position, depth: usize) -> usize {
   if depth == 0 {
     return 1;
   }
 
-  return perft_inner(position, depth);
+  if depth <= 2 {
+    return perft_inner(position, depth);
+  }
+
+  let pool = ThreadPool::new(num_cpus::get());
+  let (tx, rx) = channel();
+
+  let mut moves = MoveVec::new();
+  legal_moves(&position, &mut moves);
+  let moves_len = moves.len();
+
+  for &mv in moves.iter() {
+    let tx = tx.clone();
+    let mut position_local = position.clone();
+
+    pool.execute(move || {
+      position_local.make(mv);
+      tx.send(perft_inner(&mut position_local, depth - 1))
+        .unwrap();
+    });
+  }
+
+  return rx.iter().take(moves_len).sum();
 }
 
 pub fn perft_inner(position: &mut Position, depth: usize) -> usize {
@@ -27,7 +52,7 @@ pub fn perft_inner(position: &mut Position, depth: usize) -> usize {
   for &mv in moves.iter() {
     let capture = position.make(mv);
 
-    count += perft(position, depth - 1);
+    count += perft_inner(position, depth - 1);
 
     position.unmake(mv, capture, &state, key);
   }

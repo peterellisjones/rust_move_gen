@@ -35,7 +35,10 @@ mod util;
 #[cfg(target_feature = "sse3")]
 mod dbb;
 
+extern crate num_cpus;
 extern crate rand;
+extern crate threadpool;
+
 #[cfg(test)]
 extern crate test;
 #[cfg(test)]

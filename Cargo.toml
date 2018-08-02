@@ -1,7 +1,7 @@
 [package]
 name = "chess-move-gen"
 description = "Fast chess move generation library. Uses SIMD for fast sliding piece move generation"
-version = "0.6.0"
+version = "0.6.1"
 authors = ["Peter Ellis Jones <pete@peterellisjones.com>"]
 homepage = "https://github.com/peterellisjones/rust_move_gen"
 repository = "https://github.com/peterellisjones/rust_move_gen.git"
@@ -29,3 +29,5 @@ opt-level = 1
 rand = "0.5"
 unindent = "0.1.3"
 simd = "0.2.2"
+threadpool = "1.7.1"
+num_cpus = "1.8.0"
