@@ -54,24 +54,6 @@ mod test {
     use super::*;
     use test;
 
-    // #[test]
-    // fn print_cases() {
-    //     let (mut cases, bishop_hash, rook_hash) = generate_all_test_cases(bishop_attacks_from_sq, rook_attacks_from_sq, 0.3);
-    //     println!("const TEST_CASES_BISHOP_HASH: BB = BB(0x{:X})", bishop_hash.to_u64());
-    //     println!("const TEST_CASES_ROOK_HASH: BB = BB(0x{:X})", rook_hash.to_u64());
-    //     println!("const TEST_CASES: [(Square, BB); 640] = [");
-
-    //     let mut rng = thread_rng();
-    //     rng.shuffle(&mut cases);
-
-    //     for &(sq, bb) in cases.iter() {
-    //         println!("({}, 0x{:X}),", sq.to_usize(), bb.to_u64());
-    //     }
-    //     println!("];");
-
-    //     assert!(false);
-    // }
-
     #[bench]
     fn bench_rook_attacks_from_sq(b: &mut test::Bencher) {
         bench_attacks_from_sq(b, rook_attacks_from_sq);
