@@ -52,7 +52,6 @@ pub use gen::legal_moves;
 pub use mv::{Move, NULL_MOVE};
 pub use mv_list::{MoveCounter, MoveList, MoveVec};
 pub use perft::perft;
-pub use perft::perft_with_cache;
 pub use piece::*;
 pub use position::{Position, State, STARTING_POSITION_FEN};
 pub use side::{Side, BLACK, WHITE};

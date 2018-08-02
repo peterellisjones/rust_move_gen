@@ -82,16 +82,6 @@ pub fn perft_inner(position: &mut Position, depth: usize) -> usize {
   count
 }
 
-pub fn perft_with_cache(position: &mut Position, depth: usize, cache_size_bytes: usize) -> usize {
-  if depth == 0 {
-    return 1;
-  }
-
-  let mut cache = Cache::new(cache_size_bytes).unwrap();
-
-  return perft_with_cache_inner(position, depth, &mut cache);
-}
-
 fn perft_with_cache_inner(position: &mut Position, depth: usize, cache: &mut Cache) -> usize {
   let key = position.hash_key();
 
@@ -149,14 +139,14 @@ mod test {
   fn perft_with_cache_test_3() {
     let mut position = Position::from_fen(STARTING_POSITION_FEN).unwrap();
 
-    assert_eq!(perft_with_cache(&mut position, 3, 1024 * 1024), 8902);
+    assert_eq!(perft(&mut position, 3, false, 1024 * 1024), 8902);
   }
 
   #[test]
   fn perft_with_cache_test_4() {
     let mut position = Position::from_fen(STARTING_POSITION_FEN).unwrap();
 
-    assert_eq!(perft_with_cache(&mut position, 4, 1024 * 1024), 197281);
+    assert_eq!(perft(&mut position, 4, false, 1024 * 1024), 197281);
   }
 
   #[bench]
