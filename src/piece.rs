@@ -139,6 +139,7 @@ impl Piece {
     // assumes piece present
     #[inline]
     pub fn is_slider(&self) -> bool {
+        debug_assert!(self.is_some());
         self.0 <= BLACK_ROOK.0
     }
 

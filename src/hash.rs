@@ -2,7 +2,7 @@ use castle::*;
 use piece::*;
 use position::State;
 use rand;
-use rand::Rng;
+use rand::RngCore;
 use side::*;
 use square;
 use square::Square;
@@ -74,9 +74,8 @@ pub static DEFAULT_ZOBRISH_HASH: Zobrist = Zobrist {
 
 impl Zobrist {
     #[allow(dead_code)]
-    fn new(seed: usize) -> Zobrist {
-        let seed_arr: &[usize] = &[seed];
-        let mut rng: rand::StdRng = rand::SeedableRng::from_seed(seed_arr);
+    fn new(seed: [u8; 32]) -> Zobrist {
+        let mut rng: rand::StdRng = rand::SeedableRng::from_seed(seed);
 
         let mut keys = Zobrist {
             pieces: [0; 12],
@@ -182,7 +181,11 @@ mod test {
 
     #[test]
     fn test_castle() {
-        let keys = Zobrist::new(1);
+        let keys = Zobrist::new([
+            1,2,3,4,5,6,7,8,9,10,
+            11,12,13,14,15,16,17,18,19,20,
+            21,22,23,24,25,26,27,28,29,30,
+            31,32]);
 
         let side = WHITE;
         let castle = QUEEN_SIDE;
