@@ -40,6 +40,7 @@ pub struct Position {
     state: State,
 
     key: u64,
+
     hash: &'static Zobrist,
 }
 
@@ -156,6 +157,7 @@ impl Position {
     fn put_piece(&mut self, pc: Piece, sq: Square) {
         debug_assert!(self.at(sq).is_none());
         self.grid[sq.to_usize()] = pc;
+        self.update_grid(sq, pc);
         let bb_mask = BB::new(sq);
         let idx = pc.to_usize();
         self.bb_sides[idx & 1] |= bb_mask;
@@ -166,9 +168,11 @@ impl Position {
     fn remove_piece(&mut self, sq: Square) {
         debug_assert!(self.at(sq).is_some());
 
-        let pc = self.grid[sq.to_usize()];
+        let pc = self.at(sq);
         self.grid[sq.to_usize()] = NULL_PIECE;
         let bb_mask = !BB::new(sq);
+
+        self.update_grid(sq, NULL_PIECE);
         let idx = pc.to_usize();
         self.bb_sides[idx & 1] &= bb_mask;
         self.bb_pieces[idx] &= bb_mask;
@@ -179,10 +183,9 @@ impl Position {
         debug_assert!(self.at(from).is_some());
         debug_assert!(self.at(to).is_none());
 
-        let pc = self.grid[from.to_usize()];
-
-        self.grid[from.to_usize()] = NULL_PIECE;
-        self.grid[to.to_usize()] = pc;
+        let pc = self.at(from);
+        self.update_grid(from, NULL_PIECE);
+        self.update_grid(to, pc);
 
         let bb_mask = BB::new(from) | BB::new(to);
         let idx = pc.to_usize();
@@ -195,8 +198,10 @@ impl Position {
     fn promote_piece(&mut self, sq: Square, new_pc: Piece) {
         let old_pc = self.at(sq);
         debug_assert!(old_pc.is_some());
+        debug_assert_eq!(old_pc.side(), new_pc.side());
 
         self.grid[sq.to_usize()] = new_pc;
+        self.update_grid(sq, new_pc);
 
         let bb_mask = BB::new(sq);
         self.bb_pieces[old_pc.to_usize()] ^= bb_mask;
@@ -234,6 +239,13 @@ impl Position {
     #[inline]
     pub fn bb_empty(&self) -> BB {
         !self.bb_occupied()
+    }
+
+    #[inline]
+    fn update_grid(&mut self, sq: Square, pc: Piece) {
+        unsafe {
+            *(self.grid.get_unchecked_mut(sq.to_usize())) = pc;
+        }
     }
 }
 
