@@ -192,7 +192,7 @@ impl Position {
         bb_mask
     }
 
-    fn change_piece(&mut self, sq: Square, new_pc: Piece) {
+    fn promote_piece(&mut self, sq: Square, new_pc: Piece) {
         let old_pc = self.at(sq);
         debug_assert!(old_pc.is_some());
 

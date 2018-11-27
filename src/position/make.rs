@@ -80,7 +80,7 @@ impl Position {
 
             if mv.is_promotion() {
                 updated_mover = mv.promote_to().pc(stm);
-                self.change_piece(to, updated_mover);
+                self.promote_piece(to, updated_mover);
             }
 
             xor_key ^= self.hash.push(mover, from, updated_mover, to);
@@ -123,7 +123,7 @@ impl Position {
 
         if mv.is_promotion() {
             let mover = PAWN.pc(original_state.stm);
-            self.change_piece(mv.to(), mover);
+            self.promote_piece(mv.to(), mover);
         }
 
         self.move_piece(mv.to(), mv.from());
