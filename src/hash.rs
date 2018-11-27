@@ -1,7 +1,7 @@
 use castle::*;
 use piece::*;
 use position::State;
-use rand::{RngCore, SeedableRng, StdRng};
+use rand::{rngs::StdRng, RngCore, SeedableRng};
 use side::*;
 use square;
 use square::Square;
@@ -145,7 +145,12 @@ impl Zobrist {
 
     #[inline]
     pub fn castle(&self, castle: Castle, stm: Side) -> u64 {
-        self.castles[castle.to_usize()][stm.to_usize()]
+        return unsafe {
+            *self
+                .castles
+                .get_unchecked(castle.to_usize())
+                .get_unchecked(stm.to_usize())
+        };
     }
 
     #[inline]
@@ -160,13 +165,19 @@ impl Zobrist {
 
     #[inline]
     fn piece_square(&self, piece: Piece, square: Square) -> u64 {
-        self.pieces[piece.to_usize()].rotate_left(square.to_u32())
+        return unsafe {
+            (*self.pieces.get_unchecked(piece.to_usize())).rotate_left(square.to_u32())
+        };
     }
 
     #[inline]
     fn ep_hash(&self, ep_square: Option<Square>) -> u64 {
         if ep_square.is_some() {
-            self.en_passant_file[ep_square.unwrap().col() as usize]
+            return unsafe {
+                *self
+                    .en_passant_file
+                    .get_unchecked(ep_square.unwrap().col() as usize)
+            };
         } else {
             0
         }
