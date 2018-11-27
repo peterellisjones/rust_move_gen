@@ -156,12 +156,18 @@ impl Position {
     #[inline]
     fn put_piece(&mut self, pc: Piece, sq: Square) {
         debug_assert!(self.at(sq).is_none());
-        self.grid[sq.to_usize()] = pc;
-        self.update_grid(sq, pc);
+
         let bb_mask = BB::new(sq);
-        let idx = pc.to_usize();
-        self.bb_sides[idx & 1] |= bb_mask;
-        self.bb_pieces[idx] |= bb_mask;
+
+        self.update_grid(sq, pc);
+
+        debug_assert_eq!(self.bb_pc(pc) & bb_mask, EMPTY);
+        debug_assert_eq!(self.bb_side(pc.side()) & bb_mask, EMPTY);
+
+        unsafe {
+            *self.bb_pieces.get_unchecked_mut(pc.to_usize()) ^= bb_mask;
+            *self.bb_sides.get_unchecked_mut(pc.side().to_usize()) ^= bb_mask;
+        }
     }
 
     #[inline]
@@ -169,13 +175,17 @@ impl Position {
         debug_assert!(self.at(sq).is_some());
 
         let pc = self.at(sq);
-        self.grid[sq.to_usize()] = NULL_PIECE;
-        let bb_mask = !BB::new(sq);
+        let bb_mask = BB::new(sq);
 
         self.update_grid(sq, NULL_PIECE);
-        let idx = pc.to_usize();
-        self.bb_sides[idx & 1] &= bb_mask;
-        self.bb_pieces[idx] &= bb_mask;
+
+        debug_assert_eq!(self.bb_pc(pc) & bb_mask, bb_mask);
+        debug_assert_eq!(self.bb_side(pc.side()) & bb_mask, bb_mask);
+
+        unsafe {
+            *self.bb_pieces.get_unchecked_mut(pc.to_usize()) ^= bb_mask;
+            *self.bb_sides.get_unchecked_mut(pc.side().to_usize()) ^= bb_mask;
+        }
     }
 
     #[inline]
@@ -184,28 +194,41 @@ impl Position {
         debug_assert!(self.at(to).is_none());
 
         let pc = self.at(from);
+        let bb_mask = BB::new(from) | BB::new(to);
+
+        debug_assert_eq!(self.bb_pc(pc) & BB::new(from), BB::new(from));
+        debug_assert_eq!(self.bb_side(pc.side()) & BB::new(from), BB::new(from));
+        debug_assert_eq!(self.bb_pc(pc) & BB::new(to), EMPTY);
+        debug_assert_eq!(self.bb_side(pc.side()) & BB::new(to), EMPTY);
+
         self.update_grid(from, NULL_PIECE);
         self.update_grid(to, pc);
 
-        let bb_mask = BB::new(from) | BB::new(to);
-        let idx = pc.to_usize();
-        self.bb_sides[idx & 1] ^= bb_mask;
-        self.bb_pieces[idx] ^= bb_mask;
+        unsafe {
+            *self.bb_pieces.get_unchecked_mut(pc.to_usize()) ^= bb_mask;
+            *self.bb_sides.get_unchecked_mut(pc.side().to_usize()) ^= bb_mask;
+        }
 
         bb_mask
     }
 
     fn promote_piece(&mut self, sq: Square, new_pc: Piece) {
         let old_pc = self.at(sq);
+        let bb_mask = BB::new(sq);
+
         debug_assert!(old_pc.is_some());
         debug_assert_eq!(old_pc.side(), new_pc.side());
 
-        self.grid[sq.to_usize()] = new_pc;
         self.update_grid(sq, new_pc);
 
-        let bb_mask = BB::new(sq);
-        self.bb_pieces[old_pc.to_usize()] ^= bb_mask;
-        self.bb_pieces[new_pc.to_usize()] |= bb_mask;
+        debug_assert_eq!(self.bb_pc(old_pc) & bb_mask, bb_mask);
+        debug_assert_eq!(self.bb_pc(new_pc) & bb_mask, EMPTY);
+        debug_assert_eq!(self.bb_side(old_pc.side()) & bb_mask, bb_mask);
+
+        unsafe {
+            *(self.bb_pieces.get_unchecked_mut(old_pc.to_usize())) ^= bb_mask;
+            *(self.bb_pieces.get_unchecked_mut(new_pc.to_usize())) |= bb_mask;
+        }
     }
 
     /// Get bitboard of pieces for a particular side
