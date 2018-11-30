@@ -33,7 +33,7 @@ const EP_CAPTURE_FLAG: u8 = 64;
 pub const NULL_MOVE: Move = Move { upper: 0, lower: 0 };
 
 /// Represents a move on the chess position. Uses a compact 16 bit representation
-#[derive(Copy, Clone, PartialEq)]
+#[derive(Copy, Clone, PartialEq, Eq)]
 pub struct Move {
     lower: u8, // holds from square and castle and pawn flags
     upper: u8, // holds to square and promotion and capture flags

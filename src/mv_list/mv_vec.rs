@@ -69,7 +69,7 @@ impl MoveVec {
         self.iter()
             .map(|mv: &Move| mv.to_string())
             .collect::<Vec<String>>()
-            .join(",")
+            .join(", ")
     }
 
     #[inline]
