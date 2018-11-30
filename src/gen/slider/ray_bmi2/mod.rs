@@ -1,3 +1,5 @@
+// PEXT/PDEP bitboards https://www.chessprogramming.org/BMI2#PEXT.2FPDEP_Bitboards
+
 use bb::*;
 use square::Square;
 

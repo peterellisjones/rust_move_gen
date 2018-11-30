@@ -1,9 +1,13 @@
-mod ray_bmi2;
 mod ray_hyperbola;
 mod ray_kogge_stone;
-mod ray_magic;
 mod ray_naive;
 mod ray_subtract;
+
+#[cfg(target_feature = "bmi2")]
+mod ray_bmi2;
+
+#[cfg(not(target_feature = "bmi2"))]
+mod ray_magic;
 
 #[cfg(test)]
 mod testing;
@@ -14,6 +18,11 @@ pub use self::ray_kogge_stone::non_diag_pin_rays_including_attackers;
 pub use self::ray_kogge_stone::pinned_pieces;
 pub use self::ray_kogge_stone::{bishop_attacks, rook_attacks};
 pub use self::ray_kogge_stone::{pin_ray_diag, pin_ray_non_diag};
+
+#[cfg(target_feature = "bmi2")]
+pub use self::ray_bmi2::{bishop_attacks_from_sq, rook_attacks_from_sq};
+
+#[cfg(not(target_feature = "bmi2"))]
 pub use self::ray_magic::{bishop_attacks_from_sq, rook_attacks_from_sq};
 
 use bb::BB;
