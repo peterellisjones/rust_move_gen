@@ -84,8 +84,8 @@ pub fn generate_offsets() {
 }
 
 fn rook_outer_mask(sq: Square) -> BB {
-  let horizontal_mask = (ROW_1 << sq.rowx8());
-  let vertical_mask = (FILE_A << sq.col());
+  let horizontal_mask = ROW_1 << sq.rowx8();
+  let vertical_mask = FILE_A << sq.col();
   let sq_bb = BB(1 << sq.0);
 
   (horizontal_mask | vertical_mask) & (!sq_bb)
