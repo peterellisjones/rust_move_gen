@@ -143,12 +143,12 @@ mod test {
     }
 
     #[bench]
-    fn bench_rook_attacks(b: &mut test::Bencher) {
+    fn bench_multiple_rook_attacks(b: &mut test::Bencher) {
         bench_attacks_from_bb(b, rook_attacks);
     }
 
     #[bench]
-    fn bench_bishop_attacks(b: &mut test::Bencher) {
+    fn bench_multiple_bishop_attacks(b: &mut test::Bencher) {
         bench_attacks_from_bb(b, bishop_attacks);
     }
 }

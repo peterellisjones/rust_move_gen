@@ -48,6 +48,26 @@ pub fn bishop_attacks_from_sq(from: Square, occupied: BB) -> BB {
     attacks
 }
 
+#[inline]
+#[allow(dead_code)]
+pub fn rook_attacks(from: BB, occupied: BB) -> BB {
+    let mut attacks = EMPTY;
+    for (sq, _) in from.iter() {
+        attacks |= rook_attacks_from_sq(sq, occupied);
+    }
+    attacks
+}
+
+#[inline]
+#[allow(dead_code)]
+pub fn bishop_attacks(from: BB, occupied: BB) -> BB {
+    let mut attacks = EMPTY;
+    for (sq, _) in from.iter() {
+        attacks |= rook_attacks_from_sq(sq, occupied);
+    }
+    attacks
+}
+
 #[cfg(test)]
 mod test {
     use super::super::testing::*;
@@ -63,4 +83,15 @@ mod test {
     fn bench_bishop_attacks_from_sq(b: &mut test::Bencher) {
         bench_attacks_from_sq(b, bishop_attacks_from_sq);
     }
+
+    #[bench]
+    fn bench_multiple_rook_attacks(b: &mut test::Bencher) {
+        bench_attacks_from_bb(b, rook_attacks);
+    }
+
+    #[bench]
+    fn bench_multiple_bishop_attacks(b: &mut test::Bencher) {
+        bench_attacks_from_bb(b, bishop_attacks);
+    }
+
 }
