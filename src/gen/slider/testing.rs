@@ -6,8 +6,10 @@ use square;
 use square::*;
 use test;
 
+const TEST_CASE_BOARD_DENSITY: f64 = 0.3;
+
 pub fn test_bishop_attacks_from_bb<F: Fn(BB, BB) -> BB>(gen: F) {
-    let cases = generate_test_cases_from_bb(bishop_attacks_from_sq, 0.3);
+    let cases = generate_test_cases_from_bb(bishop_attacks_from_sq, TEST_CASE_BOARD_DENSITY);
 
     for (from, occupied, expected) in cases {
         let actual = gen(from, occupied);
@@ -16,7 +18,7 @@ pub fn test_bishop_attacks_from_bb<F: Fn(BB, BB) -> BB>(gen: F) {
 }
 
 pub fn test_bishop_attacks_from_sq<F: Fn(Square, BB) -> BB>(gen: F) {
-    let cases = generate_test_cases_from_sq(bishop_attacks_from_sq, 0.3);
+    let cases = generate_test_cases_from_sq(bishop_attacks_from_sq, TEST_CASE_BOARD_DENSITY);
 
     for (from, occupied, expected) in cases {
         let actual = gen(from, occupied);
@@ -25,7 +27,7 @@ pub fn test_bishop_attacks_from_sq<F: Fn(Square, BB) -> BB>(gen: F) {
 }
 
 pub fn test_rook_attacks_from_bb<F: Fn(BB, BB) -> BB>(gen: F) {
-    let cases = generate_test_cases_from_bb(rook_attacks_from_sq, 0.3);
+    let cases = generate_test_cases_from_bb(rook_attacks_from_sq, TEST_CASE_BOARD_DENSITY);
 
     for (from, occupied, expected) in cases {
         let actual = gen(from, occupied);
@@ -34,7 +36,7 @@ pub fn test_rook_attacks_from_bb<F: Fn(BB, BB) -> BB>(gen: F) {
 }
 
 pub fn test_rook_attacks_from_sq<F: Fn(Square, BB) -> BB>(gen: F) {
-    let cases = generate_test_cases_from_sq(rook_attacks_from_sq, 0.3);
+    let cases = generate_test_cases_from_sq(rook_attacks_from_sq, TEST_CASE_BOARD_DENSITY);
 
     for (from, occupied, expected) in cases {
         let actual = gen(from, occupied);
@@ -43,7 +45,7 @@ pub fn test_rook_attacks_from_sq<F: Fn(Square, BB) -> BB>(gen: F) {
 }
 
 pub fn bench_attacks_from_sq<F: Fn(Square, BB) -> BB>(b: &mut test::Bencher, gen: F) {
-    let cases = random_occupancies_from_sq(640, 0.3);
+    let cases = random_occupancies_from_sq(640, TEST_CASE_BOARD_DENSITY);
 
     b.iter(|| -> BB {
         let mut ret = EMPTY;
@@ -55,7 +57,7 @@ pub fn bench_attacks_from_sq<F: Fn(Square, BB) -> BB>(b: &mut test::Bencher, gen
 }
 
 pub fn bench_attacks_from_bb<F: Fn(BB, BB) -> BB>(b: &mut test::Bencher, gen: F) {
-    let cases = random_occupancies_from_bb(640, 0.3);
+    let cases = random_occupancies_from_bb(640, TEST_CASE_BOARD_DENSITY);
     b.iter(|| -> BB {
         let mut ret = EMPTY;
 
