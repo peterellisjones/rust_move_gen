@@ -178,7 +178,7 @@ mod test {
             &Position::from_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w").unwrap();
         let mut list = MoveVec::new();
         pawn_moves::<MoveVec>(position, !EMPTY, !EMPTY, !EMPTY, &mut list);
-        println!("{}", list);
+
         assert_list_includes_moves(
             &list,
             &[
@@ -251,7 +251,6 @@ mod test {
         let mut list = MoveVec::new();
 
         pawn_moves::<MoveVec>(position, !EMPTY, !EMPTY, !EMPTY, &mut list);
-        println!("{}", &list);
         assert_eq!(list.len(), 8);
         assert_list_includes_moves(
             &list,
