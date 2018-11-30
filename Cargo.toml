@@ -9,7 +9,7 @@ keywords = ["chess"]
 categories = ["game-engines"]
 license = "MIT"
 include = [
-    "/src",
+    "src/*.rs",
     "Cargo.toml",
     "LICENSE.txt"
 ]
