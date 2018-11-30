@@ -1,3 +1,4 @@
+mod ray_bmi2;
 mod ray_hyperbola;
 mod ray_kogge_stone;
 mod ray_magic;
