@@ -80,11 +80,6 @@ impl DBB {
         (BB(self.0.extract(0)), BB(self.0.extract(1)))
     }
 
-    pub fn to_byte_array(&self) -> [u8; 16] {
-        let ret: [u8; 16] = unsafe { transmute(self.0) };
-        ret
-    }
-
     #[inline]
     pub fn bswap(&self) -> DBB {
         let bytes: u8x16 = unsafe { transmute(self.0) };

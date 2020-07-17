@@ -24,12 +24,13 @@ pub fn slider_diag_rays_to_squares(source: BB, attacker: BB, position: &Position
     pin_ray_diag(source, empty, attacker)
 }
 
-pub fn checkers_and_pinned(king: BB, attacker: Side, position: &Position) -> (BB, BB) {
+pub fn checkers_and_pinned(king: BB, attacker: Side, position: &Position) -> (BB, BB, BB) {
     let occupied = position.bb_occupied();
     let king_sq = king.bitscan();
 
     let mut checkers = EMPTY;
     let mut pinned = EMPTY;
+    let mut pinners = EMPTY;
 
     // Pawns and Knights can only be checkers
     let knights = position.bb_pc(KNIGHT.pc(attacker));
@@ -55,10 +56,11 @@ pub fn checkers_and_pinned(king: BB, attacker: Side, position: &Position) -> (BB
             checkers |= bb;
         } else if potentially_pinned.pop_count() == 1 {
             pinned |= potentially_pinned;
+            pinners |= bb;
         }
     }
 
-    (checkers, pinned)
+    (checkers, pinned, pinners)
 }
 
 /// returns squares king may not move to

@@ -173,6 +173,11 @@ impl Square {
     }
 
     #[inline]
+    pub fn same_file(&self, other: Square) -> bool {
+        self.0 & 7 == other.0 & 7
+    }
+
+    #[inline]
     #[allow(dead_code)]
     pub fn diagonal(&self) -> usize {
         ((self.row() - self.col()) & 15) as usize

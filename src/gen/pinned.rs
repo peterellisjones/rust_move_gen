@@ -1,119 +1,103 @@
-use super::pawn::*;
-use super::slider::*;
 use bb::*;
+use gen::pawn::PAWN_CAPTURE_FILE_MASKS;
 use mv_list::MoveList;
 use piece::*;
 use position::Position;
-use side::Side;
+use side::{Side, WHITE};
+use square::Square;
 
-// Generates moves along pin rays, and also returns bb of pinned pieces
-pub fn pin_ray_moves<L: MoveList>(
+// Generates pawn moves along pin rays
+// NOTE: this is quigte expensive unfortunately
+pub fn pawn_pin_ray_moves<L: MoveList>(
     position: &Position,
-    capture_mask: BB,
-    push_mask: BB,
+    king_sq: Square,
+    pinned: BB,
+    pinners: BB,
     stm: Side,
     list: &mut L,
-) -> BB {
-    let move_mask = capture_mask | push_mask;
-    let king = position.bb_pc(KING.pc(stm));
-    let (enemy_diag, enemy_non_diag) = position.bb_sliders(stm.flip());
+) {
+    let empty_squares = position.bb_empty();
+    let piece = PAWN.pc(stm);
+    let movers = position.bb_pc(piece) & pinned;
 
-    let empty = position.bb_empty();
-    let friendly = position.bb_side(stm);
+    let push_shift = if stm == WHITE { 8 } else { 64 - 8 };
+    let push_mask = if stm == WHITE { ROW_4 } else { ROW_5 };
 
-    let pinned = pinned_pieces(king, empty, enemy_diag, enemy_non_diag) & friendly;
+    for (pawn_sq, pawn) in movers.iter() {
+        // if king is on the same file, the pawn can "push"
+        // as the pin is a north-south pin
+        if king_sq.same_file(pawn_sq) {
+            let single_pushes = pawn.rot_left(push_shift as u32) & empty_squares;
+            list.add_pawn_pushes(push_shift, single_pushes);
+            let double_pushes =
+                single_pushes.rot_left(push_shift as u32) & empty_squares & push_mask;
+            let double_push_shift = (push_shift * 2) % 64;
+            list.add_pawn_pushes(double_push_shift, double_pushes);
+        }
 
-    let (north_west_south_east, north_east_south_west) =
-        diag_pin_rays_including_attackers(king, empty | pinned, enemy_diag);
+        // iterate over the two possible capture directions..
+        for &(shift, file_mask) in PAWN_CAPTURE_FILE_MASKS[stm.to_usize()].iter() {
+            // captures can only happen if the pinned piece take its pinner
+            // There could be multiple pinners, but since apawn can only capture 1 square
+            // it can only ever take the pinner that is pinning it
+            let targets = pinned.rot_left(shift as u32) & file_mask & pinners;
+            list.add_pawn_captures(shift, targets);
 
-    let diag_rays = north_west_south_east | north_east_south_west;
-
-    // impossible for pawns to "cross" rays so can do all at once
-    if diag_rays & capture_mask != EMPTY {
-        pawn_captures(
-            position,
-            diag_rays & capture_mask,
-            diag_rays & push_mask,
-            !diag_rays,
-            list,
-        );
+            // no need to consider ep-capture since a pawn can never pin another piece
+        }
     }
-
-    let (north_south, east_west) =
-        non_diag_pin_rays_including_attackers(king, empty | pinned, enemy_non_diag);
-
-    if north_south != EMPTY {
-        non_diag_slider_moves(position, north_south & move_mask, north_south, list);
-    }
-    if east_west != EMPTY {
-        non_diag_slider_moves(position, east_west & move_mask, east_west, list);
-    }
-    let non_diag_rays = north_south | east_west;
-
-    if non_diag_rays & push_mask != EMPTY {
-        // impossible for pawns to "cross" rays so can do all at once
-        // do not need to evaluate captures here since all captures are on diagonals
-        pawn_pushes(position, non_diag_rays & push_mask, !non_diag_rays, list);
-    }
-
-    pinned
 }
 
 #[cfg(test)]
 mod test {
+    use super::*;
+    use gen::util::assert_list_includes_moves;
     use mv_list::MoveVec;
     use position::Position;
-    use side::*;
-    use unindent;
+    use square::*;
 
     #[test]
-    fn test_pin_ray_moves() {
+    fn test_pawn_pin_ray_moves() {
+        // test pawn capture along pin ray
         let position =
-            Position::from_fen("rnb2k1r/pp1Pbppp/2p5/q7/2B5/8/PPPQNnPP/RNB1K2R w QK - 3 9")
+            Position::from_fen("rnb2k1r/pp1Pbppp/2p5/q7/1PB5/8/PP2N1PP/RNB1K2R w KQ - 3 9")
                 .unwrap();
 
         let mut list = MoveVec::new();
-        let pinned_pieces = pin_ray_moves(&position, false, !EMPTY, !EMPTY, WHITE, &mut list);
-        let expected = unindent::unindent(
-            "
-          ABCDEFGH
-        8|........|8
-        7|........|7
-        6|........|6
-        5|........|5
-        4|........|4
-        3|........|3
-        2|...#....|2
-        1|........|1
-          ABCDEFGH
-        ",
-        );
-
-        assert_eq!(pinned_pieces.to_string(), expected);
+        pawn_pin_ray_moves(&position, E1, BB::new(B4), BB::new(A5), WHITE, &mut list);
+        assert_eq!(list.len(), 1);
+        assert_list_includes_moves(&list, &["b4xa5"]);
     }
 
     #[test]
-    fn test_pin_ray_moves_2() {
-        let position = Position::from_fen("5k2/8/8/q7/8/2Q5/8/4K3 w - -").unwrap();
+    fn test_pawn_pin_ray_moves_2() {
+        // test pawn move along pin ray
+        let position =
+            Position::from_fen("rnb2k1r/pp1Pbppp/2p5/4q3/8/8/PP2P1PP/RNB1KNBR w KQ - 3 9").unwrap();
 
         let mut list = MoveVec::new();
-        let pinned_pieces = pin_ray_moves(&position, false, !EMPTY, !EMPTY, WHITE, &mut list);
-        let expected = unindent::unindent(
-            "
-          ABCDEFGH
-        8|........|8
-        7|........|7
-        6|........|6
-        5|........|5
-        4|........|4
-        3|..#.....|3
-        2|........|2
-        1|........|1
-          ABCDEFGH
-        ",
-        );
+        pawn_pin_ray_moves(&position, E1, BB::new(E2), BB::new(E5), WHITE, &mut list);
+        assert_eq!(list.len(), 2);
+        assert_list_includes_moves(&list, &["e2e3", "e2e4"]);
+    }
 
-        assert_eq!(pinned_pieces.to_string(), expected);
-        assert_eq!(list.len(), 3);
+    #[test]
+    fn test_pawn_pin_ray_moves_3() {
+        // test pawn capture along pin ray when multiple pinners
+        let position =
+            Position::from_fen("r1b2k2/pp1Pbppp/2p5/q1n1r3/1PB5/4R3/P4PPP/RNB1K3 w Q - 3 9")
+                .unwrap();
+
+        let mut list = MoveVec::new();
+        pawn_pin_ray_moves(
+            &position,
+            E1,
+            BB::new(B4) | BB::new(E3),
+            BB::new(A5) | BB::new(E5),
+            WHITE,
+            &mut list,
+        );
+        assert_eq!(list.len(), 1);
+        assert_list_includes_moves(&list, &["b4xa5"]);
     }
 }

@@ -11,8 +11,8 @@ use self::castle::*;
 use self::lookup::*;
 use self::pawn::*;
 use self::pinned::*;
+use self::slider::consts::squares_between;
 use self::slider::*;
-use piece::*;
 
 use bb::EMPTY;
 use mv_list::MoveList;
@@ -31,7 +31,7 @@ pub fn legal_moves<L: MoveList>(position: &Position, list: &mut L) -> bool {
 
     let king_sq = kings.bitscan();
 
-    let (checkers, pinned) = checkers_and_pinned(kings, stm.flip(), position);
+    let (checkers, pinned, pinners) = checkers_and_pinned(kings, stm.flip(), position);
     let king_attacks_count = checkers.pop_count();
 
     // capture_mask and push_mask represent squares our pieces are allowed to move to or capture,
@@ -47,7 +47,6 @@ pub fn legal_moves<L: MoveList>(position: &Position, list: &mut L) -> bool {
         // if ony one attacker, we can try attacking the attacker with
         // our other pieces.
         capture_mask = checkers;
-
         push_mask = EMPTY;
 
         // If the piece giving check is a slider, we can additionally attempt
@@ -57,31 +56,29 @@ pub fn legal_moves<L: MoveList>(position: &Position, list: &mut L) -> bool {
         debug_assert!(checker.is_some());
 
         if checker.is_slider() {
-            // This branch is rare
-            if checker.kind() != ROOK {
-                push_mask |= slider_diag_rays_to_squares(kings, checkers, position);
-            }
-            if checker.kind() != BISHOP {
-                push_mask |= slider_non_diag_rays_to_squares(kings, checkers, position);
-            }
+            push_mask = squares_between(king_sq, checker_sq)
         }
     } else {
         // Not in check so can generate castles
         // impossible for castles to be affected by pins
         // so we don't need to consider pins here
         castles(position, attacked_squares, list);
-
-        // Not in check so can generate pin-ray moves.
-        // Pinned pieces can never block a check
-        pin_ray_moves(position, capture_mask, push_mask, stm, list);
     }
 
     let move_mask = capture_mask | push_mask;
 
-    // generate moves for non-pinned pieces
+    // generate moves for non-pinned knights (pinned nights can't move)
     knight_moves(position, move_mask, !pinned, list);
+
+    // generate moves for pinned and unpinned sliders
     slider_moves(position, move_mask, pinned, king_sq, list);
-    pawn_moves(position, capture_mask, push_mask, pinned, list);
+
+    // generate moves for unpinned pawns
+    pawn_moves(position, capture_mask, push_mask, !pinned, list);
+
+    // generate moves for pinned pawns
+    pawn_pin_ray_moves(position, king_sq, pinned, pinners, stm, list);
+
     king_moves(position, !attacked_squares, list);
 
     king_attacks_count > 0
