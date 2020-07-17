@@ -9,7 +9,6 @@ use side::Side;
 // Generates moves along pin rays, and also returns bb of pinned pieces
 pub fn pin_ray_moves<L: MoveList>(
     position: &Position,
-    in_check: bool,
     capture_mask: BB,
     push_mask: BB,
     stm: Side,
@@ -24,32 +23,9 @@ pub fn pin_ray_moves<L: MoveList>(
 
     let pinned = pinned_pieces(king, empty, enemy_diag, enemy_non_diag) & friendly;
 
-    // if in check pinned pieces cannot move
-    if pinned == EMPTY || in_check {
-        return pinned;
-    }
-
     let (north_west_south_east, north_east_south_west) =
         diag_pin_rays_including_attackers(king, empty | pinned, enemy_diag);
 
-    // sliders can never pass 'through' the king so we can calculate
-    // moves for sliders on opposite sides of the king together
-    if north_west_south_east != EMPTY {
-        diag_slider_moves(
-            position,
-            north_west_south_east & move_mask,
-            north_west_south_east,
-            list,
-        );
-    }
-    if north_east_south_west != EMPTY {
-        diag_slider_moves(
-            position,
-            north_east_south_west & move_mask,
-            north_east_south_west,
-            list,
-        );
-    }
     let diag_rays = north_west_south_east | north_east_south_west;
 
     // impossible for pawns to "cross" rays so can do all at once
@@ -58,7 +34,7 @@ pub fn pin_ray_moves<L: MoveList>(
             position,
             diag_rays & capture_mask,
             diag_rays & push_mask,
-            diag_rays,
+            !diag_rays,
             list,
         );
     }
@@ -77,7 +53,7 @@ pub fn pin_ray_moves<L: MoveList>(
     if non_diag_rays & push_mask != EMPTY {
         // impossible for pawns to "cross" rays so can do all at once
         // do not need to evaluate captures here since all captures are on diagonals
-        pawn_pushes(position, non_diag_rays & push_mask, non_diag_rays, list);
+        pawn_pushes(position, non_diag_rays & push_mask, !non_diag_rays, list);
     }
 
     pinned
@@ -85,7 +61,6 @@ pub fn pin_ray_moves<L: MoveList>(
 
 #[cfg(test)]
 mod test {
-    use super::*;
     use mv_list::MoveVec;
     use position::Position;
     use side::*;

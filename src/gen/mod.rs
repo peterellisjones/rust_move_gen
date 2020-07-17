@@ -31,13 +31,8 @@ pub fn legal_moves<L: MoveList>(position: &Position, list: &mut L) -> bool {
 
     let king_sq = kings.bitscan();
 
-    // Don't need to calculate checkers if no attacks on king
-    let (king_attacks_count, checkers) = if (attacked_squares & kings).any() {
-        let checkers = checks_to_sq(king_sq, stm.flip(), position);
-        (checkers.pop_count(), checkers)
-    } else {
-        (0, EMPTY)
-    };
+    let (checkers, pinned) = checkers_and_pinned(kings, stm.flip(), position);
+    let king_attacks_count = checkers.pop_count();
 
     // capture_mask and push_mask represent squares our pieces are allowed to move to or capture,
     // respectively. The difference between the two is only important for pawn EP captures
@@ -75,22 +70,21 @@ pub fn legal_moves<L: MoveList>(position: &Position, list: &mut L) -> bool {
         // impossible for castles to be affected by pins
         // so we don't need to consider pins here
         castles(position, attacked_squares, list);
+
+        // Not in check so can generate pin-ray moves.
+        // Pinned pieces can never block a check
+        pin_ray_moves(position, capture_mask, push_mask, stm, list);
     }
-
-    let in_check = king_attacks_count > 0;
-
-    // Generate rest of the moves, filtering movable squares
-    let pinned = pin_ray_moves(position, in_check, capture_mask, push_mask, stm, list);
 
     let move_mask = capture_mask | push_mask;
 
     // generate moves for non-pinned pieces
     knight_moves(position, move_mask, !pinned, list);
-    slider_moves(position, move_mask, !pinned, list);
-    pawn_moves(position, capture_mask, push_mask, !pinned, list);
+    slider_moves(position, move_mask, pinned, king_sq, list);
+    pawn_moves(position, capture_mask, push_mask, pinned, list);
     king_moves(position, !attacked_squares, list);
 
-    in_check
+    king_attacks_count > 0
 }
 
 #[cfg(test)]
@@ -107,7 +101,8 @@ mod test {
                 let position = &Position::from_fen($fen).unwrap();
                 legal_moves::<MoveVec>(position, &mut list);
                 if list.len() != $moves {
-                    println!("Moves missing: {}", list);
+                    println!("Found {} moves, expected {}", list.len(), $moves);
+                    println!("Moves: {}", list);
                     println!("{}", position);
                 }
                 assert_eq!(list.len(), $moves);

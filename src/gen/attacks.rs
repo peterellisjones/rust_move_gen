@@ -1,5 +1,8 @@
 use super::lookup::*;
 use super::pawn::*;
+use super::slider::consts::bishop_rays;
+use super::slider::consts::rook_rays;
+use super::slider::consts::squares_between;
 use super::slider::*;
 use bb::{BB, EMPTY};
 use piece::*;
@@ -19,6 +22,43 @@ pub fn slider_diag_rays_to_squares(source: BB, attacker: BB, position: &Position
     let empty = position.bb_empty();
 
     pin_ray_diag(source, empty, attacker)
+}
+
+pub fn checkers_and_pinned(king: BB, attacker: Side, position: &Position) -> (BB, BB) {
+    let occupied = position.bb_occupied();
+    let king_sq = king.bitscan();
+
+    let mut checkers = EMPTY;
+    let mut pinned = EMPTY;
+
+    // Pawns and Knights can only be checkers
+    let knights = position.bb_pc(KNIGHT.pc(attacker));
+    checkers |= knight_moves_from_sq(king_sq) & knights;
+
+    let pawns = position.bb_pc(PAWN.pc(attacker));
+    for &(shift, file_mask) in PAWN_CAPTURE_FILE_MASKS[attacker.flip().to_usize()].iter() {
+        checkers |= king.rot_left(shift as u32) & file_mask & pawns;
+    }
+
+    // Sliding pieces can be checkers or pinners depending on occupancy of intermediate squares
+
+    let (diag_attackers, non_diag_attackers) = position.bb_sliders(attacker);
+    let potential_diag_pinners = occupied & bishop_rays(king_sq) & diag_attackers;
+    let potential_non_diag_pinners = occupied & rook_rays(king_sq) & non_diag_attackers;
+
+    let potential_pinners = potential_diag_pinners | potential_non_diag_pinners;
+
+    for (sq, bb) in potential_pinners.iter() {
+        let potentially_pinned = squares_between(sq, king_sq) & occupied;
+
+        if potentially_pinned == EMPTY {
+            checkers |= bb;
+        } else if potentially_pinned.pop_count() == 1 {
+            pinned |= potentially_pinned;
+        }
+    }
+
+    (checkers, pinned)
 }
 
 /// returns squares king may not move to

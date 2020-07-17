@@ -11,11 +11,11 @@ pub fn pawn_moves<L: MoveList>(
     position: &Position,
     capture_mask: BB,
     push_mask: BB,
-    from_mask: BB,
+    pinned_mask: BB,
     list: &mut L,
 ) {
-    pawn_pushes(position, push_mask, from_mask, list);
-    pawn_captures(position, capture_mask, push_mask, from_mask, list);
+    pawn_pushes(position, push_mask, pinned_mask, list);
+    pawn_captures(position, capture_mask, push_mask, pinned_mask, list);
 }
 
 // white, left  = +7 remove FILE_H
@@ -28,11 +28,11 @@ pub const PAWN_CAPTURE_FILE_MASKS: [[(usize, BB); 2]; 2] = [
     [(64 - 9, NOT_FILE_H), (64 - 7, NOT_FILE_A)],
 ];
 
-pub fn pawn_pushes<L: MoveList>(position: &Position, to_mask: BB, from_mask: BB, list: &mut L) {
+pub fn pawn_pushes<L: MoveList>(position: &Position, to_mask: BB, pinned_mask: BB, list: &mut L) {
     // NOTE in the case of EP capture, mask is for the enemy piece taken
     let stm = position.state().stm;
     let piece = PAWN.pc(stm);
-    let movers = position.bb_pc(piece) & from_mask;
+    let movers = position.bb_pc(piece) & !pinned_mask;
 
     if movers == EMPTY {
         return;
@@ -58,13 +58,13 @@ pub fn pawn_captures<L: MoveList>(
     position: &Position,
     capture_mask: BB,
     push_mask: BB,
-    from_mask: BB,
+    pinned_mask: BB,
     list: &mut L,
 ) {
     let move_mask = capture_mask | push_mask;
     let stm = position.state().stm;
     let piece = PAWN.pc(stm);
-    let movers = position.bb_pc(piece) & from_mask;
+    let movers = position.bb_pc(piece) & !pinned_mask;
 
     if movers == EMPTY {
         return;
@@ -130,14 +130,14 @@ mod test {
     fn captures() {
         let position = &Position::from_fen("rnbqkbnr/pppppppp/P7/8/8/8/8/RNBQKBNR w").unwrap();
         let mut list = MoveVec::new();
-        pawn_moves::<MoveVec>(position, !EMPTY, !EMPTY, !EMPTY, &mut list);
+        pawn_moves::<MoveVec>(position, !EMPTY, !EMPTY, EMPTY, &mut list);
         assert_eq!(list.len(), 1);
         assert_list_includes_moves(&list, &["a6xb7"]);
 
         let position =
             &Position::from_fen("rnbqkbnr/pppppppp/7P/8/8/8/P1PPPPPP/RNBQKBNR b").unwrap();
         let mut list = MoveVec::new();
-        pawn_moves::<MoveVec>(position, !EMPTY, !EMPTY, !EMPTY, &mut list);
+        pawn_moves::<MoveVec>(position, !EMPTY, !EMPTY, EMPTY, &mut list);
         assert_list_includes_moves(&list, &["g7xh6"]);
     }
 
@@ -145,7 +145,7 @@ mod test {
     fn ep_captures() {
         let position = &Position::from_fen("rnbqkbnr/8/8/Pp6/8/8/8/RNBQKBNR w - b6").unwrap();
         let mut list = MoveVec::new();
-        pawn_moves::<MoveVec>(position, !EMPTY, !EMPTY, !EMPTY, &mut list);
+        pawn_moves::<MoveVec>(position, !EMPTY, !EMPTY, EMPTY, &mut list);
         assert_eq!(list.len(), 2);
         assert_list_includes_moves(&list, &["a5xb6e.p.", "a5a6"]);
     }
@@ -166,7 +166,7 @@ mod test {
         //   ABCDEFGH
         let position = &Position::from_fen("4k3/8/8/r2Pp2K/8/8/8/8 w - e6").unwrap();
         let mut list = MoveVec::new();
-        pawn_moves::<MoveVec>(position, !EMPTY, !EMPTY, !EMPTY, &mut list);
+        pawn_moves::<MoveVec>(position, !EMPTY, !EMPTY, EMPTY, &mut list);
         assert_list_excludes_moves(&list, &["d5xe6e.p."]);
         assert_list_includes_moves(&list, &["d5d6"]);
         assert_eq!(list.len(), 1);
@@ -177,7 +177,7 @@ mod test {
         let position =
             &Position::from_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w").unwrap();
         let mut list = MoveVec::new();
-        pawn_moves::<MoveVec>(position, !EMPTY, !EMPTY, !EMPTY, &mut list);
+        pawn_moves::<MoveVec>(position, !EMPTY, !EMPTY, EMPTY, &mut list);
 
         assert_list_includes_moves(
             &list,
@@ -189,7 +189,7 @@ mod test {
         let position =
             &Position::from_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b").unwrap();
         let mut list = MoveVec::new();
-        pawn_moves::<MoveVec>(position, !EMPTY, !EMPTY, !EMPTY, &mut list);
+        pawn_moves::<MoveVec>(position, !EMPTY, !EMPTY, EMPTY, &mut list);
         assert_list_includes_moves(
             &list,
             &[
@@ -204,7 +204,7 @@ mod test {
             &Position::from_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w").unwrap();
         let mut list = MoveVec::new();
 
-        pawn_moves::<MoveVec>(position, !EMPTY, !EMPTY, !EMPTY, &mut list);
+        pawn_moves::<MoveVec>(position, !EMPTY, !EMPTY, EMPTY, &mut list);
 
         assert_eq!(list.len(), 16);
         assert_list_includes_moves(
@@ -218,7 +218,7 @@ mod test {
             &Position::from_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b").unwrap();
         let mut list = MoveVec::new();
 
-        pawn_moves::<MoveVec>(position, !EMPTY, !EMPTY, !EMPTY, &mut list);
+        pawn_moves::<MoveVec>(position, !EMPTY, !EMPTY, EMPTY, &mut list);
         assert_eq!(list.len(), 16);
         assert_list_includes_moves(
             &list,
@@ -233,14 +233,14 @@ mod test {
         let position = &Position::from_fen("R1Rqkbnr/PPpppppp/8/8/8/8/8/RNBQKBNR w").unwrap();
         let mut list = MoveVec::new();
 
-        pawn_moves::<MoveVec>(position, !EMPTY, !EMPTY, !EMPTY, &mut list);
+        pawn_moves::<MoveVec>(position, !EMPTY, !EMPTY, EMPTY, &mut list);
         assert_eq!(list.len(), 4);
         assert_list_includes_moves(&list, &["b7b8=N", "b7b8=B", "b7b8=R", "b7b8=Q"]);
 
         let position = &Position::from_fen("rnbqkbnr/8/8/8/8/8/PPPpPPPP/RN3BNR b").unwrap();
         let mut list = MoveVec::new();
 
-        pawn_moves::<MoveVec>(position, !EMPTY, !EMPTY, !EMPTY, &mut list);
+        pawn_moves::<MoveVec>(position, !EMPTY, !EMPTY, EMPTY, &mut list);
         assert_eq!(list.len(), 4);
         assert_list_includes_moves(&list, &["d2d1=N", "d2d1=B", "d2d1=R", "d2d1=Q"]);
     }
@@ -250,7 +250,7 @@ mod test {
         let position = &Position::from_fen("rnbqkbnr/8/8/8/8/8/PPPpPPPP/RNBBNR2 b").unwrap();
         let mut list = MoveVec::new();
 
-        pawn_moves::<MoveVec>(position, !EMPTY, !EMPTY, !EMPTY, &mut list);
+        pawn_moves::<MoveVec>(position, !EMPTY, !EMPTY, EMPTY, &mut list);
         assert_eq!(list.len(), 8);
         assert_list_includes_moves(
             &list,

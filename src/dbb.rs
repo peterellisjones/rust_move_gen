@@ -324,7 +324,6 @@ impl DBB {
 #[cfg(test)]
 mod test {
     use super::*;
-    use test;
 
     #[test]
     fn test_bswap() {
