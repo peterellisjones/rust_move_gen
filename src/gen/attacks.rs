@@ -10,6 +10,7 @@ use position::Position;
 use side::Side;
 use square::Square;
 
+#[allow(dead_code)]
 #[inline]
 pub fn slider_non_diag_rays_to_squares(source: BB, attacker: BB, position: &Position) -> BB {
     let empty = position.bb_empty();
@@ -17,6 +18,7 @@ pub fn slider_non_diag_rays_to_squares(source: BB, attacker: BB, position: &Posi
     pin_ray_non_diag(source, empty, attacker)
 }
 
+#[allow(dead_code)]
 #[inline]
 pub fn slider_diag_rays_to_squares(source: BB, attacker: BB, position: &Position) -> BB {
     let empty = position.bb_empty();
@@ -115,6 +117,7 @@ pub fn attacked_squares_ignoring_ep(attacker: Side, position: &Position) -> BB {
     attacked_squares
 }
 
+#[allow(dead_code)]
 pub fn checks_to_sq(sq: Square, attacker: Side, position: &Position) -> BB {
     let occupied = position.bb_occupied();
 

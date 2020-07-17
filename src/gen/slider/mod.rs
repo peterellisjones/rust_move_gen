@@ -74,6 +74,7 @@ pub fn slider_moves<L: MoveList>(
     }
 }
 
+#[allow(dead_code)]
 pub fn non_diag_slider_moves<L: MoveList>(
     position: &Position,
     to_mask: BB,
@@ -94,6 +95,7 @@ pub fn non_diag_slider_moves<L: MoveList>(
     }
 }
 
+#[allow(dead_code)]
 pub fn diag_slider_moves<L: MoveList>(
     position: &Position,
     to_mask: BB,

@@ -30,6 +30,7 @@ const CASTLE_FLAG: u8 = 128;
 const CAPTURE_FLAG: u8 = 64;
 const PROMOTION_FLAG: u8 = 128;
 const EP_CAPTURE_FLAG: u8 = 64;
+#[allow(dead_code)]
 pub const NULL_MOVE: Move = Move { upper: 0, lower: 0 };
 
 /// Represents a move on the chess position. Uses a compact 16 bit representation

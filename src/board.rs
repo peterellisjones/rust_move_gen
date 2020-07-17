@@ -17,6 +17,7 @@ struct StackElem {
 }
 
 impl Board {
+    #[allow(dead_code)]
     pub fn new(fen: &str) -> Board {
         let position = Position::from_fen(fen).unwrap();
 
@@ -26,6 +27,7 @@ impl Board {
         }
     }
 
+    #[allow(dead_code)]
     pub fn position(&self) -> &Position {
         &self.position
     }
@@ -34,6 +36,7 @@ impl Board {
         self.position.hash_key()
     }
 
+    #[allow(dead_code)]
     pub fn depth(&self) -> usize {
         self.stack.len()
     }

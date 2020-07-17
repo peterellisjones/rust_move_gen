@@ -9,10 +9,10 @@ use square::Square;
 use std;
 use std::fmt;
 
-/// ScoredMoveVec is list move vec but calculates the piece-square score of each move as it adds them to the list
+/// ScoredMoveList is list move vec but calculates the piece-square score of each move as it adds them to the list
 /// This is more efficient than calculating scores later
 #[derive(Clone)]
-pub struct ScoredMoveVec<'a> {
+pub struct ScoredMoveList<'a> {
     moves: Vec<(Move, i16)>,
     piece_square_values: &'a [[i16; 64]; 6],
     castle_values: &'a [i16; 2],
@@ -20,19 +20,19 @@ pub struct ScoredMoveVec<'a> {
     stm: Side,
 }
 
-impl<'a> fmt::Display for ScoredMoveVec<'a> {
+impl<'a> fmt::Display for ScoredMoveList<'a> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", self.to_string())
     }
 }
 
-impl<'a> fmt::Debug for ScoredMoveVec<'a> {
+impl<'a> fmt::Debug for ScoredMoveList<'a> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", self.to_string())
     }
 }
 
-impl<'a> MoveList for ScoredMoveVec<'a> {
+impl<'a> MoveList for ScoredMoveList<'a> {
     fn add_moves(&mut self, from: Square, targets: BB, enemy: BB) {
         self.insert_non_captures(from, targets & (!enemy));
         self.insert_captures(from, targets & enemy);
@@ -121,14 +121,15 @@ impl<'a> MoveList for ScoredMoveVec<'a> {
     }
 }
 
-impl<'a> ScoredMoveVec<'a> {
+impl<'a> ScoredMoveList<'a> {
+    #[allow(dead_code)]
     pub fn new(
         piece_square_values: &'a [[i16; 64]; 6],
         castle_values: &'a [i16; 2],
         piece_grid: &'a [Piece; 64],
         stm: Side,
-    ) -> ScoredMoveVec<'a> {
-        ScoredMoveVec {
+    ) -> ScoredMoveList<'a> {
+        ScoredMoveList {
             moves: Vec::<(Move, i16)>::new(),
             piece_square_values: piece_square_values,
             castle_values: castle_values,
@@ -192,6 +193,7 @@ impl<'a> ScoredMoveVec<'a> {
         };
     }
 
+    #[allow(dead_code)]
     pub fn len(&self) -> usize {
         self.moves.len()
     }
@@ -214,7 +216,7 @@ mod test {
         let piece_square_values = [[100i16; 64]; 6];
         let castle_values = [0i16; 2];
 
-        let mut list = ScoredMoveVec::new(
+        let mut list = ScoredMoveList::new(
             &piece_square_values,
             &castle_values,
             position.grid(),
@@ -232,7 +234,7 @@ mod test {
         let piece_square_values = [[100i16; 64]; 6];
         let castle_values = [123i16, 456i16];
 
-        let mut list = ScoredMoveVec::new(
+        let mut list = ScoredMoveList::new(
             &piece_square_values,
             &castle_values,
             position.grid(),
@@ -250,7 +252,7 @@ mod test {
         let piece_square_values = [[100i16; 64]; 6];
         let castle_values = [123i16, 456i16];
 
-        let mut list = ScoredMoveVec::new(
+        let mut list = ScoredMoveList::new(
             &piece_square_values,
             &castle_values,
             position.grid(),
@@ -272,7 +274,7 @@ mod test {
         piece_square_values[PAWN.to_usize()][C2.to_usize()] = 150;
         piece_square_values[PAWN.to_usize()][C4.to_usize()] = 165;
 
-        let mut list = ScoredMoveVec::new(
+        let mut list = ScoredMoveList::new(
             &piece_square_values,
             &castle_values,
             position.grid(),
@@ -296,7 +298,7 @@ mod test {
         piece_square_values[KNIGHT.to_usize()][B1.to_usize()] = 300;
         piece_square_values[KNIGHT.to_usize()][C3.to_usize()] = 333;
 
-        let mut list = ScoredMoveVec::new(
+        let mut list = ScoredMoveList::new(
             &piece_square_values,
             &castle_values,
             position.grid(),
@@ -323,7 +325,7 @@ mod test {
         // pawn on C6 worth 50
         piece_square_values[PAWN.to_usize()][C6.to_usize()] = 50;
 
-        let mut list = ScoredMoveVec::new(
+        let mut list = ScoredMoveList::new(
             &piece_square_values,
             &castle_values,
             position.grid(),
@@ -354,7 +356,7 @@ mod test {
 
             let (mv, score) = {
                 let mut list =
-                    ScoredMoveVec::new(&piece_square_values, &castle_values, position.grid(), stm);
+                    ScoredMoveList::new(&piece_square_values, &castle_values, position.grid(), stm);
 
                 legal_moves(&position, &mut list);
 
@@ -373,7 +375,7 @@ mod test {
         assert_eq!(initial_score + moves_scores, score_after_moves);
     }
 
-    fn assert_list_includes_moves(list: &ScoredMoveVec, moves: &[&'static str]) {
+    fn assert_list_includes_moves(list: &ScoredMoveList, moves: &[&'static str]) {
         for &m in moves.iter() {
             assert!(list
                 .iter()

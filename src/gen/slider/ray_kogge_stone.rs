@@ -8,6 +8,7 @@ use square::Square;
 use dbb::*;
 
 /// calculates the bitboard of pinned pieces
+#[allow(dead_code)]
 #[inline]
 pub fn pinned_pieces(king: BB, empty: BB, enemy_diag: BB, enemy_non_diag: BB) -> BB {
     diag_pinned_pieces(king, empty, enemy_diag)
@@ -71,6 +72,7 @@ fn non_diag_pinned_pieces(king_bb: BB, empty_bb: BB, enemy_rooks: BB) -> BB {
 }
 
 #[cfg(not(target_feature = "sse3"))]
+#[allow(dead_code)]
 #[inline]
 pub fn diag_pin_rays_including_attackers(source: BB, empty: BB, enemy_diag_pieces: BB) -> (BB, BB) {
     let north_west =
@@ -86,6 +88,7 @@ pub fn diag_pin_rays_including_attackers(source: BB, empty: BB, enemy_diag_piece
 }
 
 #[cfg(target_feature = "sse3")]
+#[allow(dead_code)]
 #[inline]
 pub fn diag_pin_rays_including_attackers(
     source_bb: BB,
@@ -109,6 +112,7 @@ pub fn diag_pin_rays_including_attackers(
 }
 
 #[cfg(not(target_feature = "sse3"))]
+#[allow(dead_code)]
 #[inline]
 pub fn non_diag_pin_rays_including_attackers(
     source: BB,
@@ -124,6 +128,7 @@ pub fn non_diag_pin_rays_including_attackers(
 }
 
 #[cfg(target_feature = "sse3")]
+#[allow(dead_code)]
 #[inline]
 pub fn non_diag_pin_rays_including_attackers(
     source_bb: BB,
