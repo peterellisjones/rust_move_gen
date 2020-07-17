@@ -49,7 +49,7 @@ fn main() {
   let elapsed = now.elapsed();
   let sec = (elapsed.as_secs() as f64) + (elapsed.subsec_nanos() as f64 / 1000_000_000.0);
   let nps = move_count as f64 / sec;
-  
+
   println!(
     "Done. Total moves: {} ({:5} seconds, {:0} NPS)",
     move_count, sec, nps
