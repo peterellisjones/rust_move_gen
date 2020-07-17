@@ -2,329 +2,264 @@ use bb::BB;
 
 pub struct Offset {
     pub inner_mask: BB,
-    pub outer_mask: BB,
     pub base_offset: u32,
 }
 
 pub const BISHOP_OFFSETS: [Offset; 64] = [
     Offset {
         inner_mask: BB(18049651735527936),
-        outer_mask: BB(9241421688590303744),
         base_offset: 0,
     },
     Offset {
         inner_mask: BB(70506452091904),
-        outer_mask: BB(36099303471056128),
         base_offset: 64,
     },
     Offset {
         inner_mask: BB(275415828992),
-        outer_mask: BB(141012904249856),
         base_offset: 96,
     },
     Offset {
         inner_mask: BB(1075975168),
-        outer_mask: BB(550848566272),
         base_offset: 128,
     },
     Offset {
         inner_mask: BB(38021120),
-        outer_mask: BB(6480472064),
         base_offset: 160,
     },
     Offset {
         inner_mask: BB(8657588224),
-        outer_mask: BB(1108177604608),
         base_offset: 192,
     },
     Offset {
         inner_mask: BB(2216338399232),
-        outer_mask: BB(283691315142656),
         base_offset: 224,
     },
     Offset {
         inner_mask: BB(567382630219776),
-        outer_mask: BB(72624976668147712),
         base_offset: 256,
     },
     Offset {
         inner_mask: BB(9024825867763712),
-        outer_mask: BB(4620710844295151618),
         base_offset: 320,
     },
     Offset {
         inner_mask: BB(18049651735527424),
-        outer_mask: BB(9241421688590368773),
         base_offset: 352,
     },
     Offset {
         inner_mask: BB(70506452221952),
-        outer_mask: BB(36099303487963146),
         base_offset: 384,
     },
     Offset {
         inner_mask: BB(275449643008),
-        outer_mask: BB(141017232965652),
         base_offset: 416,
     },
     Offset {
         inner_mask: BB(9733406720),
-        outer_mask: BB(1659000848424),
         base_offset: 448,
     },
     Offset {
         inner_mask: BB(2216342585344),
-        outer_mask: BB(283693466779728),
         base_offset: 480,
     },
     Offset {
         inner_mask: BB(567382630203392),
-        outer_mask: BB(72624976676520096),
         base_offset: 512,
     },
     Offset {
         inner_mask: BB(1134765260406784),
-        outer_mask: BB(145249953336262720),
         base_offset: 544,
     },
     Offset {
         inner_mask: BB(4512412933816832),
-        outer_mask: BB(2310355422147510788),
         base_offset: 576,
     },
     Offset {
         inner_mask: BB(9024825867633664),
-        outer_mask: BB(4620710844311799048),
         base_offset: 608,
     },
     Offset {
         inner_mask: BB(18049651768822272),
-        outer_mask: BB(9241421692918565393),
         base_offset: 640,
     },
     Offset {
         inner_mask: BB(70515108615168),
-        outer_mask: BB(36100411639206946),
         base_offset: 768,
     },
     Offset {
         inner_mask: BB(2491752130560),
-        outer_mask: BB(424704217196612),
         base_offset: 896,
     },
     Offset {
         inner_mask: BB(567383701868544),
-        outer_mask: BB(72625527495610504),
         base_offset: 1024,
     },
     Offset {
         inner_mask: BB(1134765256220672),
-        outer_mask: BB(145249955479592976),
         base_offset: 1152,
     },
     Offset {
         inner_mask: BB(2269530512441344),
-        outer_mask: BB(290499906664153120),
         base_offset: 1184,
     },
     Offset {
         inner_mask: BB(2256206450263040),
-        outer_mask: BB(1155177711057110024),
         base_offset: 1216,
     },
     Offset {
         inner_mask: BB(4512412900526080),
-        outer_mask: BB(2310355426409252880),
         base_offset: 1248,
     },
     Offset {
         inner_mask: BB(9024834391117824),
-        outer_mask: BB(4620711952330133792),
         base_offset: 1280,
     },
     Offset {
         inner_mask: BB(18051867805491712),
-        outer_mask: BB(9241705379636978241),
         base_offset: 1408,
     },
     Offset {
         inner_mask: BB(637888545440768),
-        outer_mask: BB(108724279602332802),
         base_offset: 1920,
     },
     Offset {
         inner_mask: BB(1135039602493440),
-        outer_mask: BB(145390965166737412),
         base_offset: 2432,
     },
     Offset {
         inner_mask: BB(2269529440784384),
-        outer_mask: BB(290500455356698632),
         base_offset: 2560,
     },
     Offset {
         inner_mask: BB(4539058881568768),
-        outer_mask: BB(580999811184992272),
         base_offset: 2592,
     },
     Offset {
         inner_mask: BB(1128098963916800),
-        outer_mask: BB(577588851267340304),
         base_offset: 2624,
     },
     Offset {
         inner_mask: BB(2256197927833600),
-        outer_mask: BB(1155178802063085600),
         base_offset: 2656,
     },
     Offset {
         inner_mask: BB(4514594912477184),
-        outer_mask: BB(2310639079102947392),
         base_offset: 2688,
     },
     Offset {
         inner_mask: BB(9592139778506752),
-        outer_mask: BB(4693335752243822976),
         base_offset: 2816,
     },
     Offset {
         inner_mask: BB(19184279556981248),
-        outer_mask: BB(9386671504487645697),
         base_offset: 3328,
     },
     Offset {
         inner_mask: BB(2339762086609920),
-        outer_mask: BB(326598935265674242),
         base_offset: 3840,
     },
     Offset {
         inner_mask: BB(4538784537380864),
-        outer_mask: BB(581140276476643332),
         base_offset: 3968,
     },
     Offset {
         inner_mask: BB(9077569074761728),
-        outer_mask: BB(1161999073681608712),
         base_offset: 4000,
     },
     Offset {
         inner_mask: BB(562958610993152),
-        outer_mask: BB(288793334762704928),
         base_offset: 4032,
     },
     Offset {
         inner_mask: BB(1125917221986304),
-        outer_mask: BB(577868148797087808),
         base_offset: 4064,
     },
     Offset {
         inner_mask: BB(2814792987328512),
-        outer_mask: BB(1227793891648880768),
         base_offset: 4096,
     },
     Offset {
         inner_mask: BB(5629586008178688),
-        outer_mask: BB(2455587783297826816),
         base_offset: 4224,
     },
     Offset {
         inner_mask: BB(11259172008099840),
-        outer_mask: BB(4911175566595588352),
         base_offset: 4352,
     },
     Offset {
         inner_mask: BB(22518341868716544),
-        outer_mask: BB(9822351133174399489),
         base_offset: 4480,
     },
     Offset {
         inner_mask: BB(9007336962655232),
-        outer_mask: BB(1197958188344280066),
         base_offset: 4608,
     },
     Offset {
         inner_mask: BB(18014673925310464),
-        outer_mask: BB(2323857683139004420),
         base_offset: 4640,
     },
     Offset {
         inner_mask: BB(2216338399232),
-        outer_mask: BB(144117404414255168),
         base_offset: 4672,
     },
     Offset {
         inner_mask: BB(4432676798464),
-        outer_mask: BB(360293502378066048),
         base_offset: 4704,
     },
     Offset {
         inner_mask: BB(11064376819712),
-        outer_mask: BB(720587009051099136),
         base_offset: 4736,
     },
     Offset {
         inner_mask: BB(22137335185408),
-        outer_mask: BB(1441174018118909952),
         base_offset: 4768,
     },
     Offset {
         inner_mask: BB(44272556441600),
-        outer_mask: BB(2882348036221108224),
         base_offset: 4800,
     },
     Offset {
         inner_mask: BB(87995357200384),
-        outer_mask: BB(5764696068147249408),
         base_offset: 4832,
     },
     Offset {
         inner_mask: BB(35253226045952),
-        outer_mask: BB(11529391036782871041),
         base_offset: 4864,
     },
     Offset {
         inner_mask: BB(70506452091904),
-        outer_mask: BB(4611756524879479810),
         base_offset: 4896,
     },
     Offset {
         inner_mask: BB(567382630219776),
-        outer_mask: BB(567382630219904),
         base_offset: 4928,
     },
     Offset {
         inner_mask: BB(1134765260406784),
-        outer_mask: BB(1416240237150208),
         base_offset: 4992,
     },
     Offset {
         inner_mask: BB(2832480465846272),
-        outer_mask: BB(2833579985862656),
         base_offset: 5024,
     },
     Offset {
         inner_mask: BB(5667157807464448),
-        outer_mask: BB(5667164249915392),
         base_offset: 5056,
     },
     Offset {
         inner_mask: BB(11333774449049600),
-        outer_mask: BB(11334324221640704),
         base_offset: 5088,
     },
     Offset {
         inner_mask: BB(22526811443298304),
-        outer_mask: BB(22667548931719168),
         base_offset: 5120,
     },
     Offset {
         inner_mask: BB(9024825867763712),
-        outer_mask: BB(45053622886727936),
         base_offset: 5152,
     },
     Offset {
         inner_mask: BB(18049651735527936),
-        outer_mask: BB(18049651735527937),
         base_offset: 5184,
     },
 ];
@@ -332,322 +267,258 @@ pub const BISHOP_OFFSETS: [Offset; 64] = [
 pub const ROOK_OFFSETS: [Offset; 64] = [
     Offset {
         inner_mask: BB(282578800148862),
-        outer_mask: BB(72340172838076926),
         base_offset: 5248,
     },
     Offset {
         inner_mask: BB(565157600297596),
-        outer_mask: BB(144680345676153597),
         base_offset: 9344,
     },
     Offset {
         inner_mask: BB(1130315200595066),
-        outer_mask: BB(289360691352306939),
         base_offset: 11392,
     },
     Offset {
         inner_mask: BB(2260630401190006),
-        outer_mask: BB(578721382704613623),
         base_offset: 13440,
     },
     Offset {
         inner_mask: BB(4521260802379886),
-        outer_mask: BB(1157442765409226991),
         base_offset: 15488,
     },
     Offset {
         inner_mask: BB(9042521604759646),
-        outer_mask: BB(2314885530818453727),
         base_offset: 17536,
     },
     Offset {
         inner_mask: BB(18085043209519166),
-        outer_mask: BB(4629771061636907199),
         base_offset: 19584,
     },
     Offset {
         inner_mask: BB(36170086419038334),
-        outer_mask: BB(9259542123273814143),
         base_offset: 21632,
     },
     Offset {
         inner_mask: BB(282578800180736),
-        outer_mask: BB(72340172838141441),
         base_offset: 25728,
     },
     Offset {
         inner_mask: BB(565157600328704),
-        outer_mask: BB(144680345676217602),
         base_offset: 27776,
     },
     Offset {
         inner_mask: BB(1130315200625152),
-        outer_mask: BB(289360691352369924),
         base_offset: 28800,
     },
     Offset {
         inner_mask: BB(2260630401218048),
-        outer_mask: BB(578721382704674568),
         base_offset: 29824,
     },
     Offset {
         inner_mask: BB(4521260802403840),
-        outer_mask: BB(1157442765409283856),
         base_offset: 30848,
     },
     Offset {
         inner_mask: BB(9042521604775424),
-        outer_mask: BB(2314885530818502432),
         base_offset: 31872,
     },
     Offset {
         inner_mask: BB(18085043209518592),
-        outer_mask: BB(4629771061636939584),
         base_offset: 32896,
     },
     Offset {
         inner_mask: BB(36170086419037696),
-        outer_mask: BB(9259542123273813888),
         base_offset: 33920,
     },
     Offset {
         inner_mask: BB(282578808340736),
-        outer_mask: BB(72340172854657281),
         base_offset: 35968,
     },
     Offset {
         inner_mask: BB(565157608292864),
-        outer_mask: BB(144680345692602882),
         base_offset: 38016,
     },
     Offset {
         inner_mask: BB(1130315208328192),
-        outer_mask: BB(289360691368494084),
         base_offset: 39040,
     },
     Offset {
         inner_mask: BB(2260630408398848),
-        outer_mask: BB(578721382720276488),
         base_offset: 40064,
     },
     Offset {
         inner_mask: BB(4521260808540160),
-        outer_mask: BB(1157442765423841296),
         base_offset: 41088,
     },
     Offset {
         inner_mask: BB(9042521608822784),
-        outer_mask: BB(2314885530830970912),
         base_offset: 42112,
     },
     Offset {
         inner_mask: BB(18085043209388032),
-        outer_mask: BB(4629771061645230144),
         base_offset: 43136,
     },
     Offset {
         inner_mask: BB(36170086418907136),
-        outer_mask: BB(9259542123273748608),
         base_offset: 44160,
     },
     Offset {
         inner_mask: BB(282580897300736),
-        outer_mask: BB(72340177082712321),
         base_offset: 46208,
     },
     Offset {
         inner_mask: BB(565159647117824),
-        outer_mask: BB(144680349887234562),
         base_offset: 48256,
     },
     Offset {
         inner_mask: BB(1130317180306432),
-        outer_mask: BB(289360695496279044),
         base_offset: 49280,
     },
     Offset {
         inner_mask: BB(2260632246683648),
-        outer_mask: BB(578721386714368008),
         base_offset: 50304,
     },
     Offset {
         inner_mask: BB(4521262379438080),
-        outer_mask: BB(1157442769150545936),
         base_offset: 51328,
     },
     Offset {
         inner_mask: BB(9042522644946944),
-        outer_mask: BB(2314885534022901792),
         base_offset: 52352,
     },
     Offset {
         inner_mask: BB(18085043175964672),
-        outer_mask: BB(4629771063767613504),
         base_offset: 53376,
     },
     Offset {
         inner_mask: BB(36170086385483776),
-        outer_mask: BB(9259542123257036928),
         base_offset: 54400,
     },
     Offset {
         inner_mask: BB(283115671060736),
-        outer_mask: BB(72341259464802561),
         base_offset: 56448,
     },
     Offset {
         inner_mask: BB(565681586307584),
-        outer_mask: BB(144681423712944642),
         base_offset: 58496,
     },
     Offset {
         inner_mask: BB(1130822006735872),
-        outer_mask: BB(289361752209228804),
         base_offset: 59520,
     },
     Offset {
         inner_mask: BB(2261102847592448),
-        outer_mask: BB(578722409201797128),
         base_offset: 60544,
     },
     Offset {
         inner_mask: BB(4521664529305600),
-        outer_mask: BB(1157443723186933776),
         base_offset: 61568,
     },
     Offset {
         inner_mask: BB(9042787892731904),
-        outer_mask: BB(2314886351157207072),
         base_offset: 62592,
     },
     Offset {
         inner_mask: BB(18085034619584512),
-        outer_mask: BB(4629771607097753664),
         base_offset: 63616,
     },
     Offset {
         inner_mask: BB(36170077829103616),
-        outer_mask: BB(9259542118978846848),
         base_offset: 64640,
     },
     Offset {
         inner_mask: BB(420017753620736),
-        outer_mask: BB(72618349279904001),
         base_offset: 66688,
     },
     Offset {
         inner_mask: BB(699298018886144),
-        outer_mask: BB(144956323094725122),
         base_offset: 68736,
     },
     Offset {
         inner_mask: BB(1260057572672512),
-        outer_mask: BB(289632270724367364),
         base_offset: 69760,
     },
     Offset {
         inner_mask: BB(2381576680245248),
-        outer_mask: BB(578984165983651848),
         base_offset: 70784,
     },
     Offset {
         inner_mask: BB(4624614895390720),
-        outer_mask: BB(1157687956502220816),
         base_offset: 71808,
     },
     Offset {
         inner_mask: BB(9110691325681664),
-        outer_mask: BB(2315095537539358752),
         base_offset: 72832,
     },
     Offset {
         inner_mask: BB(18082844186263552),
-        outer_mask: BB(4629910699613634624),
         base_offset: 73856,
     },
     Offset {
         inner_mask: BB(36167887395782656),
-        outer_mask: BB(9259541023762186368),
         base_offset: 74880,
     },
     Offset {
         inner_mask: BB(35466950888980736),
-        outer_mask: BB(143553341945872641),
         base_offset: 76928,
     },
     Offset {
         inner_mask: BB(34905104758997504),
-        outer_mask: BB(215330564830528002),
         base_offset: 78976,
     },
     Offset {
         inner_mask: BB(34344362452452352),
-        outer_mask: BB(358885010599838724),
         base_offset: 80000,
     },
     Offset {
         inner_mask: BB(33222877839362048),
-        outer_mask: BB(645993902138460168),
         base_offset: 81024,
     },
     Offset {
         inner_mask: BB(30979908613181440),
-        outer_mask: BB(1220211685215703056),
         base_offset: 82048,
     },
     Offset {
         inner_mask: BB(26493970160820224),
-        outer_mask: BB(2368647251370188832),
         base_offset: 83072,
     },
     Offset {
         inner_mask: BB(17522093256097792),
-        outer_mask: BB(4665518383679160384),
         base_offset: 84096,
     },
     Offset {
         inner_mask: BB(35607136465616896),
-        outer_mask: BB(9259260648297103488),
         base_offset: 85120,
     },
     Offset {
         inner_mask: BB(9079539427579068672),
-        outer_mask: BB(18302911464433844481),
         base_offset: 87168,
     },
     Offset {
         inner_mask: BB(8935706818303361536),
-        outer_mask: BB(18231136449196065282),
         base_offset: 91264,
     },
     Offset {
         inner_mask: BB(8792156787827803136),
-        outer_mask: BB(18087586418720506884),
         base_offset: 93312,
     },
     Offset {
         inner_mask: BB(8505056726876686336),
-        outer_mask: BB(17800486357769390088),
         base_offset: 95360,
     },
     Offset {
         inner_mask: BB(7930856604974452736),
-        outer_mask: BB(17226286235867156496),
         base_offset: 97408,
     },
     Offset {
         inner_mask: BB(6782456361169985536),
-        outer_mask: BB(16077885992062689312),
         base_offset: 99456,
     },
     Offset {
         inner_mask: BB(4485655873561051136),
-        outer_mask: BB(13781085504453754944),
         base_offset: 101504,
     },
     Offset {
         inner_mask: BB(9115426935197958144),
-        outer_mask: BB(9187484529235886208),
         base_offset: 103552,
     },
 ];
