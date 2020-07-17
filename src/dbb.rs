@@ -49,6 +49,15 @@ impl BitXor for DBB {
     }
 }
 
+impl Shl<u32> for DBB {
+    type Output = DBB;
+
+    #[inline]
+    fn shl(self, amount: u32) -> DBB {
+        DBB(self.0 << amount)
+    }
+}
+
 const NOT_FILE_A: DBB = DBB(u64x2::new(!0x0101010101010101u64, !0x0101010101010101u64));
 const NOT_FILE_H: DBB = DBB(u64x2::new(
     !(0x0101010101010101u64 << 7),
@@ -71,9 +80,14 @@ impl DBB {
         (BB(self.0.extract(0)), BB(self.0.extract(1)))
     }
 
+    pub fn to_byte_array(&self) -> [u8; 16] {
+        let ret: [u8; 16] = unsafe { transmute(self.0) };
+        ret
+    }
+
     #[inline]
     pub fn bswap(&self) -> DBB {
-        let bytes: u8x16 = u8x16::splat(0);
+        let bytes: u8x16 = unsafe { transmute(self.0) };
         let shuffled: u8x16 = shuffle!(
             bytes,
             [7, 6, 5, 4, 3, 2, 1, 0, 15, 14, 13, 12, 11, 10, 9, 8]
@@ -304,5 +318,22 @@ impl DBB {
         let gen = self.occluded_south_fill(empty);
 
         DBB(gen.0 | (gen.0 >> 8))
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    use test;
+
+    #[test]
+    fn test_bswap() {
+        //bswap should reverse bytes in each u64
+        let input = DBB(u64x2::new(!0x0102030405060708u64, !0x0203040506070809u64));
+        let (expected_left, expected_right) =
+            (BB(!0x0807060504030201u64), BB(!0x0908070605040302u64));
+        let (output_left, output_right) = input.bswap().extract();
+        assert_eq!(output_right, expected_right);
+        assert_eq!(output_left, expected_left);
     }
 }
