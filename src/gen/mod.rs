@@ -67,7 +67,7 @@ pub fn legal_moves<L: MoveList>(position: &Position, list: &mut L) -> bool {
 
     let move_mask = capture_mask | push_mask;
 
-    // generate moves for non-pinned knights (pinned nights can't move)
+    // generate moves for non-pinned knights (pinned knights can't move)
     knight_moves(position, move_mask, !pinned, list);
 
     // generate moves for pinned and unpinned sliders
