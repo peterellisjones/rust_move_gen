@@ -45,7 +45,16 @@ impl<'a> MoveList for ScoredMoveVec<'a> {
     }
 
     fn add_pawn_ep_capture(&mut self, from: Square, to: Square) {
-        let score = 0i16;
+        let idx_mod = if self.stm == WHITE { 0 } else { 56 };
+        let from_score = self.piece_square_score(PAWN, from, idx_mod);
+        let to_score = self.piece_square_score(PAWN, to, idx_mod);
+        // capture square is the file of the 'to' square
+        // and the rank of the 'from' square
+        let capture_sq = from.along_row_with_col(to);
+        let capture_score = self.piece_square_score(PAWN, capture_sq, idx_mod ^ 56);
+
+        let score = -from_score + to_score + capture_score;
+
         self.moves.push((Move::new_ep_capture(from, to), score));
     }
 
