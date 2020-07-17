@@ -2,13 +2,9 @@
 use std::ops::*;
 
 #[cfg(target_feature = "sse3")]
-extern crate simd;
+extern crate packed_simd;
 #[cfg(target_feature = "sse3")]
-use self::simd::u8x16;
-#[cfg(target_feature = "sse3")]
-use self::simd::x86::sse2::*;
-#[cfg(target_feature = "sse3")]
-use self::simd::x86::ssse3::Ssse3U8x16;
+use self::packed_simd::*;
 
 use bb::BB;
 use std::mem::transmute;
@@ -53,15 +49,6 @@ impl BitXor for DBB {
     }
 }
 
-impl Shl<usize> for DBB {
-    type Output = DBB;
-
-    #[inline]
-    fn shl(self, amount: usize) -> DBB {
-        DBB(self.0 << amount)
-    }
-}
-
 const NOT_FILE_A: DBB = DBB(u64x2::new(!0x0101010101010101u64, !0x0101010101010101u64));
 const NOT_FILE_H: DBB = DBB(u64x2::new(
     !(0x0101010101010101u64 << 7),
@@ -86,12 +73,11 @@ impl DBB {
 
     #[inline]
     pub fn bswap(&self) -> DBB {
-        // indices to swap bytes for two 64bit integers
-        const BYTE_SWAP_INDICES: u8x16 =
-            u8x16::new(7, 6, 5, 4, 3, 2, 1, 0, 15, 14, 13, 12, 11, 10, 9, 8);
-
-        let bytes: u8x16 = unsafe { transmute(self.0) };
-        let shuffled = bytes.shuffle_bytes(BYTE_SWAP_INDICES);
+        let bytes: u8x16 = u8x16::splat(0);
+        let shuffled: u8x16 = shuffle!(
+            bytes,
+            [7, 6, 5, 4, 3, 2, 1, 0, 15, 14, 13, 12, 11, 10, 9, 8]
+        );
         let ret: u64x2 = unsafe { transmute(shuffled) };
         DBB(ret)
     }

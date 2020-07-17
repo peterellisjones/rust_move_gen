@@ -7,10 +7,10 @@ use dbb::*;
 use square::Square;
 
 #[cfg(target_feature = "sse3")]
-extern crate simd;
+extern crate packed_simd;
 
 #[cfg(target_feature = "sse3")]
-use self::simd::x86::sse2::*;
+use self::packed_simd::*;
 
 #[inline]
 #[allow(dead_code)]
@@ -80,7 +80,7 @@ pub fn bishop_attacks_from_sq(from: Square, occupied: BB) -> BB {
 #[cfg(target_feature = "sse3")]
 #[inline]
 pub fn bishop_attacks_from_sq(from: Square, occupied_bb: BB) -> BB {
-    let source = DBB::splat(BB(1)) << from.to_usize();
+    let source = DBB::splat(BB(1) << from.to_usize());
     let source_rev = source.bswap();
     let occupied = DBB::splat(occupied_bb);
 
