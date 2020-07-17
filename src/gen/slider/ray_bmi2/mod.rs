@@ -14,17 +14,21 @@ pub use self::gen::generate_offsets;
 use self::consts::*;
 use std::arch::x86_64::{_pdep_u64, _pext_u64};
 
+use super::consts::rook_rays;
+use super::consts::bishop_rays;
+
 #[inline]
 pub fn bishop_attacks_from_sq(from: Square, occupied: BB) -> BB {
     return unsafe {
         let offset = BISHOP_OFFSETS.get_unchecked(from.to_usize());
+        let outer_mask = bishop_rays(from);
 
         let idx =
             (offset.base_offset as usize) + (_pext_u64(occupied.0, offset.inner_mask.0) as usize);
 
         let attack_indexes = *SHARED_ATTACK_INDICES.get_unchecked(idx);
 
-        BB(_pdep_u64(attack_indexes as u64, offset.outer_mask.0))
+        BB(_pdep_u64(attack_indexes as u64, outer_mask.0))
     };
 }
 
@@ -32,13 +36,14 @@ pub fn bishop_attacks_from_sq(from: Square, occupied: BB) -> BB {
 pub fn rook_attacks_from_sq(from: Square, occupied: BB) -> BB {
     return unsafe {
         let offset = ROOK_OFFSETS.get_unchecked(from.to_usize());
+        let outer_mask = rook_rays(from);
 
         let idx =
             (offset.base_offset as usize) + (_pext_u64(occupied.0, offset.inner_mask.0) as usize);
 
         let attack_indexes = *SHARED_ATTACK_INDICES.get_unchecked(idx);
 
-        BB(_pdep_u64(attack_indexes as u64, offset.outer_mask.0))
+        BB(_pdep_u64(attack_indexes as u64, outer_mask.0))
     };
 }
 
