@@ -10,17 +10,18 @@ pub struct Piece(Internal);
 const CHARS: [char; 12] = ['B', 'b', 'Q', 'q', 'R', 'r', 'N', 'n', 'P', 'p', 'K', 'k'];
 // const SYMBOLS: [char; 14] = ['♙', '♟', '♘', '♞', '♗', '♝', '♖', '♜',
 //                             '♕', '♛', '♔', '♚', '.'];
+
 const NAMES: [&'static str; 12] = [
-    "white bishop",
-    "black bishop",
-    "white queen",
-    "black queen",
-    "white rook",
-    "black rook",
-    "white knight",
-    "black knight",
     "white pawn",
     "black pawn",
+    "white knight",
+    "black knight",
+    "white bishop",
+    "black bishop",
+    "white rook",
+    "black rook",
+    "white queen",
+    "black queen",
     "white king",
     "black king",
 ];
@@ -47,6 +48,39 @@ impl Kind {
 
     pub fn to_char(&self) -> char {
         CHARS[self.to_usize() << 1]
+    }
+
+    pub fn iter() -> KindsIter {
+        KindsIter(Kind(0))
+    }
+
+    pub fn to_string(&self) -> &'static str {
+        KIND_NAMES[self.to_usize()]
+    }
+
+    pub fn string_plural(&self) -> String {
+        KIND_NAMES[self.to_usize()].to_string() + &"s"
+    }
+}
+
+const KIND_NAMES: [&'static str; 6] = ["pawn", "knight", "bishop", "rook", "queen", "king"];
+
+#[derive(Debug)]
+pub struct KindsIter(Kind);
+
+impl Iterator for KindsIter {
+    type Item = Kind;
+
+    fn next(&mut self) -> Option<Kind> {
+        let kd = self.0;
+
+        if kd >= KING {
+            return None;
+        }
+
+        (self.0).0 += 1;
+
+        Some(kd)
     }
 }
 

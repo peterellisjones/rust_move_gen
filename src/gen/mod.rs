@@ -14,12 +14,11 @@ use self::pinned::*;
 use self::slider::consts::squares_between;
 use self::slider::*;
 
+use self::attacks::king_danger_squares;
 use bb::EMPTY;
 use mv_list::MoveList;
 use piece::KING;
 use position::Position;
-
-pub use self::attacks::king_danger_squares;
 
 /// Adds legal moves to the provided MoveList. Returns true if mover is in check
 pub fn legal_moves<L: MoveList>(position: &Position, list: &mut L) -> bool {
