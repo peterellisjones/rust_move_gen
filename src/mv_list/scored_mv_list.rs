@@ -375,8 +375,6 @@ mod test {
 
         legal_moves(&position, &mut list);
 
-        println!("{}", list);
-
         assert_list_includes_moves(&list, &["b8xc6 (83)"]);
     }
 
