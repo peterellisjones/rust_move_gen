@@ -4,7 +4,6 @@ use castling_rights::CastlingRights;
 use mv_list::MoveList;
 use position::Position;
 
-#[inline]
 pub fn castles<L: MoveList>(position: &Position, attacks: BB, list: &mut L) {
     const CASTLE_BLOCKING_SQUARES: [[BB; 2]; 2] = [
         [

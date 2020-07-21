@@ -17,7 +17,6 @@ use std::arch::x86_64::{_pdep_u64, _pext_u64};
 use super::consts::rook_rays;
 use super::consts::bishop_rays;
 
-#[inline]
 pub fn bishop_attacks_from_sq(from: Square, occupied: BB) -> BB {
     return unsafe {
         let offset = BISHOP_OFFSETS.get_unchecked(from.to_usize());
@@ -32,7 +31,6 @@ pub fn bishop_attacks_from_sq(from: Square, occupied: BB) -> BB {
     };
 }
 
-#[inline]
 pub fn rook_attacks_from_sq(from: Square, occupied: BB) -> BB {
     return unsafe {
         let offset = ROOK_OFFSETS.get_unchecked(from.to_usize());
@@ -47,7 +45,6 @@ pub fn rook_attacks_from_sq(from: Square, occupied: BB) -> BB {
     };
 }
 
-#[inline]
 #[allow(dead_code)]
 pub fn rook_attacks(from: BB, occupied: BB) -> BB {
     let mut attacks = EMPTY;
@@ -57,7 +54,6 @@ pub fn rook_attacks(from: BB, occupied: BB) -> BB {
     attacks
 }
 
-#[inline]
 #[allow(dead_code)]
 pub fn bishop_attacks(from: BB, occupied: BB) -> BB {
     let mut attacks = EMPTY;

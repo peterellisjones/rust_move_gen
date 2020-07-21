@@ -12,7 +12,6 @@ extern crate packed_simd;
 #[cfg(target_feature = "sse3")]
 use self::packed_simd::*;
 
-#[inline]
 #[allow(dead_code)]
 pub fn rook_attacks(from: BB, occupied: BB) -> BB {
     let mut attacks = EMPTY;
@@ -22,13 +21,11 @@ pub fn rook_attacks(from: BB, occupied: BB) -> BB {
     attacks
 }
 
-#[inline]
 #[allow(dead_code)]
 pub fn rook_attacks_from_sq(from: Square, occupied: BB) -> BB {
     file_attacks_from_sq(from, occupied) | rank_attacks_from_sq(from, occupied)
 }
 
-#[inline]
 pub fn file_attacks_from_sq(from: Square, occupied: BB) -> BB {
     let source = BB::new(from);
 
@@ -38,7 +35,6 @@ pub fn file_attacks_from_sq(from: Square, occupied: BB) -> BB {
     ((forward - source) ^ (backward - source.bswap()).bswap()) & filemask
 }
 
-#[inline]
 pub fn rank_attacks_from_sq(from: Square, occupied: BB) -> BB {
     let rowx8 = from.rowx8() as usize;
     let col = from.col() as usize;
@@ -48,7 +44,6 @@ pub fn rank_attacks_from_sq(from: Square, occupied: BB) -> BB {
     BB((attacks as u64) << rowx8)
 }
 
-#[inline]
 #[allow(dead_code)]
 pub fn bishop_attacks(from: BB, occupied: BB) -> BB {
     let mut attacks = EMPTY;
@@ -59,7 +54,6 @@ pub fn bishop_attacks(from: BB, occupied: BB) -> BB {
 }
 
 #[cfg(not(target_feature = "sse3"))]
-#[inline]
 pub fn bishop_attacks_from_sq(from: Square, occupied: BB) -> BB {
     let source = BB::new(from);
 
@@ -78,7 +72,6 @@ pub fn bishop_attacks_from_sq(from: Square, occupied: BB) -> BB {
 }
 
 #[cfg(target_feature = "sse3")]
-#[inline]
 pub fn bishop_attacks_from_sq(from: Square, occupied_bb: BB) -> BB {
     let source = DBB::splat(BB(1) << from.to_usize());
     let source_rev = source.bswap();
@@ -101,7 +94,6 @@ pub fn bishop_attacks_from_sq(from: Square, occupied_bb: BB) -> BB {
 }
 
 #[cfg(not(target_feature = "sse3"))]
-#[inline]
 pub fn diagonals_from_sq(sq: Square) -> BB {
     unsafe {
         return *DIAGONALS.get_unchecked(sq.to_usize());
@@ -109,7 +101,6 @@ pub fn diagonals_from_sq(sq: Square) -> BB {
 }
 
 #[cfg(not(target_feature = "sse3"))]
-#[inline]
 pub fn anti_diagonals_from_sq(sq: Square) -> BB {
     unsafe {
         return *ANTI_DIAGONALS.get_unchecked(sq.to_usize());

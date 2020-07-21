@@ -17,7 +17,6 @@ const CASTLE_MASKS: [BB; 4] = [
 
 impl Position {
     /// Returns piece captured and square if any
-    #[inline]
     pub fn make(&mut self, mv: Move) -> Option<(Piece, Square)> {
         let stm = self.state.stm;
         let initial_state = self.state.clone();
@@ -105,7 +104,6 @@ impl Position {
         captured
     }
 
-    #[inline]
     pub fn unmake(
         &mut self,
         mv: Move,
@@ -134,7 +132,6 @@ impl Position {
         }
     }
 
-    #[inline]
     fn unmake_castle(&mut self, castle: Castle, stm: Side) {
         let (to, from) = castle_king_squares(stm, castle);
         self.move_piece(from, to);
@@ -142,7 +139,6 @@ impl Position {
         self.move_piece(from, to);
     }
 
-    #[inline]
     fn make_castle(&mut self, castle: Castle, stm: Side) {
         let (from, to) = castle_king_squares(stm, castle);
         self.move_piece(from, to);

@@ -48,7 +48,6 @@ pub fn bishop_attacks_from_sq(from: Square, occupied: BB) -> BB {
     attacks
 }
 
-#[inline]
 #[allow(dead_code)]
 pub fn rook_attacks(from: BB, occupied: BB) -> BB {
     let mut attacks = EMPTY;
@@ -58,7 +57,6 @@ pub fn rook_attacks(from: BB, occupied: BB) -> BB {
     attacks
 }
 
-#[inline]
 #[allow(dead_code)]
 pub fn bishop_attacks(from: BB, occupied: BB) -> BB {
     let mut attacks = EMPTY;
@@ -93,5 +91,4 @@ mod test {
     fn bench_multiple_bishop_attacks(b: &mut test::Bencher) {
         bench_attacks_from_bb(b, bishop_attacks);
     }
-
 }

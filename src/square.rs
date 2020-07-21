@@ -147,76 +147,62 @@ pub const G8: Square = Square(62);
 pub const H8: Square = Square(63);
 
 impl Square {
-    #[inline]
     pub fn new(s: Internal) -> Square {
         Square(s)
     }
 
-    #[inline]
     pub const fn to_u8(&self) -> u8 {
         self.0 as u8
     }
 
-    #[inline]
     pub fn to_i32(&self) -> i32 {
         self.0 as i32
     }
 
-    #[inline]
     pub fn to_u32(&self) -> u32 {
         self.0 as u32
     }
 
-    #[inline]
     pub fn raw(&self) -> Internal {
         self.0
     }
 
-    #[inline]
     pub fn same_file(&self, other: Square) -> bool {
         self.0 & 7 == other.0 & 7
     }
 
-    #[inline]
     #[allow(dead_code)]
     pub fn diagonal(&self) -> usize {
         ((self.row() - self.col()) & 15) as usize
     }
 
-    #[inline]
     #[allow(dead_code)]
     pub fn anti_diagonal(&self) -> usize {
         ((self.row() + self.col()) & 7) as usize
     }
 
-    #[inline]
     pub fn inc(&mut self) {
         self.0 += 1
     }
 
-    #[inline]
     pub fn to_usize(&self) -> usize {
         self.0 as usize
     }
 
     // Gives square from perspective of side
     // ie, flips if black
-    #[inline]
     pub fn from_side(&self, side: Side) -> Square {
         Square(self.0 ^ if side == BLACK { 56 } else { 0 })
     }
 
-    #[inline]
     pub fn flip(&self) -> Square {
         Square(self.0 ^ 56)
     }
 
-    #[inline]
     pub fn rotate_right(&self, amount: Internal) -> Square {
         Square((self.0 + (64 - amount)) & 63)
     }
 
-    #[inline]
     pub fn rotate_left(&self, amount: Internal) -> Square {
         Square((self.0 + amount) & 63)
     }
@@ -229,39 +215,32 @@ impl Square {
         self.to_str().to_string()
     }
 
-    #[inline]
     #[cfg(test)]
     pub fn random() -> Square {
         Square(rand::random::<Internal>() % 64)
     }
 
     // returns a square at the same row as self, and the same col as another square
-    #[inline]
     pub fn along_row_with_col(&self, other: Square) -> Square {
         Square((self.0 & 56) | (other.0 & 7))
     }
 
-    #[inline]
     pub fn change_row(&self, row: Internal) -> Square {
         Square((self.0 & 7) | (row * 8))
     }
 
-    #[inline]
     pub fn row(&self) -> Internal {
         self.0 >> 3
     }
 
-    #[inline]
     pub fn rowx8(&self) -> Internal {
         self.0 & 56
     }
 
-    #[inline]
     pub fn col(&self) -> Internal {
         self.0 & 7
     }
 
-    #[inline]
     pub fn from(row: Internal, col: Internal) -> Square {
         Square(row * 8 + col)
     }
@@ -290,6 +269,29 @@ impl Square {
         }
 
         Ok(Some(Square::from(row, col)))
+    }
+
+    pub fn iter() -> SquaresIter {
+        SquaresIter(Square(0))
+    }
+}
+
+#[derive(Debug)]
+pub struct SquaresIter(Square);
+
+impl Iterator for SquaresIter {
+    type Item = Square;
+
+    fn next(&mut self) -> Option<Square> {
+        let sq = self.0;
+
+        if sq > H8 {
+            return None;
+        }
+
+        (self.0).0 += 1;
+
+        Some(sq)
     }
 }
 

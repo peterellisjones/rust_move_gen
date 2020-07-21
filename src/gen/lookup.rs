@@ -4,7 +4,6 @@ use piece::*;
 use position::Position;
 use square::Square;
 
-#[inline]
 pub fn king_moves<L: MoveList>(position: &Position, to_mask: BB, list: &mut L) {
     let stm = position.state().stm;
     let piece = KING.pc(stm);
@@ -19,7 +18,6 @@ pub fn king_moves<L: MoveList>(position: &Position, to_mask: BB, list: &mut L) {
     list.add_moves(from, targets, enemy);
 }
 
-#[inline]
 pub fn knight_moves<L: MoveList>(position: &Position, to_mask: BB, from_mask: BB, list: &mut L) {
     let stm = position.state().stm;
     let piece = KNIGHT.pc(stm);
@@ -33,21 +31,18 @@ pub fn knight_moves<L: MoveList>(position: &Position, to_mask: BB, from_mask: BB
     }
 }
 
-#[inline]
 pub fn king_moves_from_sq(sq: Square) -> BB {
     unsafe {
         return *KING_MOVES.get_unchecked(sq.to_usize());
     }
 }
 
-#[inline]
 pub fn knight_moves_from_sq(sq: Square) -> BB {
     unsafe {
         return *KNIGHT_MOVES.get_unchecked(sq.to_usize());
     }
 }
 
-#[inline]
 pub fn knight_moves_from_bb(knights: BB) -> BB {
     let attacks_right_one = (knights << 1) & !FILE_A;
     let attacks_right_two = (knights << 2) & !(FILE_A | FILE_B);

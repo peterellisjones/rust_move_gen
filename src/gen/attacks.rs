@@ -11,7 +11,6 @@ use side::Side;
 use square::Square;
 
 #[allow(dead_code)]
-#[inline]
 pub fn slider_non_diag_rays_to_squares(source: BB, attacker: BB, position: &Position) -> BB {
     let empty = position.bb_empty();
 
@@ -19,7 +18,6 @@ pub fn slider_non_diag_rays_to_squares(source: BB, attacker: BB, position: &Posi
 }
 
 #[allow(dead_code)]
-#[inline]
 pub fn slider_diag_rays_to_squares(source: BB, attacker: BB, position: &Position) -> BB {
     let empty = position.bb_empty();
 

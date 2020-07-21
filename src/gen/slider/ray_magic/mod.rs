@@ -13,7 +13,6 @@ pub struct Magic {
     offset: u32,
 }
 
-#[inline]
 pub fn bishop_attacks_from_sq(from: Square, occupied: BB) -> BB {
     let magic = unsafe { *consts::BISHOP_MAGICS.get_unchecked(from.to_usize()) };
     let mult = (occupied & magic.mask)
@@ -25,7 +24,6 @@ pub fn bishop_attacks_from_sq(from: Square, occupied: BB) -> BB {
     unsafe { *consts::SHARED_ATTACKS.get_unchecked(offset) }
 }
 
-#[inline]
 pub fn rook_attacks_from_sq(from: Square, occupied: BB) -> BB {
     let magic = unsafe { *consts::ROOK_MAGICS.get_unchecked(from.to_usize()) };
     let mult = (occupied & magic.mask)
@@ -37,7 +35,6 @@ pub fn rook_attacks_from_sq(from: Square, occupied: BB) -> BB {
     unsafe { *consts::SHARED_ATTACKS.get_unchecked(offset) }
 }
 
-#[inline]
 #[allow(dead_code)]
 pub fn rook_attacks(from: BB, occupied: BB) -> BB {
     let mut attacks = EMPTY;
@@ -47,7 +44,6 @@ pub fn rook_attacks(from: BB, occupied: BB) -> BB {
     attacks
 }
 
-#[inline]
 #[allow(dead_code)]
 pub fn bishop_attacks(from: BB, occupied: BB) -> BB {
     let mut attacks = EMPTY;

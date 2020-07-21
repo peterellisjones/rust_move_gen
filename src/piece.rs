@@ -12,16 +12,16 @@ const CHARS: [char; 12] = ['B', 'b', 'Q', 'q', 'R', 'r', 'N', 'n', 'P', 'p', 'K'
 //                             '♕', '♛', '♔', '♚', '.'];
 
 const NAMES: [&'static str; 12] = [
-    "white pawn",
-    "black pawn",
-    "white knight",
-    "black knight",
     "white bishop",
     "black bishop",
-    "white rook",
-    "black rook",
     "white queen",
     "black queen",
+    "white rook",
+    "black rook",
+    "white knight",
+    "black knight",
+    "white pawn",
+    "black pawn",
     "white king",
     "black king",
 ];
@@ -31,18 +31,15 @@ const NAMES: [&'static str; 12] = [
 pub struct Kind(pub Internal);
 
 impl Kind {
-    #[inline]
-    pub fn pc(&self, side: Side) -> Piece {
+        pub fn pc(&self, side: Side) -> Piece {
         Piece((self.0 << 1) | side.raw() as Internal)
     }
 
-    #[inline]
-    pub fn to_usize(&self) -> usize {
+        pub fn to_usize(&self) -> usize {
         self.0 as usize
     }
 
-    #[inline]
-    pub const fn to_u8(&self) -> u8 {
+        pub const fn to_u8(&self) -> u8 {
         self.0 as u8
     }
 
@@ -63,7 +60,7 @@ impl Kind {
     }
 }
 
-const KIND_NAMES: [&'static str; 6] = ["pawn", "knight", "bishop", "rook", "queen", "king"];
+const KIND_NAMES: [&'static str; 6] = ["bishop", "queen", "rook", "knight", "pawn", "king"];
 
 #[derive(Debug)]
 pub struct KindsIter(Kind);
@@ -74,7 +71,7 @@ impl Iterator for KindsIter {
     fn next(&mut self) -> Option<Kind> {
         let kd = self.0;
 
-        if kd >= KING {
+        if kd >= NULL_KIND {
             return None;
         }
 
@@ -145,34 +142,28 @@ pub const BLACK_KING: Piece = Piece(11);
 pub const NULL_PIECE: Piece = Piece(12);
 
 impl Piece {
-    #[inline]
-    pub fn to_usize(&self) -> usize {
+        pub fn to_usize(&self) -> usize {
         self.0 as usize
     }
 
-    #[inline]
-    pub fn to_char(&self) -> char {
+        pub fn to_char(&self) -> char {
         CHARS[self.to_usize()]
     }
 
-    #[inline]
-    pub fn kind(&self) -> Kind {
+        pub fn kind(&self) -> Kind {
         Kind(self.0 >> 1)
     }
 
-    #[inline]
-    pub fn is_none(&self) -> bool {
+        pub fn is_none(&self) -> bool {
         *self == NULL_PIECE
     }
 
-    #[inline]
-    pub fn is_some(&self) -> bool {
+        pub fn is_some(&self) -> bool {
         *self != NULL_PIECE
     }
 
     // assumes piece present
-    #[inline]
-    pub fn is_slider(&self) -> bool {
+        pub fn is_slider(&self) -> bool {
         debug_assert!(self.is_some());
         self.0 <= BLACK_ROOK.0
     }
@@ -185,8 +176,7 @@ impl Piece {
         NAMES[self.to_usize()].to_string() + &"s"
     }
 
-    #[inline]
-    pub fn side(&self) -> Side {
+        pub fn side(&self) -> Side {
         Side(self.to_usize() & 1)
     }
 
@@ -213,7 +203,7 @@ impl Iterator for PiecesIter {
     fn next(&mut self) -> Option<Piece> {
         let pc = self.0;
 
-        if pc >= Piece(12) {
+        if pc >= NULL_PIECE {
             return None;
         }
 

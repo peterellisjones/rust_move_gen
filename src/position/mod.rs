@@ -103,26 +103,22 @@ impl Position {
         to_fen(&self.grid, &self.state)
     }
 
-    #[inline]
-    pub fn hash_key(&self) -> u64 {
+        pub fn hash_key(&self) -> u64 {
         self.key
     }
 
     /// Get position non-positional state
-    #[inline]
-    pub fn state(&self) -> &State {
+        pub fn state(&self) -> &State {
         &self.state
     }
 
     /// Get position position
-    #[inline]
-    pub fn grid(&self) -> &[Piece; 64] {
+        pub fn grid(&self) -> &[Piece; 64] {
         &self.grid
     }
 
     /// Get piece at square
-    #[inline]
-    pub fn at(&self, sq: Square) -> Piece {
+        pub fn at(&self, sq: Square) -> Piece {
         unsafe { return *self.grid.get_unchecked(sq.to_usize()) }
     }
 
@@ -153,8 +149,7 @@ impl Position {
         )
     }
 
-    #[inline]
-    fn put_piece(&mut self, pc: Piece, sq: Square) {
+        fn put_piece(&mut self, pc: Piece, sq: Square) {
         debug_assert!(self.at(sq).is_none());
 
         let bb_mask = BB::new(sq);
@@ -170,8 +165,7 @@ impl Position {
         }
     }
 
-    #[inline]
-    fn remove_piece(&mut self, sq: Square) {
+        fn remove_piece(&mut self, sq: Square) {
         debug_assert!(self.at(sq).is_some());
 
         let pc = self.at(sq);
@@ -188,8 +182,7 @@ impl Position {
         }
     }
 
-    #[inline]
-    fn move_piece(&mut self, from: Square, to: Square) -> BB {
+        fn move_piece(&mut self, from: Square, to: Square) -> BB {
         debug_assert!(self.at(from).is_some());
         debug_assert!(self.at(to).is_none());
 
@@ -232,19 +225,20 @@ impl Position {
     }
 
     /// Get bitboard of pieces for a particular side
-    #[inline]
     pub fn bb_side(&self, side: Side) -> BB {
         unsafe { return *self.bb_sides.get_unchecked(side.to_usize() & 1) }
     }
 
     /// Get bitboard of pieces for a particular piece
-    #[inline]
     pub fn bb_pc(&self, pc: Piece) -> BB {
         unsafe { return *self.bb_pieces.get_unchecked(pc.to_usize()) }
     }
 
+    pub fn piece_iter(&self, pc: Piece) -> BBIterator {
+        self.bb_pieces[pc.to_usize()].iter()
+    }
+
     /// Get bitboard of sliding pieces for a particular side
-    #[inline]
     pub fn bb_sliders(&self, side: Side) -> (BB, BB) {
         let queens = self.bb_pc(QUEEN.pc(side));
         let rooks = self.bb_pc(ROOK.pc(side));
@@ -253,18 +247,15 @@ impl Position {
     }
 
     /// Get bitboard of all occupied squares
-    #[inline]
     pub fn bb_occupied(&self) -> BB {
         self.bb_side(WHITE) | self.bb_side(BLACK)
     }
 
     /// Get bitboard of all empty squares
-    #[inline]
     pub fn bb_empty(&self) -> BB {
         !self.bb_occupied()
     }
 
-    #[inline]
     fn update_grid(&mut self, sq: Square, pc: Piece) {
         unsafe {
             *(self.grid.get_unchecked_mut(sq.to_usize())) = pc;

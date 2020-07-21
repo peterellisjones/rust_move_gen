@@ -1,7 +1,6 @@
 use bb::BB;
 use square::Square;
 
-#[inline]
 pub fn squares_between(a: Square, b: Square) -> BB {
   unsafe {
     *SQUARES_BETWEEN
@@ -10,7 +9,6 @@ pub fn squares_between(a: Square, b: Square) -> BB {
   }
 }
 
-#[inline]
 pub fn lines_along(a: Square, b: Square) -> BB {
   unsafe {
     *LINES_ALONG
@@ -19,12 +17,10 @@ pub fn lines_along(a: Square, b: Square) -> BB {
   }
 }
 
-#[inline]
 pub fn bishop_rays(a: Square) -> BB {
   unsafe { *BISHOP_RAYS.get_unchecked(a.to_usize()) }
 }
 
-#[inline]
 pub fn rook_rays(a: Square) -> BB {
   unsafe { *ROOK_RAYS.get_unchecked(a.to_usize()) }
 }

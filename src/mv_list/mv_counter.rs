@@ -26,26 +26,22 @@ impl MoveCounter {
 }
 
 impl MoveList for MoveCounter {
-    #[inline]
     fn add_moves(&mut self, _: Square, targets: BB, enemy: BB) {
         self.moves += targets.pop_count() as u8;
         self.captures += (targets & enemy).pop_count() as u8;
     }
 
-    #[inline]
     fn add_castle(&mut self, _: Castle) {
         self.moves += 1;
         self.castles += 1;
     }
 
-    #[inline]
     fn add_pawn_ep_capture(&mut self, _: Square, _: Square) {
         self.moves += 1;
         self.captures += 1;
         self.ep_captures += 1;
     }
 
-    #[inline]
     fn add_pawn_pushes(&mut self, _: usize, targets: BB) {
         // non-promotions
         self.moves += (targets & !END_ROWS).pop_count() as u8;
@@ -55,7 +51,6 @@ impl MoveList for MoveCounter {
         self.promotions += promo_count as u8;
     }
 
-    #[inline]
     fn add_pawn_captures(&mut self, _: usize, targets: BB) {
         // non-promotions
         let non_promo_count = (targets & !END_ROWS).pop_count();

@@ -41,17 +41,14 @@ pub struct Move {
 }
 
 impl Move {
-    #[inline]
     pub fn from(&self) -> Square {
         Square::new((self.lower & 63) as square::Internal)
     }
 
-    #[inline]
     pub fn to(&self) -> Square {
         Square::new((self.upper & 63) as square::Internal)
     }
 
-    #[inline]
     pub fn promote_to(&self) -> Kind {
         debug_assert!(!self.is_castle());
         debug_assert!(self.is_promotion());
@@ -59,33 +56,27 @@ impl Move {
     }
 
     /// Returns the absolute distance moved. Eg for a push from square 8 to square 24: |24 - 8| = 16
-    #[inline]
     pub fn distance(&self) -> i32 {
         debug_assert!(!self.is_castle());
         (self.from().to_i32() - self.to().to_i32()).abs()
     }
 
-    #[inline]
     pub fn is_castle(&self) -> bool {
         ((self.upper & CASTLE_FLAG) != 0) && ((self.lower & (!63)) == 0)
     }
 
-    #[inline]
     pub fn is_capture(&self) -> bool {
         (self.lower & CAPTURE_FLAG) != 0
     }
 
-    #[inline]
     pub fn is_ep_capture(&self) -> bool {
         ((self.lower & (!63)) == CAPTURE_FLAG) && ((self.upper & (!63)) == EP_CAPTURE_FLAG)
     }
 
-    #[inline]
     pub fn is_promotion(&self) -> bool {
         (self.lower & PROMOTION_FLAG) != 0
     }
 
-    #[inline]
     pub fn castle(&self) -> Castle {
         debug_assert!(self.is_castle());
 
@@ -126,7 +117,6 @@ impl Move {
         }
     }
 
-    #[inline]
     pub const fn new_push(from: Square, to: Square) -> Move {
         Move {
             lower: from.to_u8(),
@@ -134,7 +124,6 @@ impl Move {
         }
     }
 
-    #[inline]
     pub const fn new_capture(from: Square, to: Square) -> Move {
         Move {
             lower: from.to_u8() | CAPTURE_FLAG,
@@ -142,7 +131,6 @@ impl Move {
         }
     }
 
-    #[inline]
     pub const fn new_castle(castle: Castle) -> Move {
         Move {
             lower: 0,
@@ -150,7 +138,6 @@ impl Move {
         }
     }
 
-    #[inline]
     pub const fn new_promotion(from: Square, to: Square, promote_to: Kind) -> Move {
         Move {
             lower: from.to_u8() | PROMOTION_FLAG,
@@ -158,7 +145,6 @@ impl Move {
         }
     }
 
-    #[inline]
     pub const fn new_capture_promotion(from: Square, to: Square, promote_to: Kind) -> Move {
         Move {
             lower: from.to_u8() | PROMOTION_FLAG | CAPTURE_FLAG,
@@ -166,7 +152,6 @@ impl Move {
         }
     }
 
-    #[inline]
     pub const fn new_ep_capture(from: Square, to: Square) -> Move {
         Move {
             lower: from.to_u8() | CAPTURE_FLAG,

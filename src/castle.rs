@@ -12,28 +12,23 @@ pub const KING_SIDE: Castle = Castle(1);
 const CASTLE_KING_MOVES: [[(Square, Square); 2]; 2] = [[(E1, C1), (E8, C8)], [(E1, G1), (E8, G8)]];
 const CASTLE_ROOK_MOVES: [[(Square, Square); 2]; 2] = [[(A1, D1), (A8, D8)], [(H1, F1), (H8, F8)]];
 
-#[inline]
 pub fn castle_king_squares(side: Side, castle: Castle) -> (Square, Square) {
     CASTLE_KING_MOVES[castle.to_usize()][side.to_usize()]
 }
 
-#[inline]
 pub fn castle_rook_squares(side: Side, castle: Castle) -> (Square, Square) {
     CASTLE_ROOK_MOVES[castle.to_usize()][side.to_usize()]
 }
 
 impl Castle {
-    #[inline]
     pub fn new(s: usize) -> Castle {
         Castle(s)
     }
 
-    #[inline]
     pub fn to_usize(&self) -> usize {
         self.0
     }
 
-    #[inline]
     pub const fn to_u8(&self) -> u8 {
         self.0 as u8
     }
@@ -47,7 +42,6 @@ impl Castle {
         }
     }
 
-    #[inline]
     pub fn iter() -> CastlesIter {
         CastlesIter(QUEEN_SIDE)
     }
