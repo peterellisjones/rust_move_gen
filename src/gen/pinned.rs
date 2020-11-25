@@ -25,7 +25,7 @@ pub fn pawn_pin_ray_moves<L: MoveList>(
     let double_push_mask = if stm == WHITE { ROW_4 } else { ROW_5 };
 
     let can_push = movers & king_sq.file_mask();
-    let king_diags = king_sq.both_diagonals();
+    let king_diags = king_sq.bishop_rays();
     let can_capture = movers & king_diags;
 
     // For pinned pawns, only possible moves are those along the king file

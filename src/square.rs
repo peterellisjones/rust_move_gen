@@ -1,6 +1,6 @@
 use side::{Side, BLACK};
 use std::fmt;
-use bb::{FILE_A, BB, DIAGONALS, ANTI_DIAGONALS, BOTH_DIAGONALS};
+use bb::{FILE_A, BB, DIAGONALS, ANTI_DIAGONALS, BISHOP_RAYS, ROOK_RAYS, KNIGHT_MOVES, KING_MOVES};
 
 #[cfg(test)]
 use rand;
@@ -184,8 +184,20 @@ impl Square {
         unsafe { *ANTI_DIAGONALS.get_unchecked(self.to_usize()) }
     }
 
-    pub fn both_diagonals(&self) -> BB {
-        unsafe { *BOTH_DIAGONALS.get_unchecked(self.to_usize()) }
+    pub fn bishop_rays(&self) -> BB {
+        unsafe { *BISHOP_RAYS.get_unchecked(self.to_usize()) }
+    }
+
+    pub fn rook_rays(&self) -> BB {
+        unsafe { *ROOK_RAYS.get_unchecked(self.to_usize()) }
+    }
+
+    pub fn king_moves(&self) -> BB {
+        unsafe { *KING_MOVES.get_unchecked(self.to_usize()) }
+    }
+
+    pub fn knight_moves(&self) -> BB {
+        unsafe { *KNIGHT_MOVES.get_unchecked(self.to_usize()) }
     }
 
     pub fn inc(&mut self) {

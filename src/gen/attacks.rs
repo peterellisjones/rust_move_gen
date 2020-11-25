@@ -1,7 +1,5 @@
 use super::lookup::*;
 use super::pawn::*;
-use super::slider::consts::bishop_rays;
-use super::slider::consts::rook_rays;
 use super::slider::consts::squares_between;
 use super::slider::*;
 use bb::{BB, EMPTY};
@@ -34,7 +32,7 @@ pub fn checkers_and_pinned(king: BB, attacker: Side, position: &Position) -> (BB
 
     // Pawns and Knights can only be checkers
     let knights = position.bb_pc(KNIGHT.pc(attacker));
-    checkers |= knight_moves_from_sq(king_sq) & knights;
+    checkers |= king_sq.knight_moves() & knights;
 
     let pawns = position.bb_pc(PAWN.pc(attacker));
     for &(shift, file_mask) in PAWN_CAPTURE_FILE_MASKS[attacker.flip().to_usize()].iter() {
@@ -44,8 +42,8 @@ pub fn checkers_and_pinned(king: BB, attacker: Side, position: &Position) -> (BB
     // Sliding pieces can be checkers or pinners depending on occupancy of intermediate squares
 
     let (diag_attackers, non_diag_attackers) = position.bb_sliders(attacker);
-    let potential_diag_pinners = occupied & bishop_rays(king_sq) & diag_attackers;
-    let potential_non_diag_pinners = occupied & rook_rays(king_sq) & non_diag_attackers;
+    let potential_diag_pinners = occupied & king_sq.bishop_rays() & diag_attackers;
+    let potential_non_diag_pinners = occupied & king_sq.rook_rays() & non_diag_attackers;
 
     let potential_pinners = potential_diag_pinners | potential_non_diag_pinners;
 
@@ -79,7 +77,7 @@ pub fn king_danger_squares(king: BB, attacker: Side, position: &Position) -> BB 
 
     let kings = position.bb_pc(KING.pc(attacker));
     debug_assert_eq!(kings.pop_count(), 1);
-    attacked_squares |= king_moves_from_sq(kings.bitscan());
+    attacked_squares |= kings.bitscan().king_moves();
 
     let pawns = position.bb_pc(PAWN.pc(attacker));
     for &(shift, file_mask) in PAWN_CAPTURE_FILE_MASKS[attacker.to_usize()].iter() {
@@ -104,7 +102,7 @@ pub fn attacked_squares_ignoring_ep(attacker: Side, position: &Position) -> BB {
 
     let kings = position.bb_pc(KING.pc(attacker));
     debug_assert_eq!(kings.pop_count(), 1);
-    attacked_squares |= king_moves_from_sq(kings.bitscan());
+    attacked_squares |= kings.bitscan().king_moves();
 
     let pawns = position.bb_pc(PAWN.pc(attacker));
     for &(shift, file_mask) in PAWN_CAPTURE_FILE_MASKS[attacker.to_usize()].iter() {
@@ -122,7 +120,7 @@ pub fn checks_to_sq(sq: Square, attacker: Side, position: &Position) -> BB {
     let mut attackers = EMPTY;
 
     let knights = position.bb_pc(KNIGHT.pc(attacker));
-    attackers |= knight_moves_from_sq(sq) & knights;
+    attackers |= sq.knight_moves() & knights;
 
     let pawns = position.bb_pc(PAWN.pc(attacker));
     let sq_bb = BB::new(sq);

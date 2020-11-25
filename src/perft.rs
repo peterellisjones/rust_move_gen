@@ -190,9 +190,6 @@ mod test {
   use super::*;
   use position::{Position, STARTING_POSITION_FEN};
   use test;
-  use castle::*;
-  use mv::Move;
-  use square::*;
 
   #[test]
   fn perft_test_3() {

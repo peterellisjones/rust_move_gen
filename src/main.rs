@@ -36,9 +36,6 @@ pub use perft::perft;
 pub use position::{Position, STARTING_POSITION_FEN};
 
 use std::time::Instant;
-use mv_list::{MoveCounter, MoveVec};
-use gen::legal_moves;
-
 fn main() {
   let fen = STARTING_POSITION_FEN;
   let mut position = Position::from_fen(fen).unwrap();
