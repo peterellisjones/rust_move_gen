@@ -1,11 +1,12 @@
 use bb::{BB, END_ROWS};
 use castle::Castle;
+use castle::*;
 use mv::Move;
 use mv_list::MoveList;
 use piece::*;
-use side::{Side, WHITE};
+use side::Side;
 use square;
-use square::Square;
+use square::*;
 use std;
 use std::cmp::Ordering;
 use std::collections::BinaryHeap;
@@ -32,6 +33,18 @@ impl PartialEq for MoveScore {
     }
 }
 
+impl fmt::Display for MoveScore {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{} ({})", self.0, self.1)
+    }
+}
+
+impl fmt::Debug for MoveScore {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{} ({})", self.0, self.1)
+    }
+}
+
 #[derive(Clone)]
 pub struct PieceSquareTable {
     piece_square_values: [[i16; 64]; 6],
@@ -39,6 +52,25 @@ pub struct PieceSquareTable {
 }
 
 impl PieceSquareTable {
+    pub fn new(piece_square_values: [[i16; 64]; 6]) -> PieceSquareTable {
+        let mut castle_values = [0i16; 2];
+
+        castle_values[QUEEN_SIDE.to_usize()] = piece_square_values[KING.to_usize()][C1.to_usize()]
+            + piece_square_values[ROOK.to_usize()][D1.to_usize()]
+            - piece_square_values[KING.to_usize()][E1.to_usize()]
+            - piece_square_values[ROOK.to_usize()][A1.to_usize()];
+
+        castle_values[KING_SIDE.to_usize()] = piece_square_values[KING.to_usize()][G1.to_usize()]
+            + piece_square_values[ROOK.to_usize()][F1.to_usize()]
+            - piece_square_values[KING.to_usize()][E1.to_usize()]
+            - piece_square_values[ROOK.to_usize()][H1.to_usize()];
+
+        return PieceSquareTable {
+            piece_square_values: piece_square_values,
+            castle_values: castle_values,
+        };
+    }
+
     pub fn castle_score(&self, castle: Castle) -> i16 {
         unsafe { *self.castle_values.get_unchecked(castle.to_usize()) }
     }
@@ -255,7 +287,6 @@ mod test {
     use rand::seq::SliceRandom;
     use rand::Rng;
     use side::WHITE;
-    use square::*;
 
     #[test]
     fn test_scored_move_vec() {

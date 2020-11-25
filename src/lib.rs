@@ -51,7 +51,7 @@ pub use castle::{Castle, KING_SIDE, QUEEN_SIDE};
 pub use castling_rights::{CastlingRights, BLACK_KS, BLACK_QS, WHITE_KS, WHITE_QS};
 pub use gen::legal_moves;
 pub use mv::{Move, NULL_MOVE};
-pub use mv_list::{MoveCounter, MoveList, MoveVec};
+pub use mv_list::{MoveCounter, MoveList, MoveScore, MoveVec, PieceSquareTable, ScoredMoveList};
 pub use perft::perft;
 pub use piece::*;
 pub use position::{Position, State, STARTING_POSITION_FEN};
