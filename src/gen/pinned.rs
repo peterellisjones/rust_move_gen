@@ -8,7 +8,6 @@ use square::Square;
 use square;
 
 // Generates pawn moves along pin rays
-// NOTE: this is quigte expensive unfortunately
 pub fn pawn_pin_ray_moves<L: MoveList>(
     position: &Position,
     capture_mask: BB,
