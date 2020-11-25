@@ -5,6 +5,7 @@ use piece::*;
 use position::Position;
 use side::{Side, WHITE};
 use square::Square;
+use square;
 
 // Generates pawn moves along pin rays
 // NOTE: this is quigte expensive unfortunately
@@ -45,8 +46,28 @@ pub fn pawn_pin_ray_moves<L: MoveList>(
             & king_diags;
 
         list.add_pawn_captures(shift, targets);
+    }
 
-        // no need to consider ep-capture since a pawn can never pin another piece
+    if position.state().ep_square.is_some() {
+        for &(shift, file_mask) in PAWN_CAPTURE_FILE_MASKS[stm.to_usize()].iter() {
+            let targets = can_capture.rot_left(shift as u32) & file_mask;
+
+            let ep = position.state().ep_square.unwrap();
+            let ep_captures = targets & BB::new(ep) & king_diags;
+
+            for (to, to_bb) in ep_captures.iter() {
+                let from = to.rotate_right(shift as square::Internal);
+
+                let capture_sq = from.along_row_with_col(to);
+                let capture_sq_bb = BB::new(capture_sq);
+
+                // can only make ep capture if moving to push_mask, or capturing on capture mask
+                if ((to_bb & push_mask) | (capture_sq_bb & capture_mask)).any() {
+                    let from_bb = to_bb.rot_right(shift as u32);
+                    list.add_pawn_ep_capture(from_bb.bitscan(), ep);
+                }
+            }
+        }
     }
 }
 

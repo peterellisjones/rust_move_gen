@@ -141,4 +141,10 @@ mod test {
     test_gen!(test_debug_10, 3, "r3k2r/p1pp1pb1/bn2pqp1/3PN3/1p2P3/2N5/PPPBBPpP/R4K1R w kq - 0 1");
 
     test_gen!(test_debug_11, 5, "4k3/3pq3/4Q3/1B2N3/1p2P3/2N5/PPPB1PP1/R3K2R b KQ - 0 1");
+
+    // en-passant capture along pin ray
+    test_gen!(test_debug_12, 7, "8/8/8/6k1/4Pp2/8/8/K1B5 b - e3 0 1");
+
+    // en-passant discovered check
+    test_gen!(test_debug_13, 7, "8/8/8/8/R3Ppk1/8/8/K7 b - e3 0 1");
 }
