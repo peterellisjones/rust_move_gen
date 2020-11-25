@@ -30,7 +30,7 @@ pub fn pawn_pin_ray_moves<L: MoveList>(
     let can_capture = movers & king_diags;
 
     // For pinned pawns, only possible moves are those along the king file
-    for (pawn_sq, pawn) in can_push.iter() {
+    for (_, pawn) in can_push.iter() {
         let single_pushes = pawn.rot_left(push_shift as u32) & empty_squares & push_mask;
         list.add_pawn_pushes(push_shift, single_pushes);
         let double_pushes =
