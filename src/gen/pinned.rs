@@ -10,9 +10,10 @@ use square::Square;
 // NOTE: this is quigte expensive unfortunately
 pub fn pawn_pin_ray_moves<L: MoveList>(
     position: &Position,
+    capture_mask: BB,
+    push_mask: BB,
     king_sq: Square,
     pinned: BB,
-    pinners: BB,
     stm: Side,
     list: &mut L,
 ) {
@@ -21,30 +22,31 @@ pub fn pawn_pin_ray_moves<L: MoveList>(
     let movers = position.bb_pc(piece) & pinned;
 
     let push_shift = if stm == WHITE { 8 } else { 64 - 8 };
-    let push_mask = if stm == WHITE { ROW_4 } else { ROW_5 };
+    let double_push_mask = if stm == WHITE { ROW_4 } else { ROW_5 };
 
-    for (pawn_sq, pawn) in movers.iter() {
-        // if king is on the same file, the pawn can "push"
-        // as the pin is a north-south pin
-        if king_sq.same_file(pawn_sq) {
-            let single_pushes = pawn.rot_left(push_shift as u32) & empty_squares;
-            list.add_pawn_pushes(push_shift, single_pushes);
-            let double_pushes =
-                single_pushes.rot_left(push_shift as u32) & empty_squares & push_mask;
-            let double_push_shift = (push_shift * 2) % 64;
-            list.add_pawn_pushes(double_push_shift, double_pushes);
-        }
+    let can_push = movers & king_sq.file_mask();
+    let king_diags = king_sq.both_diagonals();
+    let can_capture = movers & king_diags;
 
-        // iterate over the two possible capture directions..
-        for &(shift, file_mask) in PAWN_CAPTURE_FILE_MASKS[stm.to_usize()].iter() {
-            // captures can only happen if the pinned piece take its pinner
-            // There could be multiple pinners, but since apawn can only capture 1 square
-            // it can only ever take the pinner that is pinning it
-            let targets = pinned.rot_left(shift as u32) & file_mask & pinners;
-            list.add_pawn_captures(shift, targets);
+    // For pinned pawns, only possible moves are those along the king file
+    for (pawn_sq, pawn) in can_push.iter() {
+        let single_pushes = pawn.rot_left(push_shift as u32) & empty_squares & push_mask;
+        list.add_pawn_pushes(push_shift, single_pushes);
+        let double_pushes =
+            single_pushes.rot_left(push_shift as u32) & empty_squares & double_push_mask & push_mask;
+        let double_push_shift = (push_shift * 2) % 64;
+        list.add_pawn_pushes(double_push_shift, double_pushes);
+    }
 
-            // no need to consider ep-capture since a pawn can never pin another piece
-        }
+    for &(shift, file_mask) in PAWN_CAPTURE_FILE_MASKS[stm.to_usize()].iter() {
+        let targets = can_capture.rot_left(shift as u32)
+            & file_mask
+            & capture_mask
+            & king_diags;
+
+        list.add_pawn_captures(shift, targets);
+
+        // no need to consider ep-capture since a pawn can never pin another piece
     }
 }
 
@@ -64,7 +66,7 @@ mod test {
                 .unwrap();
 
         let mut list = MoveVec::new();
-        pawn_pin_ray_moves(&position, E1, BB::new(B4), BB::new(A5), WHITE, &mut list);
+        pawn_pin_ray_moves(&position, BB::new(A5), !EMPTY, E1, BB::new(B4), WHITE, &mut list);
         assert_eq!(list.len(), 1);
         assert_list_includes_moves(&list, &["b4xa5"]);
     }
@@ -76,7 +78,7 @@ mod test {
             Position::from_fen("rnb2k1r/pp1Pbppp/2p5/4q3/8/8/PP2P1PP/RNB1KNBR w KQ - 3 9").unwrap();
 
         let mut list = MoveVec::new();
-        pawn_pin_ray_moves(&position, E1, BB::new(E2), BB::new(E5), WHITE, &mut list);
+        pawn_pin_ray_moves(&position, BB::new(E5), !EMPTY, E1, BB::new(E2), WHITE, &mut list);
         assert_eq!(list.len(), 2);
         assert_list_includes_moves(&list, &["e2e3", "e2e4"]);
     }
@@ -91,9 +93,10 @@ mod test {
         let mut list = MoveVec::new();
         pawn_pin_ray_moves(
             &position,
+            BB::new(A5) | BB::new(E5),
+            !EMPTY,
             E1,
             BB::new(B4) | BB::new(E3),
-            BB::new(A5) | BB::new(E5),
             WHITE,
             &mut list,
         );

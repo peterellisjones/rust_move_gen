@@ -36,17 +36,20 @@ pub use perft::perft;
 pub use position::{Position, STARTING_POSITION_FEN};
 
 use std::time::Instant;
+use mv_list::{MoveCounter, MoveVec};
+use gen::legal_moves;
 
 fn main() {
-  let position = &mut Position::from_fen(STARTING_POSITION_FEN).unwrap();
+  let fen = STARTING_POSITION_FEN;
+  let mut position = Position::from_fen(fen).unwrap();
 
-  let depth: usize = 6;
+  let depth: usize = 7;
   println!(
     "Running performance test on starting position, depth {}",
     depth
   );
   let now = Instant::now();
-  let move_count = perft(position, depth, false, 0);
+  let move_count = perft(&mut position, depth, true, 1024 * 1024 * 4);
   let elapsed = now.elapsed();
   let sec = (elapsed.as_secs() as f64) + (elapsed.subsec_nanos() as f64 / 1000_000_000.0);
   let nps = move_count as f64 / sec;

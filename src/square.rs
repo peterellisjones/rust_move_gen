@@ -1,5 +1,6 @@
 use side::{Side, BLACK};
 use std::fmt;
+use bb::{FILE_A, BB, DIAGONALS, ANTI_DIAGONALS, BOTH_DIAGONALS};
 
 #[cfg(test)]
 use rand;
@@ -167,18 +168,24 @@ impl Square {
         self.0
     }
 
+    pub fn file_mask(&self) -> BB {
+        FILE_A << (self.0 & 7)
+    }
+
     pub fn same_file(&self, other: Square) -> bool {
         self.0 & 7 == other.0 & 7
     }
 
-    #[allow(dead_code)]
-    pub fn diagonal(&self) -> usize {
-        ((self.row() - self.col()) & 15) as usize
+    pub fn diagonals(&self) -> BB {
+        unsafe { *DIAGONALS.get_unchecked(self.to_usize()) }
     }
 
-    #[allow(dead_code)]
-    pub fn anti_diagonal(&self) -> usize {
-        ((self.row() + self.col()) & 7) as usize
+    pub fn anti_diagonals(&self) -> BB {
+        unsafe { *ANTI_DIAGONALS.get_unchecked(self.to_usize()) }
+    }
+
+    pub fn both_diagonals(&self) -> BB {
+        unsafe { *BOTH_DIAGONALS.get_unchecked(self.to_usize()) }
     }
 
     pub fn inc(&mut self) {

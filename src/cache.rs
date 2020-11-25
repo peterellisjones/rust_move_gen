@@ -1,7 +1,7 @@
 #[derive(Copy, Clone)]
 struct Entry {
   key: u64,
-  count: u32,
+  count: u64,
   depth: i16,
 }
 
@@ -37,24 +37,24 @@ impl Cache {
     })
   }
 
-  pub fn probe(&self, key: u64, depth: usize) -> Option<usize> {
+  pub fn probe(&self, key: u64, depth: usize) -> Option<u64> {
     let idx = (key as usize) & self.mask;
     let entry = unsafe { self.entries.get_unchecked(idx) };
 
     if entry.key == key && entry.depth == (depth as i16) {
-      Some(entry.count as usize)
+      Some(entry.count)
     } else {
       None
     }
   }
 
-  pub fn save(&mut self, key: u64, count: usize, depth: i16) {
+  pub fn save(&mut self, key: u64, count: u64, depth: i16) {
     let idx = (key as usize) & self.mask;
     let entry = unsafe { self.entries.get_unchecked_mut(idx) };
 
     *entry = Entry {
       key: key,
-      count: count as u32,
+      count: count,
       depth: depth,
     }
   }

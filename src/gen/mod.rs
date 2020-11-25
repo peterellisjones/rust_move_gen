@@ -76,8 +76,10 @@ pub fn legal_moves<L: MoveList>(position: &Position, list: &mut L) -> bool {
     pawn_moves(position, capture_mask, push_mask, !pinned, list);
 
     // generate moves for pinned pawns
-    pawn_pin_ray_moves(position, king_sq, pinned, pinners, stm, list);
+    // pinned pawn captures can only include pinners
+    pawn_pin_ray_moves(position, capture_mask & pinners, push_mask, king_sq, pinned, stm, list);
 
+    // king can only move to squares that won't result in check
     king_moves(position, !attacked_squares, list);
 
     king_attacks_count > 0
@@ -133,4 +135,10 @@ mod test {
     test_gen!(test_debug_7, 8, "5k2/8/8/q7/8/2Q5/8/4K3 w - -");
 
     test_gen!(test_debug_8, 9, "2r5/3pk3/8/2P5/8/2K5/8/8 w - - 5 4");
+
+    test_gen!(test_debug_9, 3, "5k2/5pb1/5Q1B/8/8/8/8/4K3 b - - 1 1");
+
+    test_gen!(test_debug_10, 3, "r3k2r/p1pp1pb1/bn2pqp1/3PN3/1p2P3/2N5/PPPBBPpP/R4K1R w kq - 0 1");
+
+    test_gen!(test_debug_11, 5, "4k3/3pq3/4Q3/1B2N3/1p2P3/2N5/PPPB1PP1/R3K2R b KQ - 0 1");
 }
