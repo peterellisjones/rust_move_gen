@@ -27,9 +27,14 @@ impl MoveCounter {
 }
 
 impl MoveList for MoveCounter {
-    fn add_moves(&mut self, _: Square, targets: BB, enemy: BB) {
+    fn add_captures(&mut self, _: Square, targets: BB) {
+        let count = targets.pop_count() as u64;
+        self.moves += count;
+        self.captures += count;
+    }
+
+    fn add_non_captures(&mut self, _: Square, targets: BB) {
         self.moves += targets.pop_count() as u64;
-        self.captures += (targets & enemy).pop_count() as u64;
     }
 
     fn add_castle(&mut self, _: Castle) {

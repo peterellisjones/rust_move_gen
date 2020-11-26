@@ -29,7 +29,6 @@ pub const PAWN_CAPTURE_FILE_MASKS: [[(usize, BB); 2]; 2] = [
 ];
 
 pub fn pawn_pushes<L: MoveList>(position: &Position, to_mask: BB, from_mask: BB, list: &mut L) {
-    // NOTE in the case of EP capture, mask is for the enemy piece taken
     let stm = position.state().stm;
     let piece = PAWN.pc(stm);
     let movers = position.bb_pc(piece) & from_mask;
@@ -41,13 +40,13 @@ pub fn pawn_pushes<L: MoveList>(position: &Position, to_mask: BB, from_mask: BB,
     let shift = if stm == WHITE { 8 } else { 64 - 8 };
     let empty_squares = position.bb_empty();
 
-    // Dont add mask here to avoid masking double pushes
+    // Dont apply to_mask here to avoid masking double pushes
     let single_pushes = movers.rot_left(shift as u32) & empty_squares;
 
     list.add_pawn_pushes(shift, single_pushes & to_mask);
 
-    let mask = if stm == WHITE { ROW_4 } else { ROW_5 };
-    let double_pushes = single_pushes.rot_left(shift as u32) & empty_squares & mask;
+    let double_push_mask = if stm == WHITE { ROW_4 } else { ROW_5 } & empty_squares & to_mask;
+    let double_pushes = single_pushes.rot_left(shift as u32) & double_push_mask;
 
     // DOUBLE PUSHES
     let double_push_shift = (shift * 2) % 64;
@@ -61,7 +60,6 @@ pub fn pawn_captures<L: MoveList>(
     from_mask: BB,
     list: &mut L,
 ) {
-    let move_mask = capture_mask | push_mask;
     let stm = position.state().stm;
     let piece = PAWN.pc(stm);
     let movers = position.bb_pc(piece) & from_mask;
@@ -70,14 +68,11 @@ pub fn pawn_captures<L: MoveList>(
         return;
     }
 
-    let enemies = position.bb_side(stm.flip());
-
     if capture_mask != EMPTY {
         // CAPTURES
         for &(shift, file_mask) in PAWN_CAPTURE_FILE_MASKS[stm.to_usize()].iter() {
-            let targets = movers.rot_left(shift as u32) & file_mask;
-            let occupied_targets = targets & enemies & move_mask;
-            list.add_pawn_captures(shift, occupied_targets);
+            let targets = movers.rot_left(shift as u32) & file_mask & capture_mask;
+            list.add_pawn_captures(shift, targets);
         }
     }
 
@@ -130,14 +125,22 @@ mod test {
     fn captures() {
         let position = &Position::from_fen("rnbqkbnr/pppppppp/P7/8/8/8/8/RNBQKBNR w").unwrap();
         let mut list = MoveVec::new();
-        pawn_moves::<MoveVec>(position, !EMPTY, !EMPTY, !EMPTY, &mut list);
+
+        let capture_mask = position.bb_side(position.state().stm.flip());
+        let push_mask = position.bb_empty();
+
+        pawn_moves::<MoveVec>(position, capture_mask, push_mask, !EMPTY, &mut list);
         assert_eq!(list.len(), 1);
         assert_list_includes_moves(&list, &["a6xb7"]);
 
         let position =
             &Position::from_fen("rnbqkbnr/pppppppp/7P/8/8/8/P1PPPPPP/RNBQKBNR b").unwrap();
         let mut list = MoveVec::new();
-        pawn_moves::<MoveVec>(position, !EMPTY, !EMPTY, !EMPTY, &mut list);
+
+        let capture_mask = position.bb_side(position.state().stm.flip());
+        let push_mask = position.bb_empty();
+
+        pawn_moves::<MoveVec>(position, capture_mask, push_mask, !EMPTY, &mut list);
         assert_list_includes_moves(&list, &["g7xh6"]);
     }
 
@@ -145,7 +148,11 @@ mod test {
     fn ep_captures() {
         let position = &Position::from_fen("rnbqkbnr/8/8/Pp6/8/8/8/RNBQKBNR w - b6").unwrap();
         let mut list = MoveVec::new();
-        pawn_moves::<MoveVec>(position, !EMPTY, !EMPTY, !EMPTY, &mut list);
+
+        let capture_mask = position.bb_side(position.state().stm.flip());
+        let push_mask = position.bb_empty();
+
+        pawn_moves::<MoveVec>(position, capture_mask, push_mask, !EMPTY, &mut list);
         assert_eq!(list.len(), 2);
         assert_list_includes_moves(&list, &["a5xb6e.p.", "a5a6"]);
     }
@@ -166,7 +173,12 @@ mod test {
         //   ABCDEFGH
         let position = &Position::from_fen("4k3/8/8/r2Pp2K/8/8/8/8 w - e6").unwrap();
         let mut list = MoveVec::new();
-        pawn_moves::<MoveVec>(position, !EMPTY, !EMPTY, !EMPTY, &mut list);
+
+        let capture_mask = position.bb_side(position.state().stm.flip());
+        let push_mask = position.bb_empty();
+
+        pawn_moves::<MoveVec>(position, capture_mask, push_mask, !EMPTY, &mut list);
+
         assert_list_excludes_moves(&list, &["d5xe6e.p."]);
         assert_list_includes_moves(&list, &["d5d6"]);
         assert_eq!(list.len(), 1);
@@ -204,7 +216,10 @@ mod test {
             &Position::from_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w").unwrap();
         let mut list = MoveVec::new();
 
-        pawn_moves::<MoveVec>(position, !EMPTY, !EMPTY, !EMPTY, &mut list);
+        let capture_mask = position.bb_side(position.state().stm.flip());
+        let push_mask = position.bb_empty();
+
+        pawn_moves::<MoveVec>(position, capture_mask, push_mask, !EMPTY, &mut list);
 
         assert_eq!(list.len(), 16);
         assert_list_includes_moves(
@@ -218,7 +233,10 @@ mod test {
             &Position::from_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b").unwrap();
         let mut list = MoveVec::new();
 
-        pawn_moves::<MoveVec>(position, !EMPTY, !EMPTY, !EMPTY, &mut list);
+        let capture_mask = position.bb_side(position.state().stm.flip());
+        let push_mask = position.bb_empty();
+
+        pawn_moves::<MoveVec>(position, capture_mask, push_mask, !EMPTY, &mut list);
         assert_eq!(list.len(), 16);
         assert_list_includes_moves(
             &list,
@@ -233,14 +251,21 @@ mod test {
         let position = &Position::from_fen("R1Rqkbnr/PPpppppp/8/8/8/8/8/RNBQKBNR w").unwrap();
         let mut list = MoveVec::new();
 
-        pawn_moves::<MoveVec>(position, !EMPTY, !EMPTY, !EMPTY, &mut list);
+        let capture_mask = position.bb_side(position.state().stm.flip());
+        let push_mask = position.bb_empty();
+
+        pawn_moves::<MoveVec>(position, capture_mask, push_mask, !EMPTY, &mut list);
+
         assert_eq!(list.len(), 4);
         assert_list_includes_moves(&list, &["b7b8=N", "b7b8=B", "b7b8=R", "b7b8=Q"]);
 
         let position = &Position::from_fen("rnbqkbnr/8/8/8/8/8/PPPpPPPP/RN3BNR b").unwrap();
         let mut list = MoveVec::new();
 
-        pawn_moves::<MoveVec>(position, !EMPTY, !EMPTY, !EMPTY, &mut list);
+        let capture_mask = position.bb_side(position.state().stm.flip());
+        let push_mask = position.bb_empty();
+
+        pawn_moves::<MoveVec>(position, capture_mask, push_mask, !EMPTY, &mut list);
         assert_eq!(list.len(), 4);
         assert_list_includes_moves(&list, &["d2d1=N", "d2d1=B", "d2d1=R", "d2d1=Q"]);
     }
@@ -250,7 +275,10 @@ mod test {
         let position = &Position::from_fen("rnbqkbnr/8/8/8/8/8/PPPpPPPP/RNBBNR2 b").unwrap();
         let mut list = MoveVec::new();
 
-        pawn_moves::<MoveVec>(position, !EMPTY, !EMPTY, !EMPTY, &mut list);
+        let capture_mask = position.bb_side(position.state().stm.flip());
+        let push_mask = position.bb_empty();
+
+        pawn_moves::<MoveVec>(position, capture_mask, push_mask, !EMPTY, &mut list);
         assert_eq!(list.len(), 8);
         assert_list_includes_moves(
             &list,

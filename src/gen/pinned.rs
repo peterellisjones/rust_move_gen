@@ -4,8 +4,8 @@ use mv_list::MoveList;
 use piece::*;
 use position::Position;
 use side::{Side, WHITE};
-use square::Square;
 use square;
+use square::Square;
 
 // Generates pawn moves along pin rays
 pub fn pawn_pin_ray_moves<L: MoveList>(
@@ -17,12 +17,16 @@ pub fn pawn_pin_ray_moves<L: MoveList>(
     stm: Side,
     list: &mut L,
 ) {
-    let empty_squares = position.bb_empty();
     let piece = PAWN.pc(stm);
     let movers = position.bb_pc(piece) & pinned;
 
+    // exit early if no pinned pawns
+    if movers.none() {
+        return;
+    }
+
     let push_shift = if stm == WHITE { 8 } else { 64 - 8 };
-    let double_push_mask = if stm == WHITE { ROW_4 } else { ROW_5 };
+    let double_push_mask = push_mask & if stm == WHITE { ROW_4 } else { ROW_5 };
 
     let can_push = movers & king_sq.file_mask();
     let king_diags = king_sq.bishop_rays();
@@ -30,19 +34,15 @@ pub fn pawn_pin_ray_moves<L: MoveList>(
 
     // For pinned pawns, only possible moves are those along the king file
     for (_, pawn) in can_push.iter() {
-        let single_pushes = pawn.rot_left(push_shift as u32) & empty_squares & push_mask;
+        let single_pushes = pawn.rot_left(push_shift as u32) & push_mask;
         list.add_pawn_pushes(push_shift, single_pushes);
-        let double_pushes =
-            single_pushes.rot_left(push_shift as u32) & empty_squares & double_push_mask & push_mask;
+        let double_pushes = single_pushes.rot_left(push_shift as u32) & double_push_mask;
         let double_push_shift = (push_shift * 2) % 64;
         list.add_pawn_pushes(double_push_shift, double_pushes);
     }
 
     for &(shift, file_mask) in PAWN_CAPTURE_FILE_MASKS[stm.to_usize()].iter() {
-        let targets = can_capture.rot_left(shift as u32)
-            & file_mask
-            & capture_mask
-            & king_diags;
+        let targets = can_capture.rot_left(shift as u32) & file_mask & capture_mask & king_diags;
 
         list.add_pawn_captures(shift, targets);
     }
@@ -60,8 +60,8 @@ pub fn pawn_pin_ray_moves<L: MoveList>(
                 let capture_sq = from.along_row_with_col(to);
                 let capture_sq_bb = BB::new(capture_sq);
 
-                // can only make ep capture if moving to push_mask, or capturing on capture mask
-                if ((to_bb & push_mask) | (capture_sq_bb & capture_mask)).any() {
+                // can only make ep capture if moving along king_diags, or capturing on capture mask
+                if ((to_bb & king_diags) | (capture_sq_bb & capture_mask)).any() {
                     let from_bb = to_bb.rot_right(shift as u32);
                     list.add_pawn_ep_capture(from_bb.bitscan(), ep);
                 }
@@ -86,7 +86,15 @@ mod test {
                 .unwrap();
 
         let mut list = MoveVec::new();
-        pawn_pin_ray_moves(&position, BB::new(A5), !EMPTY, E1, BB::new(B4), WHITE, &mut list);
+        pawn_pin_ray_moves(
+            &position,
+            BB::new(A5),
+            !EMPTY,
+            E1,
+            BB::new(B4),
+            WHITE,
+            &mut list,
+        );
         assert_eq!(list.len(), 1);
         assert_list_includes_moves(&list, &["b4xa5"]);
     }
@@ -98,7 +106,15 @@ mod test {
             Position::from_fen("rnb2k1r/pp1Pbppp/2p5/4q3/8/8/PP2P1PP/RNB1KNBR w KQ - 3 9").unwrap();
 
         let mut list = MoveVec::new();
-        pawn_pin_ray_moves(&position, BB::new(E5), !EMPTY, E1, BB::new(E2), WHITE, &mut list);
+        pawn_pin_ray_moves(
+            &position,
+            BB::new(E5),
+            !EMPTY,
+            E1,
+            BB::new(E2),
+            WHITE,
+            &mut list,
+        );
         assert_eq!(list.len(), 2);
         assert_list_includes_moves(&list, &["e2e3", "e2e4"]);
     }

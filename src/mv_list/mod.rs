@@ -2,18 +2,24 @@ use bb::BB;
 use castle::Castle;
 use square::Square;
 
+mod best_mv_tracker;
 mod mv_counter;
 mod mv_vec;
+mod piece_square_table;
 mod scored_mv_list;
 
+pub use self::best_mv_tracker::BestMoveTracker;
 pub use self::mv_counter::MoveCounter;
 pub use self::mv_vec::MoveVec;
-pub use self::scored_mv_list::{MoveScore, PieceSquareTable, ScoredMoveList};
+pub use self::piece_square_table::PieceSquareTable;
+pub use self::scored_mv_list::ScoredMoveList;
+
+pub const CHECK_MATE_SCORE: i16 = std::i16::MAX / 2;
 
 /// MoveList represents a way to collect moves from move generation functions. Use this if you want to collect or record moves in a way not supported by MoveVec or MoveCounter
 pub trait MoveList {
-  /// Adds moves from the from-square. Targets is a bitboard of valid to-squares. Enemy is a bitboard of enemy pieces (ie pieces that can be captured)
-  fn add_moves(&mut self, from: Square, targets: BB, enemy: BB);
+  fn add_captures(&mut self, from: Square, targets: BB);
+  fn add_non_captures(&mut self, from: Square, targets: BB);
 
   /// Adds the castle to the move list
   fn add_castle(&mut self, castle: Castle);

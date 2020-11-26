@@ -3,30 +3,38 @@ use mv_list::MoveList;
 use piece::*;
 use position::Position;
 
-pub fn king_moves<L: MoveList>(position: &Position, to_mask: BB, list: &mut L) {
+pub fn king_moves<L: MoveList>(position: &Position, capture_mask: BB, push_mask: BB, list: &mut L) {
     let stm = position.state().stm;
     let piece = KING.pc(stm);
     let movers = position.bb_pc(piece);
-    let enemy = position.bb_side(stm.flip());
-    let friendly = position.bb_side(stm);
 
     debug_assert_eq!(movers.pop_count(), 1);
     let from = movers.bitscan();
 
-    let targets = from.king_moves() & to_mask & !friendly;
-    list.add_moves(from, targets, enemy);
+    let capture_targets = from.king_moves() & capture_mask;
+    let push_targets = from.king_moves() & push_mask;
+
+    list.add_captures(from, capture_targets);
+    list.add_non_captures(from, push_targets);
 }
 
-pub fn knight_moves<L: MoveList>(position: &Position, to_mask: BB, from_mask: BB, list: &mut L) {
+pub fn knight_moves<L: MoveList>(
+    position: &Position,
+    capture_mask: BB,
+    push_mask: BB,
+    from_mask: BB,
+    list: &mut L,
+) {
     let stm = position.state().stm;
     let piece = KNIGHT.pc(stm);
     let movers = position.bb_pc(piece) & from_mask;
-    let enemy = position.bb_side(stm.flip());
-    let friendly = position.bb_side(stm);
 
     for (from, _) in movers.iter() {
-        let targets = from.knight_moves() & to_mask & !friendly;
-        list.add_moves(from, targets, enemy);
+        let capture_targets = from.knight_moves() & capture_mask;
+        let push_targets = from.knight_moves() & push_mask;
+
+        list.add_captures(from, capture_targets);
+        list.add_non_captures(from, push_targets);
     }
 }
 
@@ -56,7 +64,10 @@ mod test {
         let position =
             &Position::from_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNB1KBNR w").unwrap();
         let mut list = MoveVec::new();
-        king_moves::<MoveVec>(position, !EMPTY, &mut list);
+        let capture_mask = position.bb_side(position.state().stm.flip());
+        let push_mask = position.bb_empty();
+
+        king_moves::<MoveVec>(position, capture_mask, push_mask, &mut list);
         assert_eq!(list.len(), 1);
         assert_list_includes_moves(&list, &["e1d1"]);
     }
@@ -66,7 +77,10 @@ mod test {
         let position =
             &Position::from_fen("rnbqkbnr/pppppPpp/8/8/8/8/PPPPPPPP/RNB1KBNR b").unwrap();
         let mut list = MoveVec::new();
-        king_moves::<MoveVec>(position, !EMPTY, &mut list);
+        let capture_mask = position.bb_side(position.state().stm.flip());
+        let push_mask = position.bb_empty();
+
+        king_moves::<MoveVec>(position, capture_mask, push_mask, &mut list);
         assert_eq!(list.len(), 1);
         assert_list_includes_moves(&list, &["e8xf7"]);
     }
@@ -75,7 +89,10 @@ mod test {
     fn king_moves_with_mask() {
         let position = &Position::from_fen("1nbqkbn1/ppprpppp/8/8/8/3p4/5p2/RNBQKBNR w").unwrap();
         let mut list = MoveVec::new();
-        king_moves::<MoveVec>(position, !BB::new(E2), &mut list);
+        let capture_mask = !BB::new(E2) & position.bb_side(position.state().stm.flip());
+        let push_mask = !BB::new(E2) & position.bb_empty();
+
+        king_moves::<MoveVec>(position, capture_mask, push_mask, &mut list);
         assert_list_includes_moves(&list, &["e1d2", "e1xf2"]);
         assert_eq!(list.len(), 2);
     }
@@ -84,7 +101,11 @@ mod test {
     fn knight_pushes() {
         let position = &Position::from_fen(STARTING_POSITION_FEN).unwrap();
         let mut list = MoveVec::new();
-        knight_moves::<MoveVec>(position, !EMPTY, !EMPTY, &mut list);
+
+        let capture_mask = position.bb_side(position.state().stm.flip());
+        let push_mask = position.bb_empty();
+
+        knight_moves::<MoveVec>(position, capture_mask, push_mask, !EMPTY, &mut list);
         assert_eq!(list.len(), 4);
         assert_list_includes_moves(&list, &["b1a3", "b1c3", "g1f3", "g1h3"]);
     }
@@ -103,7 +124,11 @@ mod test {
         let position =
             &Position::from_fen("rnbqkbnr/pppppppp/P7/8/8/8/PPPPPPPP/RNBQKBNR b").unwrap();
         let mut list = MoveVec::new();
-        knight_moves::<MoveVec>(position, !EMPTY, !EMPTY, &mut list);
+
+        let capture_mask = position.bb_side(position.state().stm.flip());
+        let push_mask = position.bb_empty();
+
+        knight_moves::<MoveVec>(position, capture_mask, push_mask, !EMPTY, &mut list);
         assert_eq!(list.len(), 4);
         assert_list_includes_moves(&list, &["b8xa6"]);
     }

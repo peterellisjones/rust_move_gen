@@ -50,8 +50,11 @@ pub use board::Board;
 pub use castle::{Castle, KING_SIDE, QUEEN_SIDE};
 pub use castling_rights::{CastlingRights, BLACK_KS, BLACK_QS, WHITE_KS, WHITE_QS};
 pub use gen::legal_moves;
-pub use mv::{Move, NULL_MOVE};
-pub use mv_list::{MoveCounter, MoveList, MoveScore, MoveVec, PieceSquareTable, ScoredMoveList};
+pub use mv::{Move, MoveScore, NULL_MOVE};
+pub use mv_list::{
+    BestMoveTracker, MoveCounter, MoveList, MoveVec, PieceSquareTable, ScoredMoveList,
+    CHECK_MATE_SCORE,
+};
 pub use perft::perft;
 pub use perft::perft_detailed;
 pub use piece::*;

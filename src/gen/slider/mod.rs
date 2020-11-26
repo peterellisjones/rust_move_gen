@@ -36,15 +36,14 @@ use square::Square;
 
 pub fn slider_moves<L: MoveList>(
     position: &Position,
-    to_mask: BB,
+    capture_mask: BB,
+    push_mask: BB,
     pinned_mask: BB,
     king_sq: Square,
     list: &mut L,
 ) {
     let stm = position.state().stm;
     let occupied = position.bb_occupied();
-    let enemy = position.bb_side(stm.flip());
-    let shared_mask = to_mask & !position.bb_side(stm);
     let queens = position.bb_pc(QUEEN.pc(stm));
     let rooks = position.bb_pc(ROOK.pc(stm));
     let bishops = position.bb_pc(BISHOP.pc(stm));
@@ -52,32 +51,37 @@ pub fn slider_moves<L: MoveList>(
     let non_diag_attackers = queens | rooks;
 
     for (from, _) in (non_diag_attackers & !pinned_mask).iter() {
-        let targets = rook_attacks_from_sq(from, occupied) & shared_mask;
-        list.add_moves(from, targets, enemy);
+        let targets = rook_attacks_from_sq(from, occupied);
+        list.add_captures(from, targets & capture_mask);
+        list.add_non_captures(from, targets & push_mask);
     }
 
     for (from, _) in (non_diag_attackers & pinned_mask).iter() {
         let ray_mask = lines_along(from, king_sq);
-        let targets = rook_attacks_from_sq(from, occupied) & shared_mask & ray_mask;
-        list.add_moves(from, targets, enemy);
+        let targets = rook_attacks_from_sq(from, occupied) & ray_mask;
+        list.add_captures(from, targets & capture_mask);
+        list.add_non_captures(from, targets & push_mask);
     }
 
     for (from, _) in (diag_attackers & !pinned_mask).iter() {
-        let targets = bishop_attacks_from_sq(from, occupied) & shared_mask;
-        list.add_moves(from, targets, enemy);
+        let targets = bishop_attacks_from_sq(from, occupied);
+        list.add_captures(from, targets & capture_mask);
+        list.add_non_captures(from, targets & push_mask);
     }
 
     for (from, _) in (diag_attackers & pinned_mask).iter() {
         let ray_mask = lines_along(from, king_sq);
-        let targets = bishop_attacks_from_sq(from, occupied) & shared_mask & ray_mask;
-        list.add_moves(from, targets, enemy);
+        let targets = bishop_attacks_from_sq(from, occupied) & ray_mask;
+        list.add_captures(from, targets & capture_mask);
+        list.add_non_captures(from, targets & push_mask);
     }
 }
 
 #[allow(dead_code)]
 pub fn non_diag_slider_moves<L: MoveList>(
     position: &Position,
-    to_mask: BB,
+    capture_mask: BB,
+    push_mask: BB,
     from_mask: BB,
     list: &mut L,
 ) {
@@ -86,19 +90,19 @@ pub fn non_diag_slider_moves<L: MoveList>(
     let queens = position.bb_pc(QUEEN.pc(stm));
     let rooks = position.bb_pc(ROOK.pc(stm));
     let non_diag_attackers = (queens | rooks) & from_mask;
-    let enemy = position.bb_side(stm.flip());
-    let shared_mask = to_mask & !position.bb_side(stm);
 
     for (from, _) in non_diag_attackers.iter() {
-        let targets = rook_attacks_from_sq(from, occupied) & shared_mask;
-        list.add_moves(from, targets, enemy);
+        let targets = rook_attacks_from_sq(from, occupied);
+        list.add_captures(from, targets & capture_mask);
+        list.add_non_captures(from, targets & push_mask);
     }
 }
 
 #[allow(dead_code)]
 pub fn diag_slider_moves<L: MoveList>(
     position: &Position,
-    to_mask: BB,
+    capture_mask: BB,
+    push_mask: BB,
     from_mask: BB,
     list: &mut L,
 ) {
@@ -107,12 +111,11 @@ pub fn diag_slider_moves<L: MoveList>(
     let queens = position.bb_pc(QUEEN.pc(stm));
     let bishops = position.bb_pc(BISHOP.pc(stm));
     let diag_attackers = (queens | bishops) & from_mask;
-    let enemy = position.bb_side(stm.flip());
-    let shared_mask = to_mask & !position.bb_side(stm);
 
     for (from, _) in diag_attackers.iter() {
-        let targets = bishop_attacks_from_sq(from, occupied) & shared_mask;
-        list.add_moves(from, targets, enemy);
+        let targets = bishop_attacks_from_sq(from, occupied);
+        list.add_captures(from, targets & capture_mask);
+        list.add_non_captures(from, targets & push_mask);
     }
 }
 
@@ -128,7 +131,11 @@ mod test {
         let position =
             &Position::from_fen("rnbqkbnr/pppppppp/8/8/8/8/1PPPPPPP/RNB1KBNR w").unwrap();
         let mut list = MoveVec::new();
-        slider_moves::<MoveVec>(position, !EMPTY, EMPTY, Square(1), &mut list);
+
+        let capture_mask = position.bb_side(position.state().stm.flip());
+        let push_mask = position.bb_empty();
+
+        slider_moves::<MoveVec>(position, capture_mask, push_mask, EMPTY, Square(1), &mut list);
         assert_list_includes_moves(&list, &["a1xa7", "a1a2", "a1a3", "a1a4", "a1a5", "a1a6"]);
     }
 
@@ -136,7 +143,11 @@ mod test {
     fn test_bishop_moves() {
         let position = &Position::from_fen("rnbqkbnr/4pppp/8/5P2/8/8/8/RNBQKBNR b").unwrap();
         let mut list = MoveVec::new();
-        slider_moves::<MoveVec>(position, !EMPTY, EMPTY, Square(1), &mut list);
+
+        let capture_mask = position.bb_side(position.state().stm.flip());
+        let push_mask = position.bb_empty();
+
+        slider_moves::<MoveVec>(position, capture_mask, push_mask, EMPTY, Square(1), &mut list);
         assert_list_includes_moves(&list, &["c8xf5", "c8a6", "c8e6", "c8b7", "c8d7"]);
     }
 
@@ -145,7 +156,11 @@ mod test {
         let position =
             &Position::from_fen("rnbqkbnr/pppppppp/8/8/8/8/PPP1PPPP/RNBQKBNR w").unwrap();
         let mut list = MoveVec::new();
-        slider_moves::<MoveVec>(position, !EMPTY, EMPTY, Square(1), &mut list);
+
+        let capture_mask = position.bb_side(position.state().stm.flip());
+        let push_mask = position.bb_empty();
+
+        slider_moves::<MoveVec>(position, capture_mask, push_mask, EMPTY, Square(1), &mut list);
         assert_list_includes_moves(&list, &["d1xd7", "d1d2", "d1d3", "d1d4", "d1d5", "d1d6"]);
     }
 }

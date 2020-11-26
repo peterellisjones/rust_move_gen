@@ -108,7 +108,7 @@ impl Position {
     }
 
     /// Get position non-positional state
-        pub fn state(&self) -> &State {
+    pub fn state(&self) -> &State {
         &self.state
     }
 

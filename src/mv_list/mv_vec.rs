@@ -28,9 +28,12 @@ impl fmt::Debug for MoveVec {
 }
 
 impl MoveList for MoveVec {
-    fn add_moves(&mut self, from: Square, targets: BB, enemy: BB) {
-        self.insert_moves(from, targets & (!enemy), Move::new_push);
-        self.insert_moves(from, targets & enemy, Move::new_capture);
+    fn add_captures(&mut self, from: Square, targets: BB) {
+        self.insert_moves(from, targets, Move::new_capture);
+    }
+
+    fn add_non_captures(&mut self, from: Square, targets: BB) {
+        self.insert_moves(from, targets, Move::new_push);
     }
 
     fn add_castle(&mut self, castle: Castle) {

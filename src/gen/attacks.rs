@@ -30,7 +30,7 @@ pub fn checkers_and_pinned(king: BB, attacker: Side, position: &Position) -> (BB
     let mut pinned = EMPTY;
     let mut pinners = EMPTY;
 
-    // Pawns and Knights can only be checkers
+    // Pawns and Knights can only be checkers, not pinners
     let knights = position.bb_pc(KNIGHT.pc(attacker));
     checkers |= king_sq.knight_moves() & knights;
 
@@ -40,7 +40,6 @@ pub fn checkers_and_pinned(king: BB, attacker: Side, position: &Position) -> (BB
     }
 
     // Sliding pieces can be checkers or pinners depending on occupancy of intermediate squares
-
     let (diag_attackers, non_diag_attackers) = position.bb_sliders(attacker);
     let potential_diag_pinners = occupied & king_sq.bishop_rays() & diag_attackers;
     let potential_non_diag_pinners = occupied & king_sq.rook_rays() & non_diag_attackers;

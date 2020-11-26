@@ -6,10 +6,10 @@ use position::Position;
 use std::sync::mpsc::channel;
 use threadpool::ThreadPool;
 
-// Returns the number of nodes at the provided depth
-// cache_bytes_per_thread must be of form 2^N bytes
-// if multi_threading_enabled is set to true search will
-// run concurrently accross threads equal to your CPU count
+/// Returns the number of nodes at the provided depth
+/// cache_bytes_per_thread must be of form 2^N bytes
+/// if multi_threading_enabled is set to true search will
+/// run concurrently accross threads equal to your CPU count
 pub fn perft(
   position: &mut Position,
   depth: usize,
@@ -119,10 +119,10 @@ fn perft_with_cache_inner(position: &mut Position, depth: usize, cache: &mut Cac
   count
 }
 
-// Returns the number of moves, captures, promotions, castles and
-// en-passant captures at the provided depth
-// if multi_threading_enabled is set to true search will
-// run concurrently accross threads equal to your CPU count
+/// Returns the number of moves, captures, promotions, castles and
+/// en-passant captures at the provided depth
+/// if multi_threading_enabled is set to true search will
+/// run concurrently accross threads equal to your CPU count
 pub fn perft_detailed(
   position: &mut Position,
   depth: usize,

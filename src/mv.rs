@@ -2,6 +2,7 @@ use castle::Castle;
 use piece::*;
 use square;
 use square::Square;
+use std::cmp::Ordering;
 use std::fmt;
 
 // super compress move representation
@@ -169,6 +170,54 @@ impl fmt::Display for Move {
 impl fmt::Debug for Move {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", self.to_string())
+    }
+}
+
+/// MoveScore encodes a move score tuple
+#[derive(Clone, Eq, Copy)]
+pub struct MoveScore(Move, i16);
+
+impl MoveScore {
+    pub fn mv(&self) -> Move {
+        return self.0;
+    }
+
+    pub fn score(&self) -> i16 {
+        return self.1;
+    }
+
+    pub fn new(mv: Move, score: i16) -> MoveScore {
+        MoveScore(mv, score)
+    }
+}
+
+impl Ord for MoveScore {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.1.cmp(&other.1)
+    }
+}
+
+impl PartialOrd for MoveScore {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.1.cmp(&other.1))
+    }
+}
+
+impl PartialEq for MoveScore {
+    fn eq(&self, other: &Self) -> bool {
+        self.1 == other.1
+    }
+}
+
+impl fmt::Display for MoveScore {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{} ({})", self.0, self.1)
+    }
+}
+
+impl fmt::Debug for MoveScore {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{} ({})", self.0, self.1)
     }
 }
 
