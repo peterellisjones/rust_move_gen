@@ -186,7 +186,7 @@ impl MoveScore {
         return self.1;
     }
 
-    pub fn new(mv: Move, score: i16) -> MoveScore {
+    pub const fn new(mv: Move, score: i16) -> MoveScore {
         MoveScore(mv, score)
     }
 }

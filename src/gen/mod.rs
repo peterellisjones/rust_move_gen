@@ -26,10 +26,82 @@ pub fn legal_moves<L: MoveList>(position: &Position, list: &mut L) -> bool {
 }
 
 /// Adds 'loud' legal moves to the provided MoveList. Returns true if mover is in check
-/// If in check: adds all legal moves
-/// If not in check: adds capturing moves only
+///
+/// * If in check: adds all legal moves
+/// * If not in check: adds capturing moves only
+///
+// # TODO: TEST
 pub fn loud_legal_moves<L: MoveList>(position: &Position, list: &mut L) -> bool {
-    generate_legal_moves(position, list, true)
+    let stm = position.state().stm;
+    let kings = position.bb_pc(KING.pc(stm));
+
+    // We always need legal king moves
+    let attacked_squares = king_danger_squares(kings, stm.flip(), position);
+
+    let king_sq = kings.bitscan();
+
+    let (checkers, pinned, pinners) = checkers_and_pinned(kings, stm.flip(), position);
+    let king_attacks_count = checkers.pop_count();
+
+    // capture_mask and push_mask represent squares our pieces are allowed to move to or capture,
+    // respectively. The difference between the two is only important for pawn EP captures
+    // Since push_mask is used to block a pin, we ignore push_mask when calculating king moves
+    let enemy = position.bb_side(stm.flip());
+    let empty_squares = position.bb_empty();
+
+    let mut capture_mask = enemy;
+    let king_capture_mask = enemy & !attacked_squares;
+    let king_push_mask = empty_squares & !attacked_squares;
+
+    if king_attacks_count > 1 {
+        // multiple attackers... only solutions are king moves
+        king_moves(position, king_capture_mask, king_push_mask, list);
+        return true;
+    } else if king_attacks_count == 1 {
+        // if ony one attacker, we can try attacking the attacker with
+        // our other pieces.
+        capture_mask = checkers;
+
+        let checker_sq = checkers.bitscan();
+        let checker = position.at(checker_sq);
+        debug_assert!(checker.is_some());
+
+        let push_mask = if checker.is_slider() {
+            // If the piece giving check is a slider, we can additionally attempt
+            // to block the sliding piece;
+            squares_between(king_sq, checker_sq)
+        } else {
+            // If we are in check by a jumping piece (aka a knight) then
+            // there are no valid non-captures to avoid check
+            EMPTY
+        };
+
+        // When in check evaluate moves in this order
+        // 1. king moves
+        // 2. knight moves
+        // 3. sliding piece moves
+        // 4. pawn moves
+        // No need for pawn pin ray moves since cannot move a pinned piece if in check
+        king_moves(position, king_capture_mask, king_push_mask, list);
+        knight_moves(position, capture_mask, push_mask, !pinned, list);
+        slider_moves(position, capture_mask, push_mask, pinned, king_sq, list);
+        pawn_moves(position, capture_mask, push_mask, !pinned, list);
+    } else {
+        let push_mask = EMPTY;
+
+        // When not in check evaluate moves in this order
+        // 1. pawn captures
+        // 2. knight captures
+        // 3. sliding piece captures
+        // 4. pawn pin-ray captures
+        pawn_captures(position, capture_mask, push_mask, !pinned, list);
+        pawn_pin_ray_captures(position, capture_mask & pinners, king_sq, pinned, stm, list);
+        knight_captures(position, capture_mask, !pinned, list);
+        slider_captures(position, capture_mask, pinned, king_sq, list);
+        king_captures(position, king_capture_mask, list);
+    }
+
+    king_attacks_count > 0
 }
 
 fn generate_legal_moves<L: MoveList>(position: &Position, list: &mut L, loud_only: bool) -> bool {

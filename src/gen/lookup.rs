@@ -18,6 +18,19 @@ pub fn king_moves<L: MoveList>(position: &Position, capture_mask: BB, push_mask:
     list.add_non_captures(from, push_targets);
 }
 
+pub fn king_captures<L: MoveList>(position: &Position, capture_mask: BB, list: &mut L) {
+    let stm = position.state().stm;
+    let piece = KING.pc(stm);
+    let movers = position.bb_pc(piece);
+
+    debug_assert_eq!(movers.pop_count(), 1);
+    let from = movers.bitscan();
+
+    let capture_targets = from.king_moves() & capture_mask;
+
+    list.add_captures(from, capture_targets);
+}
+
 pub fn knight_moves<L: MoveList>(
     position: &Position,
     capture_mask: BB,
@@ -35,6 +48,23 @@ pub fn knight_moves<L: MoveList>(
 
         list.add_captures(from, capture_targets);
         list.add_non_captures(from, push_targets);
+    }
+}
+
+pub fn knight_captures<L: MoveList>(
+    position: &Position,
+    capture_mask: BB,
+    from_mask: BB,
+    list: &mut L,
+) {
+    let stm = position.state().stm;
+    let piece = KNIGHT.pc(stm);
+    let movers = position.bb_pc(piece) & from_mask;
+
+    for (from, _) in movers.iter() {
+        let capture_targets = from.knight_moves() & capture_mask;
+
+        list.add_captures(from, capture_targets);
     }
 }
 

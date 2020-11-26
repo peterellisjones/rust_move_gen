@@ -6,6 +6,7 @@ use super::util::grid_to_string_with_props;
 use bb::*;
 use castling_rights::*;
 use hash::{Zobrist, DEFAULT_ZOBRISH_HASH};
+use mv_list::PieceSquareTable;
 use piece::*;
 use side::Side;
 use side::*;
@@ -103,7 +104,7 @@ impl Position {
         to_fen(&self.grid, &self.state)
     }
 
-        pub fn hash_key(&self) -> u64 {
+    pub fn hash_key(&self) -> u64 {
         self.key
     }
 
@@ -113,12 +114,12 @@ impl Position {
     }
 
     /// Get position position
-        pub fn grid(&self) -> &[Piece; 64] {
+    pub fn grid(&self) -> &[Piece; 64] {
         &self.grid
     }
 
     /// Get piece at square
-        pub fn at(&self, sq: Square) -> Piece {
+    pub fn at(&self, sq: Square) -> Piece {
         unsafe { return *self.grid.get_unchecked(sq.to_usize()) }
     }
 
@@ -149,7 +150,7 @@ impl Position {
         )
     }
 
-        fn put_piece(&mut self, pc: Piece, sq: Square) {
+    fn put_piece(&mut self, pc: Piece, sq: Square) {
         debug_assert!(self.at(sq).is_none());
 
         let bb_mask = BB::new(sq);
@@ -165,7 +166,7 @@ impl Position {
         }
     }
 
-        fn remove_piece(&mut self, sq: Square) {
+    fn remove_piece(&mut self, sq: Square) {
         debug_assert!(self.at(sq).is_some());
 
         let pc = self.at(sq);
@@ -182,7 +183,7 @@ impl Position {
         }
     }
 
-        fn move_piece(&mut self, from: Square, to: Square) -> BB {
+    fn move_piece(&mut self, from: Square, to: Square) -> BB {
         debug_assert!(self.at(from).is_some());
         debug_assert!(self.at(to).is_none());
 
@@ -260,6 +261,25 @@ impl Position {
         unsafe {
             *(self.grid.get_unchecked_mut(sq.to_usize())) = pc;
         }
+    }
+
+    pub fn piece_square_score(&self, piece_square_table: &PieceSquareTable) -> i16 {
+        let mut score = 0i16;
+
+        for (idx, &pc) in self.grid().iter().enumerate() {
+            if pc.is_some() {
+                let piece_square_value =
+                    piece_square_table.score(pc.kind(), Square(idx).from_side(pc.side()));
+
+                score += if self.state().stm == pc.side() {
+                    piece_square_value
+                } else {
+                    -piece_square_value
+                }
+            }
+        }
+
+        score
     }
 }
 

@@ -11,30 +11,29 @@ use std;
 use std::collections::BinaryHeap;
 use std::fmt;
 
-/// ScoredMoveList is list move vec but calculates the piece-square score of each move as it adds them to the list
+/// SortedMoveList is list move vec but calculates the piece-square score of each move as it adds them to the list
 /// This is more efficient than calculating scores later
 /// /// Underlying structure is a binary heap which allows O(1) insertion and fast ordered interation via into_iter()
-#[derive(Clone)]
-pub struct ScoredMoveList<'a> {
-    moves: BinaryHeap<MoveScore>,
+pub struct SortedMoveList<'a> {
+    moves: &'a mut BinaryHeap<MoveScore>,
     piece_square_table: &'a PieceSquareTable,
     piece_grid: &'a [Piece; 64],
     stm: Side,
 }
 
-impl<'a> fmt::Display for ScoredMoveList<'a> {
+impl<'a> fmt::Display for SortedMoveList<'a> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", self.to_string())
     }
 }
 
-impl<'a> fmt::Debug for ScoredMoveList<'a> {
+impl<'a> fmt::Debug for SortedMoveList<'a> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", self.to_string())
     }
 }
 
-impl<'a> MoveList for ScoredMoveList<'a> {
+impl<'a> MoveList for SortedMoveList<'a> {
     fn add_captures(&mut self, from: Square, targets: BB) {
         if targets == EMPTY {
             return;
@@ -179,14 +178,15 @@ impl<'a> MoveList for ScoredMoveList<'a> {
     }
 }
 
-impl<'a> ScoredMoveList<'a> {
+impl<'a> SortedMoveList<'a> {
     pub fn new(
         piece_square_table: &'a PieceSquareTable,
         piece_grid: &'a [Piece; 64],
         stm: Side,
-    ) -> ScoredMoveList<'a> {
-        ScoredMoveList {
-            moves: BinaryHeap::<MoveScore>::with_capacity(60),
+        moves: &'a mut BinaryHeap<MoveScore>,
+    ) -> SortedMoveList<'a> {
+        SortedMoveList {
+            moves: moves,
             piece_square_table: piece_square_table,
             piece_grid: piece_grid,
             stm: stm,
@@ -195,22 +195,6 @@ impl<'a> ScoredMoveList<'a> {
 
     pub fn best_move(&self) -> Option<&MoveScore> {
         self.moves.peek()
-    }
-
-    pub fn to_string(&self) -> String {
-        self.iter_unsorted()
-            .map(|pair: &MoveScore| format!("{} ({})", pair.mv(), pair.score()))
-            .collect::<Vec<String>>()
-            .join(", ")
-    }
-
-    pub fn iter_unsorted(&self) -> std::collections::binary_heap::Iter<MoveScore> {
-        self.moves.iter()
-    }
-
-    #[allow(dead_code)]
-    pub fn into_iter(self) -> std::collections::binary_heap::IntoIterSorted<MoveScore> {
-        self.moves.into_iter_sorted()
     }
 
     #[allow(dead_code)]
@@ -239,12 +223,17 @@ mod test {
         let position = &Position::from_fen(STARTING_POSITION_FEN).unwrap();
         let piece_square_table = PieceSquareTable::new([[100i16; 64]; 6]);
 
-        let mut list =
-            ScoredMoveList::new(&piece_square_table, position.grid(), position.state().stm);
+        let mut heap = BinaryHeap::<MoveScore>::new();
+        let mut list = SortedMoveList::new(
+            &piece_square_table,
+            position.grid(),
+            position.state().stm,
+            &mut heap,
+        );
 
         legal_moves(&position, &mut list);
 
-        assert_eq!(list.len(), 20);
+        assert_eq!(heap.len(), 20);
     }
 
     // #[test]
@@ -253,11 +242,11 @@ mod test {
     //     let piece_square_table = PieceSquareTable::new([[100i16; 64]; 6]);
 
     //     let mut list =
-    //         ScoredMoveList::new(&piece_square_table, position.grid(), position.state().stm);
+    //         SortedMoveList::new(&piece_square_table, position.grid(), position.state().stm);
 
     //     legal_moves(&position, &mut list);
 
-    //     assert_list_includes_moves(&list, &["O-O (456)"]);
+    //     assert_list_includes_moves(&heap, &["O-O (456)"]);
     // }
 
     // #[test]
@@ -266,11 +255,11 @@ mod test {
     //     let piece_square_table = PieceSquareTable::new([[100i16; 64]; 6]);
 
     //     let mut list =
-    //         ScoredMoveList::new(&piece_square_table, position.grid(), position.state().stm);
+    //         SortedMoveList::new(&piece_square_table, position.grid(), position.state().stm);
 
     //     legal_moves(&position, &mut list);
 
-    //     assert_list_includes_moves(&list, &["O-O-O (123)"]);
+    //     assert_list_includes_moves(&heap, &["O-O-O (123)"]);
     // }
 
     #[test]
@@ -283,13 +272,17 @@ mod test {
         piece_square_values[PAWN.to_usize()][C4.to_usize()] = 165;
 
         let piece_square_table = PieceSquareTable::new(piece_square_values);
-
-        let mut list =
-            ScoredMoveList::new(&piece_square_table, position.grid(), position.state().stm);
+        let mut heap = BinaryHeap::<MoveScore>::new();
+        let mut list = SortedMoveList::new(
+            &piece_square_table,
+            position.grid(),
+            position.state().stm,
+            &mut heap,
+        );
 
         legal_moves(&position, &mut list);
 
-        assert_list_includes_moves(&list, &["c2c4 (15)"]);
+        assert_list_includes_moves(&heap, &["c2c4 (15)"]);
     }
 
     #[test]
@@ -304,13 +297,17 @@ mod test {
         piece_square_values[KNIGHT.to_usize()][C3.to_usize()] = 333;
 
         let piece_square_table = PieceSquareTable::new(piece_square_values);
-
-        let mut list =
-            ScoredMoveList::new(&piece_square_table, position.grid(), position.state().stm);
+        let mut heap = BinaryHeap::<MoveScore>::new();
+        let mut list = SortedMoveList::new(
+            &piece_square_table,
+            position.grid(),
+            position.state().stm,
+            &mut heap,
+        );
 
         legal_moves(&position, &mut list);
 
-        assert_list_includes_moves(&list, &["b8c6 (33)"]);
+        assert_list_includes_moves(&heap, &["b8c6 (33)"]);
     }
     #[test]
     fn test_capture_scoring() {
@@ -328,13 +325,17 @@ mod test {
         piece_square_values[PAWN.to_usize()][C6.to_usize()] = 50;
 
         let piece_square_table = PieceSquareTable::new(piece_square_values);
-
-        let mut list =
-            ScoredMoveList::new(&piece_square_table, position.grid(), position.state().stm);
+        let mut heap = BinaryHeap::<MoveScore>::new();
+        let mut list = SortedMoveList::new(
+            &piece_square_table,
+            position.grid(),
+            position.state().stm,
+            &mut heap,
+        );
 
         legal_moves(&position, &mut list);
 
-        assert_list_includes_moves(&list, &["b8xc6 (83)"]);
+        assert_list_includes_moves(&heap, &["b8xc6 (83)"]);
     }
 
     #[test]
@@ -353,11 +354,17 @@ mod test {
             let stm = position.state().stm;
 
             let move_score = {
-                let mut list = ScoredMoveList::new(&piece_square_table, position.grid(), stm);
+                let mut heap = BinaryHeap::<MoveScore>::new();
+                let mut list = SortedMoveList::new(
+                    &piece_square_table,
+                    position.grid(),
+                    position.state().stm,
+                    &mut heap,
+                );
 
                 legal_moves(&position, &mut list);
 
-                let sorted_vec = list.into_iter().collect::<Vec<MoveScore>>();
+                let sorted_vec = heap.into_iter_sorted().collect::<Vec<MoveScore>>();
 
                 *sorted_vec.choose(&mut rand::thread_rng()).unwrap()
             };
@@ -375,10 +382,10 @@ mod test {
         assert_eq!(initial_score + moves_scores, score_after_moves);
     }
 
-    fn assert_list_includes_moves(list: &ScoredMoveList, moves: &[&'static str]) {
+    fn assert_list_includes_moves(heap: &BinaryHeap<MoveScore>, moves: &[&'static str]) {
         for &m in moves.iter() {
-            assert!(list
-                .iter_unsorted()
+            assert!(heap
+                .iter()
                 .map(|pair: &MoveScore| format!("{} ({})", pair.mv(), pair.score()))
                 .any(|mv| mv == m));
         }

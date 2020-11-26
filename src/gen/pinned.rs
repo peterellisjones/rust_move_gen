@@ -70,6 +70,54 @@ pub fn pawn_pin_ray_moves<L: MoveList>(
     }
 }
 
+pub fn pawn_pin_ray_captures<L: MoveList>(
+    position: &Position,
+    capture_mask: BB,
+    king_sq: Square,
+    pinned: BB,
+    stm: Side,
+    list: &mut L,
+) {
+    let piece = PAWN.pc(stm);
+    let movers = position.bb_pc(piece) & pinned;
+
+    // exit early if no pinned pawns
+    if movers.none() {
+        return;
+    }
+
+    let king_diags = king_sq.bishop_rays();
+    let can_capture = movers & king_diags;
+
+    for &(shift, file_mask) in PAWN_CAPTURE_FILE_MASKS[stm.to_usize()].iter() {
+        let targets = can_capture.rot_left(shift as u32) & file_mask & capture_mask & king_diags;
+
+        list.add_pawn_captures(shift, targets);
+    }
+
+    if position.state().ep_square.is_some() {
+        for &(shift, file_mask) in PAWN_CAPTURE_FILE_MASKS[stm.to_usize()].iter() {
+            let targets = can_capture.rot_left(shift as u32) & file_mask;
+
+            let ep = position.state().ep_square.unwrap();
+            let ep_captures = targets & BB::new(ep) & king_diags;
+
+            for (to, to_bb) in ep_captures.iter() {
+                let from = to.rotate_right(shift as square::Internal);
+
+                let capture_sq = from.along_row_with_col(to);
+                let capture_sq_bb = BB::new(capture_sq);
+
+                // can only make ep capture if moving along king_diags, or capturing on capture mask
+                if ((to_bb & king_diags) | (capture_sq_bb & capture_mask)).any() {
+                    let from_bb = to_bb.rot_right(shift as u32);
+                    list.add_pawn_ep_capture(from_bb.bitscan(), ep);
+                }
+            }
+        }
+    }
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
