@@ -149,24 +149,17 @@ fn generate_legal_moves<L: MoveList>(position: &Position, list: &mut L, loud_onl
             // there are no valid non-captures to avoid check
             push_mask = EMPTY;
         }
-    } else {
-        // Not in check so can generate castles
-        // impossible for castles to be affected by pins
-        // so we don't need to consider pins here
-        castles(position, attacked_squares, list);
-
+    } else if loud_only {
         // if not in check and loud_only=true, then ignore non-captures
-        if loud_only {
-            push_mask = EMPTY;
-            king_push_mask = EMPTY;
-        }
+        push_mask = EMPTY;
+        king_push_mask = EMPTY;
     }
-
-    // generate moves for non-pinned knights (pinned knights can't move)
-    knight_moves(position, capture_mask, push_mask, !pinned, list);
 
     // generate moves for pinned and unpinned sliders
     slider_moves(position, capture_mask, push_mask, pinned, king_sq, list);
+
+    // generate moves for non-pinned knights (pinned knights can't move)
+    knight_moves(position, capture_mask, push_mask, !pinned, list);
 
     // generate moves for unpinned pawns
     pawn_moves(position, capture_mask, push_mask, !pinned, list);
@@ -182,6 +175,13 @@ fn generate_legal_moves<L: MoveList>(position: &Position, list: &mut L, loud_onl
         stm,
         list,
     );
+
+    if king_attacks_count == 0 {
+        // Not in check so can generate castles
+        // impossible for castles to be affected by pins
+        // so we don't need to consider pins here
+        castles(position, attacked_squares, list);
+    }
 
     king_moves(position, king_capture_mask, king_push_mask, list);
 

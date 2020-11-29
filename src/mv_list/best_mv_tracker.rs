@@ -1,5 +1,5 @@
 use super::piece_square_table::PieceSquareTable;
-use bb::{BB, END_ROWS, EMPTY};
+use bb::{BB, EMPTY, END_ROWS};
 use castle::Castle;
 use mv::*;
 use mv_list::MoveList;
@@ -18,6 +18,7 @@ pub struct BestMoveTracker<'a> {
   piece_square_table: &'a PieceSquareTable,
   piece_grid: &'a [Piece; 64],
   stm: Side,
+  count: usize, // counts the number of moves considered
 }
 
 impl<'a> BestMoveTracker<'a> {
@@ -32,6 +33,7 @@ impl<'a> BestMoveTracker<'a> {
       piece_grid: piece_grid,
       piece_square_table: piece_square_table,
       stm: stm,
+      count: 0,
     }
   }
 
@@ -47,7 +49,12 @@ impl<'a> BestMoveTracker<'a> {
     self.mv
   }
 
+  pub fn count(&self) -> usize {
+    self.count
+  }
+
   fn insert(&mut self, mv: Move, score: i16) {
+    self.count += 1;
     if score > self.score {
       self.score = score;
       self.mv = mv;
@@ -69,7 +76,7 @@ impl<'a> fmt::Debug for BestMoveTracker<'a> {
 impl<'a> MoveList for BestMoveTracker<'a> {
   fn add_captures(&mut self, from: Square, targets: BB) {
     if targets == EMPTY {
-      return
+      return;
     }
 
     let stm = self.stm;
@@ -94,10 +101,9 @@ impl<'a> MoveList for BestMoveTracker<'a> {
     }
   }
 
-
   fn add_non_captures(&mut self, from: Square, targets: BB) {
     if targets == EMPTY {
-      return
+      return;
     }
 
     let stm = self.stm;

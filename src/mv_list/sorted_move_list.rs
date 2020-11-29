@@ -7,13 +7,13 @@ use piece::*;
 use side::Side;
 use square;
 use square::*;
-use std;
 use std::collections::BinaryHeap;
 use std::fmt;
 
 /// SortedMoveList is list move vec but calculates the piece-square score of each move as it adds them to the list
-/// This is more efficient than calculating scores later
-/// /// Underlying structure is a binary heap which allows O(1) insertion and fast ordered interation via into_iter()
+/// This is more efficient than sorting scores later if you need the moves to be sorted according to
+/// piece-square score. Underlying structure is a binary heap which allows O(1) insertion
+/// and fast ordered interation via into_iter()
 pub struct SortedMoveList<'a> {
     moves: &'a mut BinaryHeap<MoveScore>,
     piece_square_table: &'a PieceSquareTable,

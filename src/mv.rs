@@ -1,4 +1,4 @@
-use castle::Castle;
+use castle::{Castle, KING_SIDE, QUEEN_SIDE};
 use piece::*;
 use square;
 use square::Square;
@@ -33,9 +33,11 @@ const PROMOTION_FLAG: u8 = 128;
 const EP_CAPTURE_FLAG: u8 = 64;
 #[allow(dead_code)]
 pub const NULL_MOVE: Move = Move { upper: 0, lower: 0 };
+pub const QUEEN_SIDE_CASTLE: Move = Move::new_castle(QUEEN_SIDE);
+pub const KING_SIDE_CASTLE: Move = Move::new_castle(KING_SIDE);
 
 /// Represents a move on the chess position. Uses a compact 16 bit representation
-#[derive(Copy, Clone, PartialEq, Eq)]
+#[derive(Copy, Clone, PartialEq, Eq, Hash)]
 pub struct Move {
     lower: u8, // holds from square and castle and pawn flags
     upper: u8, // holds to square and promotion and capture flags
@@ -224,7 +226,6 @@ impl fmt::Debug for MoveScore {
 #[cfg(test)]
 mod test {
     use super::*;
-    use castle::*;
     use square::*;
     use std::mem;
 

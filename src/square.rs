@@ -1,6 +1,6 @@
+use bb::{ANTI_DIAGONALS, BB, BISHOP_RAYS, DIAGONALS, FILE_A, KING_MOVES, KNIGHT_MOVES, ROOK_RAYS};
 use side::{Side, BLACK};
 use std::fmt;
-use bb::{FILE_A, BB, DIAGONALS, ANTI_DIAGONALS, BISHOP_RAYS, ROOK_RAYS, KNIGHT_MOVES, KING_MOVES};
 
 #[cfg(test)]
 use rand;
@@ -17,6 +17,9 @@ const NAMES: [&'static str; 64] = [
     "a5", "b5", "c5", "d5", "e5", "f5", "g5", "h5", "a6", "b6", "c6", "d6", "e6", "f6", "g6", "h6",
     "a7", "b7", "c7", "d7", "e7", "f7", "g7", "h7", "a8", "b8", "c8", "d8", "e8", "f8", "g8", "h8",
 ];
+
+const FILES: [char; 8] = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
+const RANKS: [char; 8] = ['1', '2', '3', '4', '5', '6', '7', '8'];
 
 #[allow(dead_code)]
 pub const A1: Square = Square(0);
@@ -174,6 +177,14 @@ impl Square {
 
     pub fn same_file(&self, other: Square) -> bool {
         self.0 & 7 == other.0 & 7
+    }
+
+    pub fn file_char(&self) -> char {
+        FILES[self.0 & 7]
+    }
+
+    pub fn rank_char(&self) -> char {
+        RANKS[self.0 >> 3]
     }
 
     pub fn diagonals(&self) -> BB {

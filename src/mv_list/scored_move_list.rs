@@ -11,9 +11,8 @@ use std::fmt;
 
 /// ScoredMoveList is list move vec but calculates the piece-square score of each move as it adds them to the list
 /// This is more efficient than calculating scores later
-#[derive(Clone)]
 pub struct ScoredMoveList<'a> {
-  moves: Vec<MoveScore>,
+  moves: &'a mut Vec<MoveScore>,
   piece_square_table: &'a PieceSquareTable,
   piece_grid: &'a [Piece; 64],
   stm: Side,
@@ -181,9 +180,10 @@ impl<'a> ScoredMoveList<'a> {
     piece_square_table: &'a PieceSquareTable,
     piece_grid: &'a [Piece; 64],
     stm: Side,
+    moves: &'a mut Vec<MoveScore>,
   ) -> ScoredMoveList<'a> {
     ScoredMoveList {
-      moves: Vec::with_capacity(60),
+      moves: moves,
       piece_square_table: piece_square_table,
       piece_grid: piece_grid,
       stm: stm,
@@ -229,11 +229,17 @@ mod test {
     let position = &Position::from_fen(STARTING_POSITION_FEN).unwrap();
     let piece_square_table = PieceSquareTable::new([[100i16; 64]; 6]);
 
-    let mut list = ScoredMoveList::new(&piece_square_table, position.grid(), position.state().stm);
+    let mut vec: Vec<MoveScore> = Vec::with_capacity(60);
+    let mut list = ScoredMoveList::new(
+      &piece_square_table,
+      position.grid(),
+      position.state().stm,
+      &mut vec,
+    );
 
     legal_moves(&position, &mut list);
 
-    assert_eq!(list.len(), 20);
+    assert_eq!(vec.len(), 20);
   }
 
   // #[test]
@@ -272,12 +278,17 @@ mod test {
     piece_square_values[PAWN.to_usize()][C4.to_usize()] = 165;
 
     let piece_square_table = PieceSquareTable::new(piece_square_values);
-
-    let mut list = ScoredMoveList::new(&piece_square_table, position.grid(), position.state().stm);
+    let mut vec: Vec<MoveScore> = Vec::with_capacity(60);
+    let mut list = ScoredMoveList::new(
+      &piece_square_table,
+      position.grid(),
+      position.state().stm,
+      &mut vec,
+    );
 
     legal_moves(&position, &mut list);
 
-    assert_list_includes_moves(&list, &["c2c4 (15)"]);
+    assert_list_includes_moves(&vec, &["c2c4 (15)"]);
   }
 
   #[test]
@@ -291,12 +302,17 @@ mod test {
     piece_square_values[KNIGHT.to_usize()][C3.to_usize()] = 333;
 
     let piece_square_table = PieceSquareTable::new(piece_square_values);
-
-    let mut list = ScoredMoveList::new(&piece_square_table, position.grid(), position.state().stm);
+    let mut vec: Vec<MoveScore> = Vec::with_capacity(60);
+    let mut list = ScoredMoveList::new(
+      &piece_square_table,
+      position.grid(),
+      position.state().stm,
+      &mut vec,
+    );
 
     legal_moves(&position, &mut list);
 
-    assert_list_includes_moves(&list, &["b8c6 (33)"]);
+    assert_list_includes_moves(&vec, &["b8c6 (33)"]);
   }
   #[test]
   fn test_capture_scoring() {
@@ -313,12 +329,17 @@ mod test {
     piece_square_values[PAWN.to_usize()][C6.to_usize()] = 50;
 
     let piece_square_table = PieceSquareTable::new(piece_square_values);
-
-    let mut list = ScoredMoveList::new(&piece_square_table, position.grid(), position.state().stm);
+    let mut vec: Vec<MoveScore> = Vec::with_capacity(60);
+    let mut list = ScoredMoveList::new(
+      &piece_square_table,
+      position.grid(),
+      position.state().stm,
+      &mut vec,
+    );
 
     legal_moves(&position, &mut list);
 
-    assert_list_includes_moves(&list, &["b8xc6 (83)"]);
+    assert_list_includes_moves(&vec, &["b8xc6 (83)"]);
   }
 
   #[test]
@@ -337,11 +358,15 @@ mod test {
       let stm = position.state().stm;
 
       let move_score = {
-        let mut list = ScoredMoveList::new(&piece_square_table, position.grid(), stm);
+        let mut vec: Vec<MoveScore> = Vec::with_capacity(60);
+        let mut list = ScoredMoveList::new(
+          &piece_square_table,
+          position.grid(),
+          position.state().stm,
+          &mut vec,
+        );
 
         legal_moves(&position, &mut list);
-
-        let vec = list.moves();
 
         *vec.choose(&mut rand::thread_rng()).unwrap()
       };
@@ -359,10 +384,9 @@ mod test {
     assert_eq!(initial_score + moves_scores, score_after_moves);
   }
 
-  fn assert_list_includes_moves(list: &ScoredMoveList, moves: &[&'static str]) {
+  fn assert_list_includes_moves(list: &Vec<MoveScore>, moves: &[&'static str]) {
     for &m in moves.iter() {
       assert!(list
-        .moves()
         .iter()
         .map(|pair: &MoveScore| format!("{} ({})", pair.mv(), pair.score()))
         .any(|mv| mv == m));
