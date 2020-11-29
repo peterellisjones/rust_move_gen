@@ -53,7 +53,7 @@ pub use gen::{legal_moves, loud_legal_moves};
 pub use mv::{Move, MoveScore, KING_SIDE_CASTLE, NULL_MOVE, QUEEN_SIDE_CASTLE};
 pub use mv_list::{
     BestMoveTracker, MoveCounter, MoveList, MoveVec, PieceSquareTable, ScoredMoveList,
-    SortedMoveList,
+    SortedMoveHeap, SortedMoveHeapItem, SortedMoveList,
 };
 pub use perft::perft;
 pub use perft::perft_detailed;

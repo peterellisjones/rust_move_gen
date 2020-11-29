@@ -7,15 +7,91 @@ use piece::*;
 use side::Side;
 use square;
 use square::*;
+use std::cmp::Ordering;
 use std::collections::BinaryHeap;
 use std::fmt;
 
-/// SortedMoveList is list move vec but calculates the piece-square score of each move as it adds them to the list
-/// This is more efficient than sorting scores later if you need the moves to be sorted according to
-/// piece-square score. Underlying structure is a binary heap which allows O(1) insertion
+const CAPTURE_BASE_ORDERING_SCORE: i16 = 100i16;
+// Maps promotion target pieces to base move ordering score
+// reason: calculating rook and bishop promotions almost never gives
+// an advantage over queen and knight promotions
+const PROMOTION_ORDERING_SCORES: [(Kind, i16); 4] = [
+    (QUEEN, 50i16),
+    (KNIGHT, 25i16),
+    (ROOK, -200i16),
+    (BISHOP, -200i16),
+];
+
+pub struct SortedMoveHeapItem((MoveScore, i16));
+
+impl SortedMoveHeapItem {
+    fn ordering_score(&self) -> &i16 {
+        &self.0 .1
+    }
+
+    pub fn move_score(&self) -> &MoveScore {
+        &self.0 .0
+    }
+}
+
+impl PartialEq for SortedMoveHeapItem {
+    fn eq(&self, other: &Self) -> bool {
+        self.ordering_score() == other.ordering_score()
+    }
+}
+
+impl Eq for SortedMoveHeapItem {}
+
+impl PartialOrd for SortedMoveHeapItem {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        self.ordering_score().partial_cmp(&other.ordering_score())
+    }
+}
+
+impl Ord for SortedMoveHeapItem {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.ordering_score().cmp(other.ordering_score())
+    }
+}
+
+pub struct SortedMoveHeap(BinaryHeap<SortedMoveHeapItem>);
+
+impl SortedMoveHeap {
+    pub fn new() -> SortedMoveHeap {
+        const DEFAULT_CAPACITY: usize = 32;
+        SortedMoveHeap(BinaryHeap::<SortedMoveHeapItem>::with_capacity(
+            DEFAULT_CAPACITY,
+        ))
+    }
+
+    pub fn peek(&self) -> Option<&SortedMoveHeapItem> {
+        self.0.peek()
+    }
+
+    pub fn len(&self) -> usize {
+        self.0.len()
+    }
+
+    pub fn push(&mut self, elem: SortedMoveHeapItem) {
+        self.0.push(elem);
+    }
+
+    pub fn iter(self) -> std::collections::binary_heap::IntoIterSorted<SortedMoveHeapItem> {
+        self.0.into_iter_sorted()
+    }
+
+    pub fn to_sorted_vec(self) -> Vec<MoveScore> {
+        self.iter()
+            .map(|e| *e.move_score())
+            .collect::<Vec<MoveScore>>()
+    }
+}
+
+/// SortedMoveList is list of moves including the piece-square score for making this move
+/// It also tracks the MVV/LVA score of the move and keeps the list sorted by this
 /// and fast ordered interation via into_iter()
 pub struct SortedMoveList<'a> {
-    moves: &'a mut BinaryHeap<MoveScore>,
+    moves: &'a mut SortedMoveHeap,
     piece_square_table: &'a PieceSquareTable,
     piece_grid: &'a [Piece; 64],
     stm: Side,
@@ -54,9 +130,14 @@ impl<'a> MoveList for SortedMoveList<'a> {
                 .piece_square_table
                 .score(capture_kind, to.from_side(stm.flip()));
 
+            // weight captures +100 above non_captures
+            let move_ordering_score =
+                CAPTURE_BASE_ORDERING_SCORE + capture_kind.mvv_score() - from_kind.mvv_score();
+
             self.insert(
                 Move::new_capture(from, to),
                 -from_score + to_score + capture_score,
+                move_ordering_score,
             );
         }
     }
@@ -75,14 +156,19 @@ impl<'a> MoveList for SortedMoveList<'a> {
 
         for (to, _) in targets.iter() {
             let to_score = self.piece_square_table.score(from_kind, to.from_side(stm));
+            let move_ordering_score = 0i16;
 
-            self.insert(Move::new_push(from, to), -from_score + to_score);
+            self.insert(
+                Move::new_push(from, to),
+                -from_score + to_score,
+                move_ordering_score,
+            );
         }
     }
 
     fn add_castle(&mut self, castle: Castle) {
         let score = self.piece_square_table.castle_score(castle);
-        self.insert(Move::new_castle(castle), score);
+        self.insert(Move::new_castle(castle), score, 0i16);
     }
 
     fn add_pawn_ep_capture(&mut self, from: Square, to: Square) {
@@ -99,7 +185,11 @@ impl<'a> MoveList for SortedMoveList<'a> {
 
         let score = -from_score + to_score + capture_score;
 
-        self.insert(Move::new_ep_capture(from, to), score);
+        // weight captures +100 above non_captures
+        // since aggresor and victim are both pawns, then MVV is 100
+        let move_ordering_score = CAPTURE_BASE_ORDERING_SCORE;
+
+        self.insert(Move::new_ep_capture(from, to), score, move_ordering_score);
     }
 
     fn add_pawn_pushes(&mut self, shift: usize, targets: BB) {
@@ -113,7 +203,13 @@ impl<'a> MoveList for SortedMoveList<'a> {
                 .score(from_kind, from.from_side(stm));
             let to_score = self.piece_square_table.score(from_kind, to.from_side(stm));
 
-            self.insert(Move::new_push(from, to), -from_score + to_score);
+            let move_ordering_score = 0i16;
+
+            self.insert(
+                Move::new_push(from, to),
+                -from_score + to_score,
+                move_ordering_score,
+            );
         }
 
         for (to, _) in (targets & END_ROWS).iter() {
@@ -122,12 +218,13 @@ impl<'a> MoveList for SortedMoveList<'a> {
                 .piece_square_table
                 .score(from_kind, from.from_side(stm));
 
-            for to_kind in &[QUEEN, ROOK, BISHOP, KNIGHT] {
+            for (to_kind, move_ordering_score) in &PROMOTION_ORDERING_SCORES {
                 let to_score = self.piece_square_table.score(*to_kind, to.from_side(stm));
 
                 self.insert(
                     Move::new_promotion(from, to, *to_kind),
                     -from_score + to_score,
+                    *move_ordering_score,
                 );
             }
         }
@@ -149,9 +246,12 @@ impl<'a> MoveList for SortedMoveList<'a> {
                 .piece_square_table
                 .score(capture_kind, to.from_side(stm.flip()));
 
+            let move_ordering_score = 100i16 + capture_kind.mvv_score() - PAWN.mvv_score();
+
             self.insert(
                 Move::new_capture(from, to),
                 -from_score + to_score + capture_score,
+                move_ordering_score,
             );
         }
 
@@ -166,12 +266,15 @@ impl<'a> MoveList for SortedMoveList<'a> {
                 .piece_square_table
                 .score(capture_kind, to.from_side(stm.flip()));
 
-            for to_kind in &[QUEEN, ROOK, BISHOP, KNIGHT] {
+            for (to_kind, promo_move_ordering_score) in &PROMOTION_ORDERING_SCORES {
                 let to_score = self.piece_square_table.score(*to_kind, to.from_side(stm));
+
+                let move_ordering_score = CAPTURE_BASE_ORDERING_SCORE + promo_move_ordering_score;
 
                 self.insert(
                     Move::new_capture_promotion(from, to, *to_kind),
                     -from_score + to_score + capture_score,
+                    move_ordering_score,
                 );
             }
         }
@@ -183,7 +286,7 @@ impl<'a> SortedMoveList<'a> {
         piece_square_table: &'a PieceSquareTable,
         piece_grid: &'a [Piece; 64],
         stm: Side,
-        moves: &'a mut BinaryHeap<MoveScore>,
+        moves: &'a mut SortedMoveHeap,
     ) -> SortedMoveList<'a> {
         SortedMoveList {
             moves: moves,
@@ -194,7 +297,10 @@ impl<'a> SortedMoveList<'a> {
     }
 
     pub fn best_move(&self) -> Option<&MoveScore> {
-        self.moves.peek()
+        match self.moves.peek() {
+            Some(item) => Some(item.move_score()),
+            None => None,
+        }
     }
 
     #[allow(dead_code)]
@@ -202,8 +308,11 @@ impl<'a> SortedMoveList<'a> {
         self.moves.len()
     }
 
-    fn insert(&mut self, mv: Move, score: i16) {
-        self.moves.push(MoveScore::new(mv, score));
+    fn insert(&mut self, mv: Move, piece_square_score: i16, move_ordering_score: i16) {
+        let item =
+            SortedMoveHeapItem((MoveScore::new(mv, piece_square_score), move_ordering_score));
+
+        self.moves.push(item);
     }
 }
 
@@ -223,7 +332,7 @@ mod test {
         let position = &Position::from_fen(STARTING_POSITION_FEN).unwrap();
         let piece_square_table = PieceSquareTable::new([[100i16; 64]; 6]);
 
-        let mut heap = BinaryHeap::<MoveScore>::new();
+        let mut heap = SortedMoveHeap::new();
         let mut list = SortedMoveList::new(
             &piece_square_table,
             position.grid(),
@@ -272,7 +381,7 @@ mod test {
         piece_square_values[PAWN.to_usize()][C4.to_usize()] = 165;
 
         let piece_square_table = PieceSquareTable::new(piece_square_values);
-        let mut heap = BinaryHeap::<MoveScore>::new();
+        let mut heap = SortedMoveHeap::new();
         let mut list = SortedMoveList::new(
             &piece_square_table,
             position.grid(),
@@ -282,7 +391,7 @@ mod test {
 
         legal_moves(&position, &mut list);
 
-        assert_list_includes_moves(&heap, &["c2c4 (15)"]);
+        assert_list_includes_moves(heap, &["c2c4 (15)"]);
     }
 
     #[test]
@@ -297,7 +406,7 @@ mod test {
         piece_square_values[KNIGHT.to_usize()][C3.to_usize()] = 333;
 
         let piece_square_table = PieceSquareTable::new(piece_square_values);
-        let mut heap = BinaryHeap::<MoveScore>::new();
+        let mut heap = SortedMoveHeap::new();
         let mut list = SortedMoveList::new(
             &piece_square_table,
             position.grid(),
@@ -307,7 +416,7 @@ mod test {
 
         legal_moves(&position, &mut list);
 
-        assert_list_includes_moves(&heap, &["b8c6 (33)"]);
+        assert_list_includes_moves(heap, &["b8c6 (33)"]);
     }
     #[test]
     fn test_capture_scoring() {
@@ -325,7 +434,7 @@ mod test {
         piece_square_values[PAWN.to_usize()][C6.to_usize()] = 50;
 
         let piece_square_table = PieceSquareTable::new(piece_square_values);
-        let mut heap = BinaryHeap::<MoveScore>::new();
+        let mut heap = SortedMoveHeap::new();
         let mut list = SortedMoveList::new(
             &piece_square_table,
             position.grid(),
@@ -335,7 +444,7 @@ mod test {
 
         legal_moves(&position, &mut list);
 
-        assert_list_includes_moves(&heap, &["b8xc6 (83)"]);
+        assert_list_includes_moves(heap, &["b8xc6 (83)"]);
     }
 
     #[test]
@@ -354,7 +463,7 @@ mod test {
             let stm = position.state().stm;
 
             let move_score = {
-                let mut heap = BinaryHeap::<MoveScore>::new();
+                let mut heap = SortedMoveHeap::new();
                 let mut list = SortedMoveList::new(
                     &piece_square_table,
                     position.grid(),
@@ -364,7 +473,7 @@ mod test {
 
                 legal_moves(&position, &mut list);
 
-                let sorted_vec = heap.into_iter_sorted().collect::<Vec<MoveScore>>();
+                let sorted_vec = heap.to_sorted_vec();
 
                 *sorted_vec.choose(&mut rand::thread_rng()).unwrap()
             };
@@ -382,11 +491,12 @@ mod test {
         assert_eq!(initial_score + moves_scores, score_after_moves);
     }
 
-    fn assert_list_includes_moves(heap: &BinaryHeap<MoveScore>, moves: &[&'static str]) {
+    fn assert_list_includes_moves(heap: SortedMoveHeap, moves: &[&'static str]) {
+        let sorted_vec = heap.to_sorted_vec();
         for &m in moves.iter() {
-            assert!(heap
+            assert!(sorted_vec
                 .iter()
-                .map(|pair: &MoveScore| format!("{} ({})", pair.mv(), pair.score()))
+                .map(|move_score| format!("{} ({})", move_score.mv(), move_score.score()))
                 .any(|mv| mv == m));
         }
     }

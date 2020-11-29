@@ -8,6 +8,7 @@ use side::Side;
 use square;
 use square::*;
 use std::fmt;
+use position::Position;
 
 /// ScoredMoveList is list move vec but calculates the piece-square score of each move as it adds them to the list
 /// This is more efficient than calculating scores later
@@ -188,6 +189,42 @@ impl<'a> ScoredMoveList<'a> {
       piece_grid: piece_grid,
       stm: stm,
     }
+  }
+
+
+  // sorts move vector by most valuable victim / least valuable attacker
+  pub fn mvv_lva_sort(&mut self, position: &Position) {
+    self.moves.sort_by(|move_a, move_b| -> std::cmp::Ordering {
+        let mut val_a = 0i16;
+        let mut val_b = 0i16;
+
+        let mv_a = move_a.mv();
+        let mv_b = move_b.mv();
+
+        if mv_a.is_capture() {
+            let aggresor = position.at(mv_a.from());
+            let victim = if mv_a.is_ep_capture() {
+                WHITE_PAWN
+            } else {
+                position.at(mv_a.to())
+            };
+
+            val_a = victim.kind().mvv_score() - aggresor.kind().mvv_score();
+        }
+
+        if mv_b.is_capture() {
+            let aggresor = position.at(mv_b.from());
+            let victim = if mv_b.is_ep_capture() {
+                WHITE_PAWN
+            } else {
+                position.at(mv_b.to())
+            };
+            
+            val_b = victim.kind().mvv_score() - aggresor.kind().mvv_score();
+        }
+
+        val_b.cmp(&val_a)
+    });
   }
 
   pub fn to_string(&self) -> String {

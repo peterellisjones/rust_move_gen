@@ -14,7 +14,7 @@ pub use self::mv_counter::MoveCounter;
 pub use self::mv_vec::MoveVec;
 pub use self::piece_square_table::PieceSquareTable;
 pub use self::scored_move_list::ScoredMoveList;
-pub use self::sorted_move_list::SortedMoveList;
+pub use self::sorted_move_list::{SortedMoveHeap, SortedMoveHeapItem, SortedMoveList};
 
 pub const CHECK_MATE_SCORE: i16 = std::i16::MAX / 2;
 

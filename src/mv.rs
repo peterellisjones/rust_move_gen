@@ -33,8 +33,14 @@ const PROMOTION_FLAG: u8 = 128;
 const EP_CAPTURE_FLAG: u8 = 64;
 #[allow(dead_code)]
 pub const NULL_MOVE: Move = Move { upper: 0, lower: 0 };
-pub const QUEEN_SIDE_CASTLE: Move = Move::new_castle(QUEEN_SIDE);
-pub const KING_SIDE_CASTLE: Move = Move::new_castle(KING_SIDE);
+pub const QUEEN_SIDE_CASTLE: Move = Move {
+    lower: 0,
+    upper: CASTLE_FLAG | (QUEEN_SIDE.to_u8() << 6),
+};
+pub const KING_SIDE_CASTLE: Move = Move {
+    lower: 0,
+    upper: CASTLE_FLAG | (KING_SIDE.to_u8() << 6),
+};
 
 /// Represents a move on the chess position. Uses a compact 16 bit representation
 #[derive(Copy, Clone, PartialEq, Eq, Hash)]
@@ -120,42 +126,42 @@ impl Move {
         }
     }
 
-    pub const fn new_push(from: Square, to: Square) -> Move {
+    pub fn new_push(from: Square, to: Square) -> Move {
         Move {
             lower: from.to_u8(),
             upper: to.to_u8(),
         }
     }
 
-    pub const fn new_capture(from: Square, to: Square) -> Move {
+    pub fn new_capture(from: Square, to: Square) -> Move {
         Move {
             lower: from.to_u8() | CAPTURE_FLAG,
             upper: to.to_u8(),
         }
     }
 
-    pub const fn new_castle(castle: Castle) -> Move {
+    pub fn new_castle(castle: Castle) -> Move {
         Move {
             lower: 0,
             upper: CASTLE_FLAG | (castle.to_u8() << 6),
         }
     }
 
-    pub const fn new_promotion(from: Square, to: Square, promote_to: Kind) -> Move {
+    pub fn new_promotion(from: Square, to: Square, promote_to: Kind) -> Move {
         Move {
             lower: from.to_u8() | PROMOTION_FLAG,
             upper: to.to_u8() | (promote_to.to_u8() << 6),
         }
     }
 
-    pub const fn new_capture_promotion(from: Square, to: Square, promote_to: Kind) -> Move {
+    pub fn new_capture_promotion(from: Square, to: Square, promote_to: Kind) -> Move {
         Move {
             lower: from.to_u8() | PROMOTION_FLAG | CAPTURE_FLAG,
             upper: to.to_u8() | (promote_to.to_u8() << 6),
         }
     }
 
-    pub const fn new_ep_capture(from: Square, to: Square) -> Move {
+    pub fn new_ep_capture(from: Square, to: Square) -> Move {
         Move {
             lower: from.to_u8() | CAPTURE_FLAG,
             upper: to.to_u8() | EP_CAPTURE_FLAG,

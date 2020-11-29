@@ -68,7 +68,7 @@ pub fn bishop_attacks_from_sq(from: Square, occupied: BB) -> BB {
     let anti_diag_attacks =
         ((forward - source) ^ (backward - source.bswap()).bswap()) & anti_diag_mask;
 
-    (diag_attacks | anti_diag_attacks)
+    diag_attacks | anti_diag_attacks
 }
 
 #[cfg(target_feature = "sse3")]
@@ -92,7 +92,6 @@ pub fn bishop_attacks_from_sq(from: Square, occupied_bb: BB) -> BB {
         return high | low;
     }
 }
-
 
 #[cfg(test)]
 mod test {
