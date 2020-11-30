@@ -58,11 +58,6 @@ impl Kind {
     pub fn string_plural(&self) -> String {
         KIND_NAMES[self.to_usize()].to_string() + &"s"
     }
-
-    pub fn mvv_score(self) -> i16 {
-        const MVV_SCORE: [i16; 12] = [3, 3, 5, 5, 4, 4, 2, 2, 1, 1, 6, 6];
-        MVV_SCORE[self.0 as usize]
-    }
 }
 
 const KIND_NAMES: [&'static str; 6] = ["bishop", "queen", "rook", "knight", "pawn", "king"];

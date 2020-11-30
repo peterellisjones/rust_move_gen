@@ -52,8 +52,8 @@ pub use castling_rights::{CastlingRights, BLACK_KS, BLACK_QS, WHITE_KS, WHITE_QS
 pub use gen::{legal_moves, loud_legal_moves};
 pub use mv::{Move, MoveScore, KING_SIDE_CASTLE, NULL_MOVE, QUEEN_SIDE_CASTLE};
 pub use mv_list::{
-    BestMoveTracker, MoveCounter, MoveList, MoveVec, PieceSquareTable, ScoredMoveList,
-    SortedMoveHeap, SortedMoveHeapItem, SortedMoveList,
+    BestMoveTracker, MoveCounter, MoveList, MoveVec, PieceSquareTable, SortedMoveHeap,
+    SortedMoveHeapItem, SortedMoveList,
 };
 pub use perft::perft;
 pub use perft::perft_detailed;

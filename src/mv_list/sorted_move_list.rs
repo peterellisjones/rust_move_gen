@@ -11,16 +11,325 @@ use std::cmp::Ordering;
 use std::collections::BinaryHeap;
 use std::fmt;
 
-const CAPTURE_BASE_ORDERING_SCORE: i16 = 100i16;
-// Maps promotion target pieces to base move ordering score
-// reason: calculating rook and bishop promotions almost never gives
-// an advantage over queen and knight promotions
-const PROMOTION_ORDERING_SCORES: [(Kind, i16); 4] = [
-    (QUEEN, 50i16),
-    (KNIGHT, 25i16),
-    (ROOK, -200i16),
-    (BISHOP, -200i16),
-];
+/// SortedMoveList is list of moves including the piece-square score for making this move
+/// It is sorted by an 'ordering score'
+///     
+/// Non-captures are ordered by priotising destination squares that are
+/// further up the board relative to the mover, with a bonus for pawns
+/// near promotion, a handicap for non-pawn moves to rank 1, and a handicap
+/// for pawn moves to low ranks.
+///
+/// Captures are ordered by most-valuable-victim / least-valuable-aggresor
+/// with piece scores worth:
+///     Pawn: 0
+///     King: 1 (can only be aggresor)
+///     Knight: 2
+///     Bishop: 3
+///     Rook: 4
+///     Queen: 5
+///
+/// Move ordering priorities:
+/// -250: promotion to bishop
+/// -200: promotion to rook
+/// -145..-145: capture and promotion to bishop (exact score based on MVV-LVA)
+/// -105..-95: capture and promotion to rook (exact score based on MVV-LVA)
+/// 0: non-pawn to rank 1
+/// 1: -
+/// 2: pawn to rank 3
+/// 3: pawn to rank 4, non-pawn to rank 2
+/// 4: pawn to rank 5, non-pawn to rank 3
+/// 5: non-pawn to rank 4
+/// 6: non-pawn to rank 5
+/// 7: non-pawn to rank 6
+/// 8: non-pawn to rank 7
+/// 9: non-pawn to rank 8
+/// 10: pawn to rank 6
+/// 11: pawn to rank 7
+/// 20: castle
+/// 25: promotion to knight
+/// 50: promotion to queen
+/// 95..105: capture (exact score based on MVV-LVA)
+/// 120..130: capture and promotion to knight (exact score based on MVV-LVA)
+/// 145..155: capture and promotion to queen (exact score based on MVV-LVA)
+pub struct SortedMoveList<'a> {
+    moves: &'a mut SortedMoveHeap,
+    piece_square_table: &'a PieceSquareTable,
+    piece_grid: &'a [Piece; 64],
+    stm: Side,
+}
+
+impl<'a> fmt::Display for SortedMoveList<'a> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.to_string())
+    }
+}
+
+impl<'a> fmt::Debug for SortedMoveList<'a> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.to_string())
+    }
+}
+
+impl<'a> MoveList for SortedMoveList<'a> {
+    fn add_captures(&mut self, from: Square, targets: BB) {
+        if targets == EMPTY {
+            return;
+        }
+
+        let stm = self.stm;
+
+        let from_kind = unsafe { self.piece_grid.get_unchecked(from.to_usize()).kind() };
+        let from_score = self
+            .piece_square_table
+            .score(from_kind, from.from_side(stm));
+
+        for (to, _) in targets.iter() {
+            let to_score = self.piece_square_table.score(from_kind, to.from_side(stm));
+
+            let capture_kind = unsafe { self.piece_grid.get_unchecked(to.to_usize()).kind() };
+            let capture_score = self
+                .piece_square_table
+                .score(capture_kind, to.from_side(stm.flip()));
+
+            self.insert(
+                Move::new_capture(from, to),
+                -from_score + to_score + capture_score,
+                self.capture_ordering_score(from_kind, capture_kind),
+            );
+        }
+    }
+
+    fn add_non_captures(&mut self, from: Square, targets: BB) {
+        if targets == EMPTY {
+            return;
+        }
+
+        let stm = self.stm;
+
+        let from_kind = unsafe { self.piece_grid.get_unchecked(from.to_usize()).kind() };
+        let from_score = self
+            .piece_square_table
+            .score(from_kind, from.from_side(stm));
+
+        for (to, _) in targets.iter() {
+            let relative_to_sq = to.from_side(stm);
+            let to_score = self.piece_square_table.score(from_kind, relative_to_sq);
+
+            self.insert(
+                Move::new_push(from, to),
+                -from_score + to_score,
+                self.non_capture_ordering_score(relative_to_sq),
+            );
+        }
+    }
+
+    fn add_castle(&mut self, castle: Castle) {
+        let score = self.piece_square_table.castle_score(castle);
+        self.insert(
+            Move::new_castle(castle),
+            score,
+            self.castle_ordering_score(),
+        );
+    }
+
+    fn add_pawn_ep_capture(&mut self, from: Square, to: Square) {
+        let stm = self.stm;
+        let from_score = self.piece_square_table.score(PAWN, from.from_side(stm));
+        let to_score = self.piece_square_table.score(PAWN, to.from_side(stm));
+        // capture square is the file of the 'to' square
+        // and the rank of the 'from' square
+        let capture_sq = from.along_row_with_col(to);
+
+        let capture_score = self
+            .piece_square_table
+            .score(PAWN, capture_sq.from_side(stm.flip()));
+
+        let score = -from_score + to_score + capture_score;
+
+        self.insert(
+            Move::new_ep_capture(from, to),
+            score,
+            self.capture_ordering_score(PAWN, PAWN),
+        );
+    }
+
+    fn add_pawn_pushes(&mut self, shift: usize, targets: BB) {
+        let stm = self.stm;
+        let from_kind = PAWN;
+
+        for (to, _) in (targets & !END_ROWS).iter() {
+            let from = to.rotate_right(shift as square::Internal);
+            let from_score = self
+                .piece_square_table
+                .score(from_kind, from.from_side(stm));
+            let relative_to_sq = to.from_side(stm);
+            let to_score = self.piece_square_table.score(from_kind, relative_to_sq);
+
+            let move_ordering_score = self.pawn_non_capture_ordering_score(relative_to_sq);
+
+            self.insert(
+                Move::new_push(from, to),
+                -from_score + to_score,
+                move_ordering_score,
+            );
+        }
+
+        for (to, _) in (targets & END_ROWS).iter() {
+            let from = to.rotate_right(shift as square::Internal);
+            let from_score = self
+                .piece_square_table
+                .score(from_kind, from.from_side(stm));
+
+            for (to_kind, move_ordering_score) in &Self::PROMOTION_ORDERING_SCORES {
+                let to_score = self.piece_square_table.score(*to_kind, to.from_side(stm));
+
+                self.insert(
+                    Move::new_promotion(from, to, *to_kind),
+                    -from_score + to_score,
+                    *move_ordering_score,
+                );
+            }
+        }
+    }
+
+    fn add_pawn_captures(&mut self, shift: usize, targets: BB) {
+        let stm = self.stm;
+        let from_kind = PAWN;
+
+        for (to, _) in (targets & !END_ROWS).iter() {
+            let from = to.rotate_right(shift as square::Internal);
+            let from_score = self
+                .piece_square_table
+                .score(from_kind, from.from_side(stm));
+            let to_score = self.piece_square_table.score(from_kind, to.from_side(stm));
+
+            let capture_kind = unsafe { self.piece_grid.get_unchecked(to.to_usize()).kind() };
+            let capture_score = self
+                .piece_square_table
+                .score(capture_kind, to.from_side(stm.flip()));
+
+            let move_ordering_score = self.capture_ordering_score(PAWN, capture_kind);
+
+            self.insert(
+                Move::new_capture(from, to),
+                -from_score + to_score + capture_score,
+                move_ordering_score,
+            );
+        }
+
+        for (to, _) in (targets & END_ROWS).iter() {
+            let from = to.rotate_right(shift as square::Internal);
+            let from_score = self
+                .piece_square_table
+                .score(from_kind, from.from_side(stm));
+
+            let capture_kind = unsafe { self.piece_grid.get_unchecked(to.to_usize()).kind() };
+            let capture_score = self
+                .piece_square_table
+                .score(capture_kind, to.from_side(stm.flip()));
+
+            for (to_kind, promo_move_ordering_score) in &Self::PROMOTION_ORDERING_SCORES {
+                let to_score = self.piece_square_table.score(*to_kind, to.from_side(stm));
+
+                let move_ordering_score = 100i16 + promo_move_ordering_score;
+
+                self.insert(
+                    Move::new_capture_promotion(from, to, *to_kind),
+                    -from_score + to_score + capture_score,
+                    move_ordering_score,
+                );
+            }
+        }
+    }
+}
+
+impl<'a> SortedMoveList<'a> {
+    // Maps promotion target pieces to base move ordering score
+    // reason: calculating rook and bishop promotions almost never gives
+    // an advantage over queen and knight promotions
+    const PROMOTION_ORDERING_SCORES: [(Kind, i16); 4] = [
+        (QUEEN, 50i16),
+        (KNIGHT, 25i16),
+        (ROOK, -200i16),
+        (BISHOP, -250i16),
+    ];
+    pub fn new(
+        piece_square_table: &'a PieceSquareTable,
+        piece_grid: &'a [Piece; 64],
+        stm: Side,
+        moves: &'a mut SortedMoveHeap,
+    ) -> SortedMoveList<'a> {
+        SortedMoveList {
+            moves: moves,
+            piece_square_table: piece_square_table,
+            piece_grid: piece_grid,
+            stm: stm,
+        }
+    }
+
+    pub fn best_move(&self) -> Option<&MoveScore> {
+        match self.moves.peek() {
+            Some(item) => Some(item.move_score()),
+            None => None,
+        }
+    }
+
+    #[allow(dead_code)]
+    pub fn len(&self) -> usize {
+        self.moves.len()
+    }
+
+    fn insert(&mut self, mv: Move, piece_square_score: i16, move_ordering_score: i16) {
+        let item =
+            SortedMoveHeapItem((MoveScore::new(mv, piece_square_score), move_ordering_score));
+
+        self.moves.push(item);
+    }
+
+    // Captures are order based on
+    // most-valuable-victim - least-valuable-attacker
+    fn capture_ordering_score(&self, mover_kind: Kind, capture_kind: Kind) -> i16 {
+        debug_assert_ne!(capture_kind, KING);
+        100i16 + self.mvv_score(capture_kind) - self.mvv_score(mover_kind)
+    }
+
+    fn mvv_score(&self, kind: Kind) -> i16 {
+        const MVV_SCORE: [i16; 6] = [
+            3, // Bishop
+            5, // Queen
+            4, // Rook
+            2, // Knight
+            0, // Pawn
+            1, // King
+        ];
+        MVV_SCORE[kind.to_usize()]
+    }
+
+    fn non_capture_ordering_score(&self, relative_to_sq: Square) -> i16 {
+        let row = relative_to_sq.row();
+        // no bonus for moves to rank 1
+        if row == 0 {
+            return 0i16;
+        }
+        // +2 bonus compared to pawn moves
+        2i16 + (row as i16)
+    }
+
+    fn pawn_non_capture_ordering_score(&self, relative_to_sq: Square) -> i16 {
+        let row = relative_to_sq.row();
+
+        if row > 4 {
+            // bonus for moves to rank 6, 7, 8 (=row 5, 6, 7)
+            return row as i16 + 5i16;
+        }
+
+        row as i16
+    }
+
+    fn castle_ordering_score(&self) -> i16 {
+        20i16
+    }
+}
 
 pub struct SortedMoveHeapItem((MoveScore, i16));
 
@@ -87,235 +396,6 @@ impl SortedMoveHeap {
     }
 }
 
-/// SortedMoveList is list of moves including the piece-square score for making this move
-/// It also tracks the MVV/LVA score of the move and keeps the list sorted by this
-/// and fast ordered interation via into_iter()
-pub struct SortedMoveList<'a> {
-    moves: &'a mut SortedMoveHeap,
-    piece_square_table: &'a PieceSquareTable,
-    piece_grid: &'a [Piece; 64],
-    stm: Side,
-}
-
-impl<'a> fmt::Display for SortedMoveList<'a> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self.to_string())
-    }
-}
-
-impl<'a> fmt::Debug for SortedMoveList<'a> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self.to_string())
-    }
-}
-
-impl<'a> MoveList for SortedMoveList<'a> {
-    fn add_captures(&mut self, from: Square, targets: BB) {
-        if targets == EMPTY {
-            return;
-        }
-
-        let stm = self.stm;
-
-        let from_kind = unsafe { self.piece_grid.get_unchecked(from.to_usize()).kind() };
-        let from_score = self
-            .piece_square_table
-            .score(from_kind, from.from_side(stm));
-
-        for (to, _) in targets.iter() {
-            let to_score = self.piece_square_table.score(from_kind, to.from_side(stm));
-
-            let capture_kind = unsafe { self.piece_grid.get_unchecked(to.to_usize()).kind() };
-            let capture_score = self
-                .piece_square_table
-                .score(capture_kind, to.from_side(stm.flip()));
-
-            // weight captures +100 above non_captures
-            let move_ordering_score =
-                CAPTURE_BASE_ORDERING_SCORE + capture_kind.mvv_score() - from_kind.mvv_score();
-
-            self.insert(
-                Move::new_capture(from, to),
-                -from_score + to_score + capture_score,
-                move_ordering_score,
-            );
-        }
-    }
-
-    fn add_non_captures(&mut self, from: Square, targets: BB) {
-        if targets == EMPTY {
-            return;
-        }
-
-        let stm = self.stm;
-
-        let from_kind = unsafe { self.piece_grid.get_unchecked(from.to_usize()).kind() };
-        let from_score = self
-            .piece_square_table
-            .score(from_kind, from.from_side(stm));
-
-        for (to, _) in targets.iter() {
-            let to_score = self.piece_square_table.score(from_kind, to.from_side(stm));
-            let move_ordering_score = 0i16;
-
-            self.insert(
-                Move::new_push(from, to),
-                -from_score + to_score,
-                move_ordering_score,
-            );
-        }
-    }
-
-    fn add_castle(&mut self, castle: Castle) {
-        let score = self.piece_square_table.castle_score(castle);
-        self.insert(Move::new_castle(castle), score, 0i16);
-    }
-
-    fn add_pawn_ep_capture(&mut self, from: Square, to: Square) {
-        let stm = self.stm;
-        let from_score = self.piece_square_table.score(PAWN, from.from_side(stm));
-        let to_score = self.piece_square_table.score(PAWN, to.from_side(stm));
-        // capture square is the file of the 'to' square
-        // and the rank of the 'from' square
-        let capture_sq = from.along_row_with_col(to);
-
-        let capture_score = self
-            .piece_square_table
-            .score(PAWN, capture_sq.from_side(stm.flip()));
-
-        let score = -from_score + to_score + capture_score;
-
-        // weight captures +100 above non_captures
-        // since aggresor and victim are both pawns, then MVV is 100
-        let move_ordering_score = CAPTURE_BASE_ORDERING_SCORE;
-
-        self.insert(Move::new_ep_capture(from, to), score, move_ordering_score);
-    }
-
-    fn add_pawn_pushes(&mut self, shift: usize, targets: BB) {
-        let stm = self.stm;
-        let from_kind = PAWN;
-
-        for (to, _) in (targets & !END_ROWS).iter() {
-            let from = to.rotate_right(shift as square::Internal);
-            let from_score = self
-                .piece_square_table
-                .score(from_kind, from.from_side(stm));
-            let to_score = self.piece_square_table.score(from_kind, to.from_side(stm));
-
-            let move_ordering_score = 0i16;
-
-            self.insert(
-                Move::new_push(from, to),
-                -from_score + to_score,
-                move_ordering_score,
-            );
-        }
-
-        for (to, _) in (targets & END_ROWS).iter() {
-            let from = to.rotate_right(shift as square::Internal);
-            let from_score = self
-                .piece_square_table
-                .score(from_kind, from.from_side(stm));
-
-            for (to_kind, move_ordering_score) in &PROMOTION_ORDERING_SCORES {
-                let to_score = self.piece_square_table.score(*to_kind, to.from_side(stm));
-
-                self.insert(
-                    Move::new_promotion(from, to, *to_kind),
-                    -from_score + to_score,
-                    *move_ordering_score,
-                );
-            }
-        }
-    }
-
-    fn add_pawn_captures(&mut self, shift: usize, targets: BB) {
-        let stm = self.stm;
-        let from_kind = PAWN;
-
-        for (to, _) in (targets & !END_ROWS).iter() {
-            let from = to.rotate_right(shift as square::Internal);
-            let from_score = self
-                .piece_square_table
-                .score(from_kind, from.from_side(stm));
-            let to_score = self.piece_square_table.score(from_kind, to.from_side(stm));
-
-            let capture_kind = unsafe { self.piece_grid.get_unchecked(to.to_usize()).kind() };
-            let capture_score = self
-                .piece_square_table
-                .score(capture_kind, to.from_side(stm.flip()));
-
-            let move_ordering_score = 100i16 + capture_kind.mvv_score() - PAWN.mvv_score();
-
-            self.insert(
-                Move::new_capture(from, to),
-                -from_score + to_score + capture_score,
-                move_ordering_score,
-            );
-        }
-
-        for (to, _) in (targets & END_ROWS).iter() {
-            let from = to.rotate_right(shift as square::Internal);
-            let from_score = self
-                .piece_square_table
-                .score(from_kind, from.from_side(stm));
-
-            let capture_kind = unsafe { self.piece_grid.get_unchecked(to.to_usize()).kind() };
-            let capture_score = self
-                .piece_square_table
-                .score(capture_kind, to.from_side(stm.flip()));
-
-            for (to_kind, promo_move_ordering_score) in &PROMOTION_ORDERING_SCORES {
-                let to_score = self.piece_square_table.score(*to_kind, to.from_side(stm));
-
-                let move_ordering_score = CAPTURE_BASE_ORDERING_SCORE + promo_move_ordering_score;
-
-                self.insert(
-                    Move::new_capture_promotion(from, to, *to_kind),
-                    -from_score + to_score + capture_score,
-                    move_ordering_score,
-                );
-            }
-        }
-    }
-}
-
-impl<'a> SortedMoveList<'a> {
-    pub fn new(
-        piece_square_table: &'a PieceSquareTable,
-        piece_grid: &'a [Piece; 64],
-        stm: Side,
-        moves: &'a mut SortedMoveHeap,
-    ) -> SortedMoveList<'a> {
-        SortedMoveList {
-            moves: moves,
-            piece_square_table: piece_square_table,
-            piece_grid: piece_grid,
-            stm: stm,
-        }
-    }
-
-    pub fn best_move(&self) -> Option<&MoveScore> {
-        match self.moves.peek() {
-            Some(item) => Some(item.move_score()),
-            None => None,
-        }
-    }
-
-    #[allow(dead_code)]
-    pub fn len(&self) -> usize {
-        self.moves.len()
-    }
-
-    fn insert(&mut self, mv: Move, piece_square_score: i16, move_ordering_score: i16) {
-        let item =
-            SortedMoveHeapItem((MoveScore::new(mv, piece_square_score), move_ordering_score));
-
-        self.moves.push(item);
-    }
-}
-
 #[cfg(test)]
 mod test {
     extern crate rand;
@@ -344,32 +424,6 @@ mod test {
 
         assert_eq!(heap.len(), 20);
     }
-
-    // #[test]
-    // fn test_white_castle_scoring() {
-    //     let position = &Position::from_fen("rnbqkbnr/8/8/8/8/8/8/R3K2R w K").unwrap();
-    //     let piece_square_table = PieceSquareTable::new([[100i16; 64]; 6]);
-
-    //     let mut list =
-    //         SortedMoveList::new(&piece_square_table, position.grid(), position.state().stm);
-
-    //     legal_moves(&position, &mut list);
-
-    //     assert_list_includes_moves(&heap, &["O-O (456)"]);
-    // }
-
-    // #[test]
-    // fn test_black_castle_scoring() {
-    //     let position = &Position::from_fen("r3kbnr/8/8/8/8/8/8/R3K2R b KQq").unwrap();
-    //     let piece_square_table = PieceSquareTable::new([[100i16; 64]; 6]);
-
-    //     let mut list =
-    //         SortedMoveList::new(&piece_square_table, position.grid(), position.state().stm);
-
-    //     legal_moves(&position, &mut list);
-
-    //     assert_list_includes_moves(&heap, &["O-O-O (123)"]);
-    // }
 
     #[test]
     fn test_pawn_push_scoring() {

@@ -2,13 +2,7 @@ use castle::{Castle, KING_SIDE, QUEEN_SIDE};
 use piece::*;
 use square;
 use square::Square;
-use std::cmp::Ordering;
 use std::fmt;
-
-// super compress move representation
-// 0-5: from
-// 6-11: to
-// 12-15: flags
 
 /*
     FLAGS:
@@ -17,7 +11,7 @@ use std::fmt;
     0101    5: ep capture
     1XXX     : promotion
 
-    ALT LAYOUT
+    LAYOUT
     lower, upper
     00 01 -> double pawn push
     01 00 -> capture
@@ -27,10 +21,11 @@ use std::fmt;
     00 1X -> castle (X is castle type)
 */
 
-const CASTLE_FLAG: u8 = 128;
-const CAPTURE_FLAG: u8 = 64;
-const PROMOTION_FLAG: u8 = 128;
-const EP_CAPTURE_FLAG: u8 = 64;
+pub type Internal = u8;
+const CASTLE_FLAG: Internal = 128;
+const CAPTURE_FLAG: Internal = 64;
+const PROMOTION_FLAG: Internal = 128;
+const EP_CAPTURE_FLAG: Internal = 64;
 #[allow(dead_code)]
 pub const NULL_MOVE: Move = Move { upper: 0, lower: 0 };
 pub const QUEEN_SIDE_CASTLE: Move = Move {
@@ -44,9 +39,10 @@ pub const KING_SIDE_CASTLE: Move = Move {
 
 /// Represents a move on the chess position. Uses a compact 16 bit representation
 #[derive(Copy, Clone, PartialEq, Eq, Hash)]
+#[repr(packed(2))] // packed since often stored in transposition tables
 pub struct Move {
-    lower: u8, // holds from square and castle and pawn flags
-    upper: u8, // holds to square and promotion and capture flags
+    lower: Internal, // holds from square and castle and pawn flags
+    upper: Internal, // holds to square and promotion and capture flags
 }
 
 impl Move {
@@ -182,7 +178,7 @@ impl fmt::Debug for Move {
 }
 
 /// MoveScore encodes a move score tuple
-#[derive(Clone, Eq, Copy)]
+#[derive(Clone, Copy)]
 pub struct MoveScore(Move, i16);
 
 impl MoveScore {
@@ -196,24 +192,6 @@ impl MoveScore {
 
     pub const fn new(mv: Move, score: i16) -> MoveScore {
         MoveScore(mv, score)
-    }
-}
-
-impl Ord for MoveScore {
-    fn cmp(&self, other: &Self) -> Ordering {
-        self.1.cmp(&other.1)
-    }
-}
-
-impl PartialOrd for MoveScore {
-    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        Some(self.1.cmp(&other.1))
-    }
-}
-
-impl PartialEq for MoveScore {
-    fn eq(&self, other: &Self) -> bool {
-        self.1 == other.1
     }
 }
 

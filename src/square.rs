@@ -163,6 +163,10 @@ impl Square {
         self.0 as i32
     }
 
+    pub fn to_i16(&self) -> i16 {
+        self.0 as i16
+    }
+
     pub fn to_u32(&self) -> u32 {
         self.0 as u32
     }
@@ -216,7 +220,7 @@ impl Square {
     }
 
     pub fn to_usize(&self) -> usize {
-        self.0 as usize
+        self.0
     }
 
     // Gives square from perspective of side

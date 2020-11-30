@@ -25,7 +25,7 @@ impl Castle {
         Castle(s)
     }
 
-    pub fn to_usize(&self) -> usize {
+    pub const fn to_usize(&self) -> usize {
         self.0
     }
 
