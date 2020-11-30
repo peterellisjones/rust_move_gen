@@ -10,6 +10,7 @@ pub fn king_moves<L: MoveList>(position: &Position, capture_mask: BB, push_mask:
 
     debug_assert_eq!(movers.pop_count(), 1);
     let from = movers.bitscan();
+    debug_assert_eq!(position.at(from), piece);
 
     let capture_targets = from.king_moves() & capture_mask;
     let push_targets = from.king_moves() & push_mask;
@@ -25,6 +26,7 @@ pub fn king_captures<L: MoveList>(position: &Position, capture_mask: BB, list: &
 
     debug_assert_eq!(movers.pop_count(), 1);
     let from = movers.bitscan();
+    debug_assert_eq!(position.at(from), piece);
 
     let capture_targets = from.king_moves() & capture_mask;
 
@@ -43,6 +45,7 @@ pub fn knight_moves<L: MoveList>(
     let movers = position.bb_pc(piece) & from_mask;
 
     for (from, _) in movers.iter() {
+        debug_assert_eq!(position.at(from), piece);
         let capture_targets = from.knight_moves() & capture_mask;
         let push_targets = from.knight_moves() & push_mask;
 
@@ -62,6 +65,7 @@ pub fn knight_captures<L: MoveList>(
     let movers = position.bb_pc(piece) & from_mask;
 
     for (from, _) in movers.iter() {
+        debug_assert_eq!(position.at(from), piece);
         let capture_targets = from.knight_moves() & capture_mask;
 
         list.add_captures(from, capture_targets);

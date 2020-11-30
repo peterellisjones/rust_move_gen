@@ -51,12 +51,14 @@ pub fn slider_moves<L: MoveList>(
     let non_diag_attackers = queens | rooks;
 
     for (from, _) in (non_diag_attackers & !pinned_mask).iter() {
+        debug_assert!(position.at(from) == ROOK.pc(stm) || position.at(from) == QUEEN.pc(stm));
         let targets = rook_attacks_from_sq(from, occupied);
         list.add_captures(from, targets & capture_mask);
         list.add_non_captures(from, targets & push_mask);
     }
 
     for (from, _) in (non_diag_attackers & pinned_mask).iter() {
+        debug_assert!(position.at(from) == ROOK.pc(stm) || position.at(from) == QUEEN.pc(stm));
         let ray_mask = lines_along(from, king_sq);
         let targets = rook_attacks_from_sq(from, occupied) & ray_mask;
         list.add_captures(from, targets & capture_mask);
@@ -64,12 +66,14 @@ pub fn slider_moves<L: MoveList>(
     }
 
     for (from, _) in (diag_attackers & !pinned_mask).iter() {
+        debug_assert!(position.at(from) == BISHOP.pc(stm) || position.at(from) == QUEEN.pc(stm));
         let targets = bishop_attacks_from_sq(from, occupied);
         list.add_captures(from, targets & capture_mask);
         list.add_non_captures(from, targets & push_mask);
     }
 
     for (from, _) in (diag_attackers & pinned_mask).iter() {
+        debug_assert!(position.at(from) == BISHOP.pc(stm) || position.at(from) == QUEEN.pc(stm));
         let ray_mask = lines_along(from, king_sq);
         let targets = bishop_attacks_from_sq(from, occupied) & ray_mask;
         list.add_captures(from, targets & capture_mask);
@@ -93,22 +97,26 @@ pub fn slider_captures<L: MoveList>(
     let non_diag_attackers = queens | rooks;
 
     for (from, _) in (non_diag_attackers & !pinned_mask).iter() {
+        debug_assert!(position.at(from) == ROOK.pc(stm) || position.at(from) == QUEEN.pc(stm));
         let targets = rook_attacks_from_sq(from, occupied);
         list.add_captures(from, targets & capture_mask);
     }
 
     for (from, _) in (non_diag_attackers & pinned_mask).iter() {
+        debug_assert!(position.at(from) == ROOK.pc(stm) || position.at(from) == QUEEN.pc(stm));
         let ray_mask = lines_along(from, king_sq);
         let targets = rook_attacks_from_sq(from, occupied) & ray_mask;
         list.add_captures(from, targets & capture_mask);
     }
 
     for (from, _) in (diag_attackers & !pinned_mask).iter() {
+        debug_assert!(position.at(from) == BISHOP.pc(stm) || position.at(from) == QUEEN.pc(stm));
         let targets = bishop_attacks_from_sq(from, occupied);
         list.add_captures(from, targets & capture_mask);
     }
 
     for (from, _) in (diag_attackers & pinned_mask).iter() {
+        debug_assert!(position.at(from) == BISHOP.pc(stm) || position.at(from) == QUEEN.pc(stm));
         let ray_mask = lines_along(from, king_sq);
         let targets = bishop_attacks_from_sq(from, occupied) & ray_mask;
         list.add_captures(from, targets & capture_mask);

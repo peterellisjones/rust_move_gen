@@ -2,7 +2,7 @@ use super::{Position, State};
 use bb::*;
 use castle::*;
 use castling_rights::*;
-use mv::Move;
+use mv::{Move, NULL_MOVE};
 use piece::*;
 use side::Side;
 use square::*;
@@ -18,6 +18,7 @@ const CASTLE_MASKS: [BB; 4] = [
 impl Position {
     /// Returns piece captured and square if any
     pub fn make(&mut self, mv: Move) -> Option<(Piece, Square)> {
+        debug_assert_ne!(mv, NULL_MOVE);
         let stm = self.state.stm;
         let initial_state = self.state.clone();
         let mut move_resets_half_move_clock = false;
@@ -53,6 +54,7 @@ impl Position {
 
                 let captured_piece = self.at(capture_sq);
                 debug_assert!(captured_piece.is_some());
+                debug_assert_ne!(captured_piece.kind(), KING);
 
                 self.remove_piece(capture_sq);
 
@@ -111,6 +113,7 @@ impl Position {
         original_state: &State,
         original_hash_key: u64,
     ) {
+        debug_assert_ne!(mv, NULL_MOVE);
         self.state = original_state.clone();
         self.key = original_hash_key;
 

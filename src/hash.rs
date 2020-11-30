@@ -134,7 +134,7 @@ impl Zobrist {
     }
 
     /// Generates the difference between two states
-        pub fn state(&self, before: &State, after: &State) -> u64 {
+    pub fn state(&self, before: &State, after: &State) -> u64 {
         self.castling_rights[before.castling_rights.to_usize()]
             ^ self.castling_rights[after.castling_rights.to_usize()]
             ^ self.ep_hash(before.ep_square)
@@ -142,7 +142,7 @@ impl Zobrist {
             ^ self.stm
     }
 
-        pub fn castle(&self, castle: Castle, stm: Side) -> u64 {
+    pub fn castle(&self, castle: Castle, stm: Side) -> u64 {
         return unsafe {
             *self
                 .castles
@@ -151,21 +151,21 @@ impl Zobrist {
         };
     }
 
-        pub fn capture(&self, captured: Piece, capture_square: Square) -> u64 {
+    pub fn capture(&self, captured: Piece, capture_square: Square) -> u64 {
         self.piece_square(captured, capture_square)
     }
 
-        pub fn push(&self, pc_from: Piece, from: Square, pc_to: Piece, to: Square) -> u64 {
+    pub fn push(&self, pc_from: Piece, from: Square, pc_to: Piece, to: Square) -> u64 {
         self.piece_square(pc_from, from) ^ self.piece_square(pc_to, to)
     }
 
-        fn piece_square(&self, piece: Piece, square: Square) -> u64 {
+    fn piece_square(&self, piece: Piece, square: Square) -> u64 {
         return unsafe {
             (*self.pieces.get_unchecked(piece.to_usize())).rotate_left(square.to_u32())
         };
     }
 
-        fn ep_hash(&self, ep_square: Option<Square>) -> u64 {
+    fn ep_hash(&self, ep_square: Option<Square>) -> u64 {
         if ep_square.is_some() {
             return unsafe {
                 *self

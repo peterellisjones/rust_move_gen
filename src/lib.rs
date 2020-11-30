@@ -49,7 +49,10 @@ pub use bb::BB;
 pub use board::Board;
 pub use castle::{Castle, KING_SIDE, QUEEN_SIDE};
 pub use castling_rights::{CastlingRights, BLACK_KS, BLACK_QS, WHITE_KS, WHITE_QS};
-pub use gen::{legal_moves, loud_legal_moves};
+pub use gen::{
+    legal_moves, legal_moves_with_preprocessing, loud_legal_moves, movegen_preprocessing,
+    MoveGenPreprocessing,
+};
 pub use mv::{Move, MoveScore, KING_SIDE_CASTLE, NULL_MOVE, QUEEN_SIDE_CASTLE};
 pub use mv_list::{
     BestMoveTracker, MoveCounter, MoveList, MoveVec, PieceSquareTable, SortedMoveHeap,

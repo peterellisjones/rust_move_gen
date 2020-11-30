@@ -85,6 +85,7 @@ pub fn pawn_captures<L: MoveList>(
             let ep_captures = targets & BB::new(ep);
             for (to, to_bb) in ep_captures.iter() {
                 let from = to.rotate_right(shift as square::Internal);
+                debug_assert_eq!(position.at(from), piece);
 
                 let capture_sq = from.along_row_with_col(to);
                 let capture_sq_bb = BB::new(capture_sq);
