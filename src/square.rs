@@ -11,7 +11,7 @@ pub type Internal = usize;
 #[derive(PartialEq, PartialOrd, Copy, Clone)]
 pub struct Square(pub Internal);
 
-const NAMES: [&'static str; 64] = [
+const NAMES: [&str; 64] = [
     "a1", "b1", "c1", "d1", "e1", "f1", "g1", "h1", "a2", "b2", "c2", "d2", "e2", "f2", "g2", "h2",
     "a3", "b3", "c3", "d3", "e3", "f3", "g3", "h3", "a4", "b4", "c4", "d4", "e4", "f4", "g4", "h4",
     "a5", "b5", "c5", "d5", "e5", "f5", "g5", "h5", "a6", "b6", "c6", "d6", "e6", "f6", "g6", "h6",
@@ -241,14 +241,6 @@ impl Square {
         Square((self.0 + amount) & 63)
     }
 
-    pub fn to_str(&self) -> &'static str {
-        NAMES[self.0 as usize]
-    }
-
-    pub fn to_string(&self) -> String {
-        self.to_str().to_string()
-    }
-
     #[cfg(test)]
     pub fn random() -> Square {
         Square(rand::random::<Internal>() % 64)
@@ -288,7 +280,7 @@ impl Square {
             return Err("String too short".to_string());
         }
 
-        let col_char = s.chars().nth(0).unwrap() as Internal;
+        let col_char = s.chars().next().unwrap() as Internal;
         let row_char = s.chars().nth(1).unwrap() as Internal;
 
         let col = col_char - 'a' as Internal;
@@ -331,13 +323,13 @@ impl Iterator for SquaresIter {
 
 impl fmt::Display for Square {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self.to_string())
+        write!(f, "{}", NAMES[self.0 as usize])
     }
 }
 
 impl fmt::Debug for Square {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self.to_string())
+        write!(f, "{}", NAMES[self.0 as usize])
     }
 }
 

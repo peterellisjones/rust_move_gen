@@ -7,7 +7,7 @@ type Internal = usize;
 pub struct Side(pub Internal);
 
 const CHARS: [char; 2] = ['w', 'b'];
-const NAMES: [&'static str; 2] = ["white", "black"];
+const NAMES: [&str; 2] = ["white", "black"];
 
 impl Side {
     pub fn to_char(&self) -> char {
@@ -38,10 +38,6 @@ impl Side {
 
     pub fn to_str(&self) -> &'static str {
         NAMES[self.0]
-    }
-
-    pub fn to_string(&self) -> String {
-        self.to_str().to_string()
     }
 }
 

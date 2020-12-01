@@ -22,7 +22,7 @@ impl Board {
         let position = Position::from_fen(fen).unwrap();
 
         Board {
-            position: position,
+            position,
             stack: Vec::new(),
         }
     }
@@ -42,15 +42,15 @@ impl Board {
     }
 
     pub fn make(&mut self, mv: Move) {
-        let before_state = self.position.state().clone();
+        let state = self.position.state().clone();
         let key = self.position.hash_key();
-        let capture = self.position.make(mv);
+        let captured = self.position.make(mv);
 
         self.stack.push(StackElem {
-            key: key,
-            captured: capture,
-            state: before_state,
-            mv: mv,
+            key,
+            captured,
+            state,
+            mv,
         })
     }
 

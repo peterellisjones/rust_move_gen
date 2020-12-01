@@ -2,19 +2,15 @@ use bb::BB;
 use castle::Castle;
 use square::Square;
 
-mod best_mv_tracker;
 mod mv_counter;
 mod mv_vec;
 mod piece_square_table;
 mod sorted_move_list;
 
-pub use self::best_mv_tracker::BestMoveTracker;
 pub use self::mv_counter::MoveCounter;
 pub use self::mv_vec::MoveVec;
 pub use self::piece_square_table::PieceSquareTable;
 pub use self::sorted_move_list::{SortedMoveHeap, SortedMoveHeapItem, SortedMoveList};
-
-pub const CHECK_MATE_SCORE: i16 = std::i16::MAX / 2;
 
 /// MoveList represents a way to collect moves from move generation functions. Use this if you want to collect or record moves in a way not supported by MoveVec or MoveCounter
 pub trait MoveList {

@@ -146,10 +146,9 @@ mod test {
 
     #[test]
     fn test_knight_moves_from_bb() {
-        for i in 0..64 {
+        for (i, &moves) in KNIGHT_MOVES.iter().enumerate() {
             let bb = BB::new(Square::new(i));
-            let actual_moves = KNIGHT_MOVES[i];
-            assert_eq!(knight_moves_from_bb(bb), actual_moves);
+            assert_eq!(knight_moves_from_bb(bb), moves);
         }
     }
 

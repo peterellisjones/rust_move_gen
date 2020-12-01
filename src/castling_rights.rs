@@ -56,30 +56,13 @@ impl CastlingRights {
         self.0 != 0
     }
 
-    pub fn to_string(&self) -> String {
-        let mut string = String::new();
-
-        if !self.any() {
-            return "-".to_string();
-        }
-
-        for i in 0..4 {
-            let right = CastlingRights(1 << i);
-            if self.has(right) {
-                string.push(CASTLING_RIGHTS_CHARS[i]);
-            }
-        }
-
-        string
-    }
-
     pub fn from(castle: Castle, side: Side) -> CastlingRights {
         CastlingRights(1 << (castle.to_usize() * 2 + side.0))
     }
 
     pub fn parse(chr: char) -> Result<CastlingRights, String> {
-        for i in 0..4 {
-            if CASTLING_RIGHTS_CHARS[i] == chr {
+        for (i, &c) in CASTLING_RIGHTS_CHARS.iter().enumerate() {
+            if c == chr {
                 return Ok(CastlingRights(1 << i));
             }
         }
@@ -89,13 +72,39 @@ impl CastlingRights {
 
 impl fmt::Display for CastlingRights {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self.to_string())
+        let mut string = String::new();
+
+        if !self.any() {
+            return write!(f, "-");
+        }
+
+        for (i, &c) in CASTLING_RIGHTS_CHARS.iter().enumerate() {
+            let right = CastlingRights(1 << i);
+            if self.has(right) {
+                string.push(c);
+            }
+        }
+
+        write!(f, "{}", string)
     }
 }
 
 impl fmt::Debug for CastlingRights {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self.to_string())
+        let mut string = String::new();
+
+        if !self.any() {
+            return write!(f, "-");
+        }
+
+        for (i, &c) in CASTLING_RIGHTS_CHARS.iter().enumerate() {
+            let right = CastlingRights(1 << i);
+            if self.has(right) {
+                string.push(c);
+            }
+        }
+
+        write!(f, "{}", string)
     }
 }
 

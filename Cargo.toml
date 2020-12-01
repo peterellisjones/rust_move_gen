@@ -20,6 +20,8 @@ path = "src/lib.rs"
 [profile.release]
 opt-level = 3
 debug = false
+lto = true
+overflow-checks = false
 
 [profile.dev]
 opt-level = 1

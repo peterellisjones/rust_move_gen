@@ -60,13 +60,31 @@ pub struct SortedMoveList<'a> {
 
 impl<'a> fmt::Display for SortedMoveList<'a> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self.to_string())
+        write!(
+            f,
+            "{}",
+            self.moves
+                .0
+                .iter()
+                .map(|item: &SortedMoveHeapItem| item.move_score().to_string())
+                .collect::<Vec<String>>()
+                .join(", ")
+        )
     }
 }
 
 impl<'a> fmt::Debug for SortedMoveList<'a> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self.to_string())
+        write!(
+            f,
+            "{}",
+            self.moves
+                .0
+                .iter()
+                .map(|item: &SortedMoveHeapItem| item.move_score().to_string())
+                .collect::<Vec<String>>()
+                .join(", ")
+        )
     }
 }
 
@@ -260,23 +278,19 @@ impl<'a> SortedMoveList<'a> {
         moves: &'a mut SortedMoveHeap,
     ) -> SortedMoveList<'a> {
         SortedMoveList {
-            moves: moves,
-            piece_square_table: piece_square_table,
-            piece_grid: piece_grid,
-            stm: stm,
+            moves,
+            piece_square_table,
+            piece_grid,
+            stm,
         }
     }
 
-    pub fn best_move(&self) -> Option<&MoveScore> {
-        match self.moves.peek() {
-            Some(item) => Some(item.move_score()),
-            None => None,
-        }
-    }
-
-    #[allow(dead_code)]
     pub fn len(&self) -> usize {
         self.moves.len()
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
     }
 
     fn insert(&mut self, mv: Move, piece_square_score: i16, move_ordering_score: i16) {
@@ -381,6 +395,10 @@ impl SortedMoveHeap {
         self.0.len()
     }
 
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
+
     pub fn push(&mut self, elem: SortedMoveHeapItem) {
         self.0.push(elem);
     }
@@ -389,10 +407,16 @@ impl SortedMoveHeap {
         self.0.into_iter_sorted()
     }
 
-    pub fn to_sorted_vec(self) -> Vec<MoveScore> {
+    pub fn into_sorted_vec(self) -> Vec<MoveScore> {
         self.iter()
             .map(|e| *e.move_score())
             .collect::<Vec<MoveScore>>()
+    }
+}
+
+impl Default for SortedMoveHeap {
+    fn default() -> Self {
+        Self::new()
     }
 }
 
@@ -527,7 +551,7 @@ mod test {
 
                 legal_moves(&position, &mut list);
 
-                let sorted_vec = heap.to_sorted_vec();
+                let sorted_vec = heap.into_sorted_vec();
 
                 *sorted_vec.choose(&mut rand::thread_rng()).unwrap()
             };
@@ -546,7 +570,7 @@ mod test {
     }
 
     fn assert_list_includes_moves(heap: SortedMoveHeap, moves: &[&'static str]) {
-        let sorted_vec = heap.to_sorted_vec();
+        let sorted_vec = heap.into_sorted_vec();
         for &m in moves.iter() {
             assert!(sorted_vec
                 .iter()

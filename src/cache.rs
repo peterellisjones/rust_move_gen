@@ -52,10 +52,6 @@ impl Cache {
     let idx = (key as usize) & self.mask;
     let entry = unsafe { self.entries.get_unchecked_mut(idx) };
 
-    *entry = Entry {
-      key: key,
-      count: count,
-      depth: depth,
-    }
+    *entry = Entry { key, count, depth }
   }
 }

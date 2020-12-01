@@ -5,7 +5,7 @@ use square::Square;
 use std::ops;
 
 /// MoveCounter implements MoveList and keeps a count of different types of moves added to it.
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Default)]
 pub struct MoveCounter {
     pub moves: u64,
     pub captures: u64,
@@ -17,11 +17,7 @@ pub struct MoveCounter {
 impl MoveCounter {
     pub fn new() -> MoveCounter {
         MoveCounter {
-            moves: 0,
-            captures: 0,
-            castles: 0,
-            promotions: 0,
-            ep_captures: 0,
+            ..Default::default()
         }
     }
 }

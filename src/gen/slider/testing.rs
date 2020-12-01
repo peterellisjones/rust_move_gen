@@ -62,7 +62,7 @@ pub fn bench_attacks_from_bb<F: Fn(BB, BB) -> BB>(b: &mut test::Bencher, gen: F)
         let mut ret = EMPTY;
 
         for &(from, occupied) in cases.iter() {
-            ret = ret ^ gen(from, occupied);
+            ret ^= gen(from, occupied);
         }
 
         ret

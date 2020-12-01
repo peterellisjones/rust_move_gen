@@ -33,8 +33,7 @@ fn line_attacks(occupied: BB, mask: LineMask) -> BB {
     let msb = (-BB(1)) << ((if lower == EMPTY { BB(1) } else { lower }).msb() as usize);
     let lsb = upper & -upper;
     let diff = BB(2) * lsb + msb;
-    let attacks = diff & (mask.lower | mask.upper);
-    attacks
+    diff & (mask.lower | mask.upper)
 }
 
 #[cfg(test)]

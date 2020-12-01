@@ -13,6 +13,7 @@ use self::pawn::*;
 use self::pinned::*;
 use self::slider::consts::squares_between;
 use self::slider::*;
+use std::cmp::Ordering;
 
 use self::attacks::king_danger_squares;
 use bb::{BB, EMPTY};
@@ -26,13 +27,13 @@ use position::Position;
 /// movegen_preprocessing() followed by legal_moves_with_preprocessing()
 /// will save some time. eg:
 ///
-/// 
+///
 /// let movegen_data = movegen_preprocessing(position);
 /// if movegen_data.in_check() {
 ///    // ...do something
 /// }
 /// legal_moves_with_preprocessing(list, data);
-/// 
+///
 pub struct MoveGenPreprocessing((BB, BB, BB));
 
 impl MoveGenPreprocessing {
@@ -82,27 +83,29 @@ pub fn legal_moves_with_preprocessing<L: MoveList>(
     let mut push_mask = empty_squares;
     let king_push_mask = empty_squares & !attacked_squares;
 
-    if king_attacks_count > 1 {
-        // multiple attackers... only solutions are king moves
-        king_moves(position, king_capture_mask, king_push_mask, list);
-        return true;
-    } else if king_attacks_count == 1 {
-        // if ony one attacker, we can try attacking the attacker with
-        // our other pieces.
-        capture_mask = checkers;
-
-        let checker_sq = checkers.bitscan();
-        let checker = position.at(checker_sq);
-        debug_assert!(checker.is_some());
-
-        if checker.is_slider() {
-            // If the piece giving check is a slider, we can additionally attempt
-            // to block the sliding piece;
-            push_mask = squares_between(king_sq, checker_sq);
-        } else {
-            // If we are in check by a jumping piece (aka a knight) then
-            // there are no valid non-captures to avoid check
-            push_mask = EMPTY;
+    match king_attacks_count.cmp(&1) {
+        Ordering::Greater => {
+            // multiple attackers... only solutions are king moves
+            king_moves(position, king_capture_mask, king_push_mask, list);
+            return true;
+        }
+        Ordering::Less => (),
+        Ordering::Equal => {
+            // if ony one attacker, we can try attacking the attacker with
+            // our other pieces.
+            capture_mask = checkers;
+            let checker_sq = checkers.bitscan();
+            let checker = position.at(checker_sq);
+            debug_assert!(checker.is_some());
+            if checker.is_slider() {
+                // If the piece giving check is a slider, we can additionally attempt
+                // to block the sliding piece;
+                push_mask = squares_between(king_sq, checker_sq);
+            } else {
+                // If we are in check by a jumping piece (aka a knight) then
+                // there are no valid non-captures to avoid check
+                push_mask = EMPTY;
+            }
         }
     }
 
@@ -145,6 +148,14 @@ pub fn legal_moves_with_preprocessing<L: MoveList>(
 /// * Captures
 /// * Check evasions
 pub fn loud_legal_moves<L: MoveList>(position: &Position, list: &mut L) -> bool {
+    loud_legal_moves_with_preprocessing(position, list, movegen_preprocessing(position))
+}
+
+pub fn loud_legal_moves_with_preprocessing<L: MoveList>(
+    position: &Position,
+    list: &mut L,
+    preprocessed_data: MoveGenPreprocessing,
+) -> bool {
     let stm = position.state().stm;
     let kings = position.bb_pc(KING.pc(stm));
 
@@ -153,7 +164,7 @@ pub fn loud_legal_moves<L: MoveList>(position: &Position, list: &mut L) -> bool 
 
     let king_sq = kings.bitscan();
 
-    let (checkers, pinned, pinners) = checkers_and_pinned(kings, stm.flip(), position);
+    let (checkers, pinned, pinners) = preprocessed_data.0;
     let king_attacks_count = checkers.pop_count();
 
     // capture_mask and push_mask represent squares our pieces are allowed to move to or capture,
@@ -166,52 +177,53 @@ pub fn loud_legal_moves<L: MoveList>(position: &Position, list: &mut L) -> bool 
     let king_capture_mask = enemy & !attacked_squares;
     let king_push_mask = empty_squares & !attacked_squares;
 
-    if king_attacks_count > 1 {
-        // multiple attackers... only solutions are king moves
-        king_moves(position, king_capture_mask, king_push_mask, list);
-        return true;
-    } else if king_attacks_count == 1 {
-        // if ony one attacker, we can try attacking the attacker with
-        // our other pieces.
-        capture_mask = checkers;
+    match king_attacks_count.cmp(&1) {
+        Ordering::Greater => {
+            // multiple attackers... only solutions are king moves
+            king_moves(position, king_capture_mask, king_push_mask, list);
+            return true;
+        }
+        Ordering::Equal => {
+            // if ony one attacker, we can try attacking the attacker with
+            // our other pieces.
+            capture_mask = checkers;
+            let checker_sq = checkers.bitscan();
+            let checker = position.at(checker_sq);
+            debug_assert!(checker.is_some());
+            let push_mask = if checker.is_slider() {
+                // If the piece giving check is a slider, we can additionally attempt
+                // to block the sliding piece;
+                squares_between(king_sq, checker_sq)
+            } else {
+                // If we are in check by a jumping piece (aka a knight) then
+                // there are no valid non-captures to avoid check
+                EMPTY
+            };
+            // When in check evaluate moves in this order
+            // 1. king moves
+            // 2. knight moves
+            // 3. sliding piece moves
+            // 4. pawn moves
+            // No need for pawn pin ray moves since cannot move a pinned piece if in check
+            king_moves(position, king_capture_mask, king_push_mask, list);
+            knight_moves(position, capture_mask, push_mask, !pinned, list);
+            slider_moves(position, capture_mask, push_mask, pinned, king_sq, list);
+            pawn_moves(position, capture_mask, push_mask, !pinned, list);
+        }
+        Ordering::Less => {
+            let push_mask = EMPTY;
 
-        let checker_sq = checkers.bitscan();
-        let checker = position.at(checker_sq);
-        debug_assert!(checker.is_some());
-
-        let push_mask = if checker.is_slider() {
-            // If the piece giving check is a slider, we can additionally attempt
-            // to block the sliding piece;
-            squares_between(king_sq, checker_sq)
-        } else {
-            // If we are in check by a jumping piece (aka a knight) then
-            // there are no valid non-captures to avoid check
-            EMPTY
-        };
-
-        // When in check evaluate moves in this order
-        // 1. king moves
-        // 2. knight moves
-        // 3. sliding piece moves
-        // 4. pawn moves
-        // No need for pawn pin ray moves since cannot move a pinned piece if in check
-        king_moves(position, king_capture_mask, king_push_mask, list);
-        knight_moves(position, capture_mask, push_mask, !pinned, list);
-        slider_moves(position, capture_mask, push_mask, pinned, king_sq, list);
-        pawn_moves(position, capture_mask, push_mask, !pinned, list);
-    } else {
-        let push_mask = EMPTY;
-
-        // When not in check evaluate moves in this order
-        // 1. pawn captures
-        // 2. knight captures
-        // 3. sliding piece captures
-        // 4. pawn pin-ray captures
-        pawn_captures(position, capture_mask, push_mask, !pinned, list);
-        pawn_pin_ray_captures(position, capture_mask & pinners, king_sq, pinned, stm, list);
-        knight_captures(position, capture_mask, !pinned, list);
-        slider_captures(position, capture_mask, pinned, king_sq, list);
-        king_captures(position, king_capture_mask, list);
+            // When not in check evaluate moves in this order
+            // 1. pawn captures
+            // 2. knight captures
+            // 3. sliding piece captures
+            // 4. pawn pin-ray captures
+            pawn_captures(position, capture_mask, push_mask, !pinned, list);
+            pawn_pin_ray_captures(position, capture_mask & pinners, king_sq, pinned, stm, list);
+            knight_captures(position, capture_mask, !pinned, list);
+            slider_captures(position, capture_mask, pinned, king_sq, list);
+            king_captures(position, king_capture_mask, list);
+        }
     }
 
     king_attacks_count > 0

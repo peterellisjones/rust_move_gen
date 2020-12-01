@@ -93,8 +93,8 @@ pub fn attacked_squares_ignoring_ep(attacker: Side, position: &Position) -> BB {
     let mut attacked_squares = EMPTY;
 
     let (diag_attackers, non_diag_attackers) = position.bb_sliders(attacker);
-    attacked_squares = attacked_squares | rook_attacks(non_diag_attackers, occupied);
-    attacked_squares = attacked_squares | bishop_attacks(diag_attackers, occupied);
+    attacked_squares |= rook_attacks(non_diag_attackers, occupied);
+    attacked_squares |= bishop_attacks(diag_attackers, occupied);
 
     let knights = position.bb_pc(KNIGHT.pc(attacker));
     attacked_squares |= knight_moves_from_bb(knights);
@@ -106,7 +106,7 @@ pub fn attacked_squares_ignoring_ep(attacker: Side, position: &Position) -> BB {
     let pawns = position.bb_pc(PAWN.pc(attacker));
     for &(shift, file_mask) in PAWN_CAPTURE_FILE_MASKS[attacker.to_usize()].iter() {
         let targets = pawns.rot_left(shift as u32) & file_mask;
-        attacked_squares = attacked_squares | targets;
+        attacked_squares |=  targets;
     }
 
     attacked_squares

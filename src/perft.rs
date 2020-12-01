@@ -89,9 +89,9 @@ pub fn perft_inner(position: &mut Position, depth: usize) -> u64 {
 fn perft_with_cache_inner(position: &mut Position, depth: usize, cache: &mut Cache) -> u64 {
   let key = position.hash_key();
 
-  let ret = cache.probe(key, depth);
-  if ret.is_some() {
-    return ret.unwrap();
+  let result = cache.probe(key, depth);
+  if let Some(value) = result {
+    return value;
   }
 
   let mut count = 0;
@@ -166,7 +166,7 @@ pub fn perft_detailed(
     counter += c;
   }
 
-  return counter
+  counter
 }
 
 pub fn perft_detailed_inner(position: &mut Position, depth: usize) -> MoveCounter {
@@ -230,7 +230,9 @@ mod test {
   #[test]
   // https://www.chessprogramming.org/Perft_Results#Position_2
   fn perft_detailed_position_2_depth_3() {
-    let mut position = Position::from_fen("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -").unwrap();
+    let mut position =
+      Position::from_fen("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -")
+        .unwrap();
     let counter = perft_detailed(&mut position, 3, true);
 
     assert_eq!(counter.promotions, 0);
@@ -243,7 +245,9 @@ mod test {
   #[test]
   // https://www.chessprogramming.org/Perft_Results#Position_2
   fn perft_detailed_position_2_depth_4() {
-    let mut position = Position::from_fen("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -").unwrap();
+    let mut position =
+      Position::from_fen("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -")
+        .unwrap();
     let counter = perft_detailed(&mut position, 4, true);
 
     assert_eq!(counter.promotions, 15172);
@@ -252,7 +256,6 @@ mod test {
     assert_eq!(counter.captures, 757163);
     assert_eq!(counter.moves, 4085603);
   }
-
 
   #[test]
   // https://www.chessprogramming.org/Perft_Results#Position_3
@@ -265,7 +268,9 @@ mod test {
   #[test]
   // https://www.chessprogramming.org/Perft_Results#Position_4
   fn perft_position_4_depth_4() {
-    let mut position = Position::from_fen("r2q1rk1/pP1p2pp/Q4n2/bbp1p3/Np6/1B3NBn/pPPP1PPP/R3K2R b KQ - 0 1").unwrap();
+    let mut position =
+      Position::from_fen("r2q1rk1/pP1p2pp/Q4n2/bbp1p3/Np6/1B3NBn/pPPP1PPP/R3K2R b KQ - 0 1")
+        .unwrap();
 
     assert_eq!(perft(&mut position, 4, true, 1024 * 1024), 422333);
   }
@@ -273,7 +278,8 @@ mod test {
   #[test]
   // https://www.chessprogramming.org/Perft_Results#Position_5
   fn perft_position_5_depth_3() {
-    let mut position = Position::from_fen("rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8").unwrap();
+    let mut position =
+      Position::from_fen("rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8").unwrap();
 
     assert_eq!(perft(&mut position, 3, true, 1024 * 1024), 62379);
   }
@@ -281,7 +287,9 @@ mod test {
   #[test]
   // https://www.chessprogramming.org/Perft_Results#Position_5
   fn perft_debug_1() {
-    let mut position = Position::from_fen("r3k2r/p1pp1pb1/bn2pqp1/3PN3/1p2P3/2N5/PPPBBPpP/R4K1R w kq - 0 1").unwrap();
+    let mut position =
+      Position::from_fen("r3k2r/p1pp1pb1/bn2pqp1/3PN3/1p2P3/2N5/PPPBBPpP/R4K1R w kq - 0 1")
+        .unwrap();
 
     assert_eq!(perft(&mut position, 1, false, 0), 3);
   }

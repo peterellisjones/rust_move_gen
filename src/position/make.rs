@@ -19,6 +19,7 @@ impl Position {
     /// Returns piece captured and square if any
     pub fn make(&mut self, mv: Move) -> Option<(Piece, Square)> {
         debug_assert_ne!(mv, NULL_MOVE);
+
         let stm = self.state.stm;
         let initial_state = self.state.clone();
         let mut move_resets_half_move_clock = false;
@@ -53,7 +54,9 @@ impl Position {
                 };
 
                 let captured_piece = self.at(capture_sq);
+
                 debug_assert!(captured_piece.is_some());
+
                 debug_assert_ne!(captured_piece.kind(), KING);
 
                 self.remove_piece(capture_sq);
@@ -106,6 +109,24 @@ impl Position {
         captured
     }
 
+    pub fn make_null_move(&mut self) -> Option<(Piece, Square)> {
+        let initial_state = self.state.clone();
+
+        // increment full move clock if black moved
+        self.state.full_move_number += self.state.stm.to_usize();
+        self.state.half_move_clock += 1;
+        self.state.stm = self.state.stm.flip();
+        self.state.ep_square = None;
+
+        let mut xor_key = 0u64;
+
+        xor_key ^= self.hash.state(&initial_state, &self.state);
+
+        self.key ^= xor_key;
+
+        None
+    }
+
     pub fn unmake(
         &mut self,
         mv: Move,
@@ -114,6 +135,7 @@ impl Position {
         original_hash_key: u64,
     ) {
         debug_assert_ne!(mv, NULL_MOVE);
+
         self.state = original_state.clone();
         self.key = original_hash_key;
 
@@ -129,8 +151,7 @@ impl Position {
 
         self.move_piece(mv.to(), mv.from());
 
-        if capture.is_some() {
-            let (captured_piece, capture_sq) = capture.unwrap();
+        if let Some((captured_piece, capture_sq)) = capture {
             self.put_piece(captured_piece, capture_sq);
         }
     }
@@ -147,6 +168,11 @@ impl Position {
         self.move_piece(from, to);
         let (from, to) = castle_rook_squares(stm, castle);
         self.move_piece(from, to);
+    }
+
+    pub fn unmake_null_move(&mut self, original_state: &State, original_hash_key: u64) {
+        self.state = original_state.clone();
+        self.key = original_hash_key;
     }
 }
 

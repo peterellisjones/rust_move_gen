@@ -17,7 +17,7 @@ pub fn lines_along(a: Square, b: Square) -> BB {
   }
 }
 
-const SQUARES_BETWEEN: [[BB; 64]; 64] = [
+static SQUARES_BETWEEN: [[BB; 64]; 64] = [
   [
     BB(0),
     BB(0),
@@ -4244,7 +4244,7 @@ const SQUARES_BETWEEN: [[BB; 64]; 64] = [
   ],
 ];
 
-const LINES_ALONG: [[BB; 64]; 64] = [
+static LINES_ALONG: [[BB; 64]; 64] = [
   [
     BB(0),
     BB(255),

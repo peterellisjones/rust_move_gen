@@ -15,7 +15,7 @@ pub fn from_fen(fen: &str) -> Result<([Piece; 64], State), String> {
     };
 
     let parts: Vec<&str> = fen.split(' ').collect();
-    if parts.len() < 1 {
+    if parts.is_empty() {
         return Err(format!("Not enough fields for FEN: {}", fen));
     }
 
@@ -33,21 +33,17 @@ pub fn from_fen(fen: &str) -> Result<([Piece; 64], State), String> {
         state.ep_square = Square::parse(parts[3])?;
     }
 
-    if parts.len() > 4 {
-        if parts[4] != "-" {
-            match parts[4].parse::<usize>() {
-                Ok(hmc) => state.half_move_clock = hmc,
-                Err(err) => return Err(err.to_string()),
-            }
+    if parts.len() > 4 && parts[4] != "-" {
+        match parts[4].parse::<usize>() {
+            Ok(hmc) => state.half_move_clock = hmc,
+            Err(err) => return Err(err.to_string()),
         }
     }
 
-    if parts.len() > 5 {
-        if parts[5] != "-" {
-            match parts[5].parse::<usize>() {
-                Ok(fmn) => state.full_move_number = fmn,
-                Err(err) => return Err(err.to_string()),
-            }
+    if parts.len() > 5 && parts[5] != "-" {
+        match parts[5].parse::<usize>() {
+            Ok(fmn) => state.full_move_number = fmn,
+            Err(err) => return Err(err.to_string()),
         }
     }
 
@@ -84,7 +80,11 @@ pub fn to_fen(grid: &[Piece; 64], state: &State) -> String {
     fen.push(' ');
     fen += &state.castling_rights.to_string();
     fen.push(' ');
-    fen += state.ep_square.map_or("-", |sq| sq.to_str());
+    fen += &(if let Some(sq) = state.ep_square {
+        sq.to_string()
+    } else {
+        "-".to_string()
+    });
     fen.push(' ');
     fen += &state.half_move_clock.to_string();
     fen.push(' ');
@@ -94,7 +94,7 @@ pub fn to_fen(grid: &[Piece; 64], state: &State) -> String {
 }
 
 fn parse_stm(s: &str) -> Result<Side, String> {
-    match s.chars().nth(0) {
+    match s.chars().next() {
         Some(c) => Side::parse(c),
         None => Err("String too short".to_string()),
     }
@@ -131,7 +131,7 @@ fn parse_rows(fen: &str) -> Result<[Piece; 64], String> {
 fn parse_row(row_str: &str, row: usize, grid: &mut [Piece; 64]) -> Option<String> {
     let mut col = 0;
     for c in row_str.chars() {
-        if c >= '1' && c <= '8' {
+        if ('1'..='8').contains(&c) {
             col += c as usize - '1' as usize;
         } else {
             if col >= 8 {

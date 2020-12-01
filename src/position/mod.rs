@@ -16,7 +16,7 @@ use std::fmt;
 
 use std;
 
-pub const STARTING_POSITION_FEN: &'static str = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w \
+pub const STARTING_POSITION_FEN: &str = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w \
                                                  QqKk - 0 1";
 
 /// State encodes all game state except position
@@ -49,8 +49,8 @@ impl std::clone::Clone for Position {
     fn clone(&self) -> Self {
         Position {
             grid: self.grid,
-            bb_sides: self.bb_sides.clone(),
-            bb_pieces: self.bb_pieces.clone(),
+            bb_sides: self.bb_sides,
+            bb_pieces: self.bb_pieces,
             state: self.state.clone(),
             key: self.key,
             hash: self.hash,
@@ -66,7 +66,32 @@ impl fmt::Debug for Position {
 
 impl fmt::Display for Position {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self.to_string())
+        let props = vec![
+            ("    side to move", self.state.stm.to_str().to_string()),
+            (" castling rights", self.state.castling_rights.to_string()),
+            (
+                "      en-passant",
+                self.state
+                    .ep_square
+                    .map_or("-".to_string(), |s| s.to_string()),
+            ),
+            (" half-move clock", self.state.half_move_clock.to_string()),
+            ("full-move number", self.state.full_move_number.to_string()),
+            ("             FEN", self.to_fen()),
+        ];
+        let s = grid_to_string_with_props(
+            |sq: Square| -> char {
+                let pc = self.at(sq);
+                if pc.is_none() {
+                    '.'
+                } else {
+                    pc.to_char()
+                }
+            },
+            props.as_slice(),
+        );
+
+        write!(f, "{}", &s)
     }
 }
 
@@ -85,12 +110,12 @@ impl Position {
         let key = hash.position(&grid, &state);
 
         Position {
-            grid: grid,
-            bb_pieces: bb_pieces,
-            bb_sides: bb_sides,
-            state: state,
+            grid,
+            bb_pieces,
+            bb_sides,
+            state,
             hash: &DEFAULT_ZOBRISH_HASH,
-            key: key,
+            key,
         }
     }
 
@@ -121,33 +146,6 @@ impl Position {
     /// Get piece at square
     pub fn at(&self, sq: Square) -> Piece {
         unsafe { return *self.grid.get_unchecked(sq.to_usize()) }
-    }
-
-    pub fn to_string(&self) -> String {
-        let props = vec![
-            ("    side to move", self.state.stm.to_string()),
-            (" castling rights", self.state.castling_rights.to_string()),
-            (
-                "      en-passant",
-                self.state
-                    .ep_square
-                    .map_or("-".to_string(), |s| s.to_string()),
-            ),
-            (" half-move clock", self.state.half_move_clock.to_string()),
-            ("full-move number", self.state.full_move_number.to_string()),
-            ("             FEN", self.to_fen()),
-        ];
-        grid_to_string_with_props(
-            |sq: Square| -> char {
-                let pc = self.at(sq);
-                if pc.is_none() {
-                    '.'
-                } else {
-                    pc.to_char()
-                }
-            },
-            props.as_slice(),
-        )
     }
 
     fn put_piece(&mut self, pc: Piece, sq: Square) {

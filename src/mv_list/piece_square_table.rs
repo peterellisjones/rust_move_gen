@@ -28,10 +28,10 @@ impl PieceSquareTable {
       - piece_square_values[KING.to_usize()][E1.to_usize()]
       - piece_square_values[ROOK.to_usize()][H1.to_usize()];
 
-    return PieceSquareTable {
-      piece_square_values: piece_square_values,
-      castle_values: castle_values,
-    };
+    PieceSquareTable {
+      piece_square_values,
+      castle_values,
+    }
   }
 
   pub fn castle_score(&self, castle: Castle) -> i16 {

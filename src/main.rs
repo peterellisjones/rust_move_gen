@@ -48,7 +48,7 @@ fn main() {
   let now = Instant::now();
   let move_count = perft(&mut position, depth, true, 1024 * 1024 * 4);
   let elapsed = now.elapsed();
-  let sec = (elapsed.as_secs() as f64) + (elapsed.subsec_nanos() as f64 / 1000_000_000.0);
+  let sec = (elapsed.as_secs() as f64) + (elapsed.subsec_nanos() as f64 / 1_000_000_000.0);
   let nps = move_count as f64 / sec;
 
   println!(

@@ -166,12 +166,8 @@ impl Zobrist {
     }
 
     fn ep_hash(&self, ep_square: Option<Square>) -> u64 {
-        if ep_square.is_some() {
-            return unsafe {
-                *self
-                    .en_passant_file
-                    .get_unchecked(ep_square.unwrap().col() as usize)
-            };
+        if let Some(sq) = ep_square {
+            unsafe { *self.en_passant_file.get_unchecked(sq.col() as usize) }
         } else {
             0
         }

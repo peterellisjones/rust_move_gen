@@ -46,73 +46,46 @@ pub struct Move {
 }
 
 impl Move {
-    pub fn from(&self) -> Square {
+    pub fn from(self) -> Square {
         Square::new((self.lower & 63) as square::Internal)
     }
 
-    pub fn to(&self) -> Square {
+    pub fn to(self) -> Square {
         Square::new((self.upper & 63) as square::Internal)
     }
 
-    pub fn promote_to(&self) -> Kind {
+    pub fn promote_to(self) -> Kind {
         debug_assert!(!self.is_castle());
         debug_assert!(self.is_promotion());
         Kind(((self.upper as usize) & (!63)) >> 6)
     }
 
     /// Returns the absolute distance moved. Eg for a push from square 8 to square 24: |24 - 8| = 16
-    pub fn distance(&self) -> i32 {
+    pub fn distance(self) -> i32 {
         debug_assert!(!self.is_castle());
         (self.from().to_i32() - self.to().to_i32()).abs()
     }
 
-    pub fn is_castle(&self) -> bool {
+    pub fn is_castle(self) -> bool {
         ((self.upper & CASTLE_FLAG) != 0) && ((self.lower & (!63)) == 0)
     }
 
-    pub fn is_capture(&self) -> bool {
+    pub fn is_capture(self) -> bool {
         (self.lower & CAPTURE_FLAG) != 0
     }
 
-    pub fn is_ep_capture(&self) -> bool {
+    pub fn is_ep_capture(self) -> bool {
         ((self.lower & (!63)) == CAPTURE_FLAG) && ((self.upper & (!63)) == EP_CAPTURE_FLAG)
     }
 
-    pub fn is_promotion(&self) -> bool {
+    pub fn is_promotion(self) -> bool {
         (self.lower & PROMOTION_FLAG) != 0
     }
 
-    pub fn castle(&self) -> Castle {
+    pub fn castle(self) -> Castle {
         debug_assert!(self.is_castle());
 
         Castle::new(((self.upper & 64) >> 6) as usize)
-    }
-
-    pub fn to_string(&self) -> String {
-        if self.is_castle() {
-            return self.castle().pgn_string().to_string();
-        }
-
-        let mut s = String::new();
-
-        s += self.from().to_str();
-
-        if self.is_capture() {
-            s.push('x');
-        }
-
-        s += self.to().to_str();
-
-        if self.is_promotion() {
-            s.push('=');
-            s.push(self.promote_to().to_char());
-        }
-
-        if self.is_ep_capture() {
-            s += "e.p."
-        }
-
-        s
     }
 
     pub fn new_move(from: Square, to: Square, is_capture: bool) -> Move {
@@ -167,7 +140,30 @@ impl Move {
 
 impl fmt::Display for Move {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self.to_string())
+        if self.is_castle() {
+            return write!(f, "{}", self.castle().pgn_string());
+        }
+
+        let mut s = String::new();
+
+        s += &self.from().to_string();
+
+        if self.is_capture() {
+            s.push('x');
+        }
+
+        s += &self.to().to_string();
+
+        if self.is_promotion() {
+            s.push('=');
+            s.push(self.promote_to().to_char());
+        }
+
+        if self.is_ep_capture() {
+            s += "e.p."
+        }
+
+        write!(f, "{}", &s)
     }
 }
 
@@ -182,12 +178,12 @@ impl fmt::Debug for Move {
 pub struct MoveScore(Move, i16);
 
 impl MoveScore {
-    pub fn mv(&self) -> Move {
-        return self.0;
+    pub fn mv(self) -> Move {
+        self.0
     }
 
-    pub fn score(&self) -> i16 {
-        return self.1;
+    pub fn score(self) -> i16 {
+        self.1
     }
 
     pub const fn new(mv: Move, score: i16) -> MoveScore {

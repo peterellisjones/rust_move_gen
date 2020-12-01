@@ -17,13 +17,27 @@ pub struct MoveVec {
 
 impl fmt::Display for MoveVec {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self.to_string())
+        write!(
+            f,
+            "{}",
+            self.iter()
+                .map(|mv: &Move| mv.to_string())
+                .collect::<Vec<String>>()
+                .join(", ")
+        )
     }
 }
 
 impl fmt::Debug for MoveVec {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self.to_string())
+        write!(
+            f,
+            "{}",
+            self.iter()
+                .map(|mv: &Move| mv.to_string())
+                .collect::<Vec<String>>()
+                .join(", ")
+        )
     }
 }
 
@@ -55,18 +69,17 @@ impl MoveList for MoveVec {
     }
 }
 
+impl Default for MoveVec {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl MoveVec {
     pub fn new() -> MoveVec {
         MoveVec {
             moves: Vec::with_capacity(60),
         }
-    }
-
-    pub fn to_string(&self) -> String {
-        self.iter()
-            .map(|mv: &Move| mv.to_string())
-            .collect::<Vec<String>>()
-            .join(", ")
     }
 
     pub fn iter(&self) -> std::slice::Iter<Move> {
@@ -93,6 +106,10 @@ impl MoveVec {
 
     pub fn len(&self) -> usize {
         self.moves.len()
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
     }
 
     fn insert_promos_by_shift<F: Fn(Square, Square, Kind) -> Move>(

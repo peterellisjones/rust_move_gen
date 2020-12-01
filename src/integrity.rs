@@ -86,13 +86,13 @@ fn test_castling_rights(position: &Position) -> Option<String> {
             if rights.has(CastlingRights::from(QUEEN_SIDE, side)) {
                 return Some(format!(
                     "Error: {} cannot castle as king has moved",
-                    side.to_string()
+                    side.to_str()
                 ));
             }
             if rights.has(CastlingRights::from(KING_SIDE, side)) {
                 return Some(format!(
                     "Error: {} cannot castle as king has moved",
-                    side.to_string()
+                    side.to_str()
                 ));
             }
         }
@@ -102,7 +102,7 @@ fn test_castling_rights(position: &Position) -> Option<String> {
         if rights.has(right) && position.at(rook_square) != ROOK.pc(side) {
             return Some(format!(
                 "Error: {} cannot castle queen-side as rook has moved",
-                side.to_string()
+                side.to_str()
             ));
         }
     }
@@ -111,7 +111,7 @@ fn test_castling_rights(position: &Position) -> Option<String> {
         if rights.has(right) && position.at(rook_square) != ROOK.pc(side) {
             return Some(format!(
                 "Error: {} cannot castle king-side as rook has moved",
-                side.to_string()
+                side.to_str()
             ));
         }
     }
@@ -119,17 +119,14 @@ fn test_castling_rights(position: &Position) -> Option<String> {
 }
 
 fn test_ep_square(position: &Position) -> Option<String> {
-    if position.state().ep_square.is_none() {
-        return None;
-    }
-    let sq = position.state().ep_square.unwrap();
+    let sq = position.state().ep_square?;
 
     let stm = position.state().stm;
     if (stm == BLACK && sq.row() != 2) || (stm == WHITE && sq.row() != 5) {
         return Some(format!(
             "Error: en-passant square is {} but side to move is {}",
             sq,
-            stm.to_string()
+            stm.to_str()
         ));
     }
 

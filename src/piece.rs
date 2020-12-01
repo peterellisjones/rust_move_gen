@@ -11,7 +11,7 @@ const CHARS: [char; 12] = ['B', 'b', 'Q', 'q', 'R', 'r', 'N', 'n', 'P', 'p', 'K'
 // const SYMBOLS: [char; 14] = ['♙', '♟', '♘', '♞', '♗', '♝', '♖', '♜',
 //                             '♕', '♛', '♔', '♚', '.'];
 
-const NAMES: [&'static str; 12] = [
+const NAMES: [&str; 12] = [
     "white bishop",
     "black bishop",
     "white queen",
@@ -56,11 +56,11 @@ impl Kind {
     }
 
     pub fn string_plural(&self) -> String {
-        KIND_NAMES[self.to_usize()].to_string() + &"s"
+        KIND_NAMES[self.to_usize()].to_string() + "s"
     }
 }
 
-const KIND_NAMES: [&'static str; 6] = ["bishop", "queen", "rook", "knight", "pawn", "king"];
+const KIND_NAMES: [&str; 6] = ["bishop", "queen", "rook", "knight", "pawn", "king"];
 
 #[derive(Debug)]
 pub struct KindsIter(Kind);
@@ -173,7 +173,7 @@ impl Piece {
     }
 
     pub fn string_plural(&self) -> String {
-        NAMES[self.to_usize()].to_string() + &"s"
+        NAMES[self.to_usize()].to_string() + "s"
     }
 
     pub fn side(&self) -> Side {
