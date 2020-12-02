@@ -214,6 +214,36 @@ mod test {
     }
 
     #[test]
+    fn test_hmc_incremented_by_non_pawn_non_capture() {
+        let mut position =
+            Position::from_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBKQBNR w QqKk - 20 1")
+                .unwrap();
+        position.make(Move::new_push(B1, C3));
+
+        assert_eq!(position.state().half_move_clock, 21);
+    }
+
+    #[test]
+    fn test_hmc_reset_by_pawn_non_capture() {
+        let mut position =
+            Position::from_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBKQBNR w QqKk - 20 1")
+                .unwrap();
+        position.make(Move::new_push(A2, A3));
+
+        assert_eq!(position.state().half_move_clock, 0);
+    }
+
+    #[test]
+    fn test_hmc_reset_by_non_pawn_capture() {
+        let mut position =
+            Position::from_fen("rnbqkbnr/1ppppppp/8/8/8/p7/PPPPPPPP/RNBKQBNR w QqKk - 20 1")
+                .unwrap();
+        position.make(Move::new_capture(B1, A3));
+
+        assert_eq!(position.state().half_move_clock, 0);
+    }
+
+    #[test]
     fn test_hash() {
         let mut position_1 =
             Position::from_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/R3KBNR w QqKk - 1 1").unwrap();

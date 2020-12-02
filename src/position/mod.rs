@@ -16,8 +16,7 @@ use std::fmt;
 
 use std;
 
-pub const STARTING_POSITION_FEN: &str = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w \
-                                                 QqKk - 0 1";
+pub const STARTING_POSITION_FEN: &str = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w QqKk - 0 1";
 
 /// State encodes all game state except position
 #[derive(Debug, Clone, Copy)]
