@@ -34,14 +34,14 @@ pub fn from_fen(fen: &str) -> Result<([Piece; 64], State), String> {
     }
 
     if parts.len() > 4 && parts[4] != "-" {
-        match parts[4].parse::<usize>() {
+        match parts[4].parse::<u8>() {
             Ok(hmc) => state.half_move_clock = hmc,
             Err(err) => return Err(err.to_string()),
         }
     }
 
     if parts.len() > 5 && parts[5] != "-" {
-        match parts[5].parse::<usize>() {
+        match parts[5].parse::<u16>() {
             Ok(fmn) => state.full_move_number = fmn,
             Err(err) => return Err(err.to_string()),
         }

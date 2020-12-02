@@ -1,5 +1,3 @@
-use super::super::consts::bishop_rays;
-use super::super::consts::rook_rays;
 use super::super::ray_naive::*;
 use bb::*;
 use square::*;
@@ -23,7 +21,7 @@ pub fn generate_offsets() {
   for i in 0..64 {
     let sq = Square(i);
     let inner_mask = bishop_inner_mask(sq);
-    let outer_mask = bishop_rays(sq);
+    let outer_mask = sq.bishop_rays();
     let occupancy_attack_map =
       generate_occupancy_attack_map(sq, bishop_attacks_from_sq, inner_mask);
     let base_offset = offset;
@@ -59,7 +57,7 @@ pub fn generate_offsets() {
   for i in 0..64 {
     let sq = Square(i);
     let inner_mask = rook_inner_mask(sq);
-    let outer_mask = rook_rays(sq);
+    let outer_mask = sq.rook_rays();
     let occupancy_attack_map = generate_occupancy_attack_map(sq, rook_attacks_from_sq, inner_mask);
     let base_offset = offset;
 

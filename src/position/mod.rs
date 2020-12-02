@@ -20,13 +20,25 @@ pub const STARTING_POSITION_FEN: &str = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQ
                                                  QqKk - 0 1";
 
 /// State encodes all game state except position
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Copy)]
 pub struct State {
     pub castling_rights: CastlingRights,
     pub ep_square: Option<Square>,
     pub stm: Side,
-    pub full_move_number: usize,
-    pub half_move_clock: usize,
+    pub full_move_number: u16,
+    pub half_move_clock: u8,
+}
+
+impl Default for State {
+    fn default() -> Self {
+        State {
+            castling_rights: NO_RIGHTS,
+            ep_square: None,
+            stm: WHITE,
+            full_move_number: 1,
+            half_move_clock: 0,
+        }
+    }
 }
 
 /// Position encodes all positional information and non-positional game state
@@ -285,6 +297,11 @@ impl Position {
 mod test {
     use super::*;
     use unindent;
+
+    #[test]
+    fn test_is_not_too_big() {
+        assert_eq!(std::mem::size_of::<Position>(), 224);
+    }
 
     #[test]
     fn test_to_string() {

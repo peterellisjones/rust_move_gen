@@ -2,7 +2,7 @@ use castle::*;
 use side::Side;
 use std::fmt;
 
-type Internal = usize;
+type Internal = u8;
 
 /// Represents the right to castle in a particular director for a particular side
 #[derive(PartialEq, Copy, Clone)]
@@ -20,17 +20,17 @@ pub const WHITE_RIGHTS: CastlingRights = CastlingRights(1 | 4);
 const CASTLING_RIGHTS_CHARS: [char; 4] = ['Q', 'q', 'K', 'k'];
 
 impl CastlingRights {
-    pub fn to_usize(&self) -> Internal {
-        self.0
+    pub fn to_usize(self) -> usize {
+        self.0 as usize
     }
 
-    pub fn has(&self, right: CastlingRights) -> bool {
+    pub fn has(self, right: CastlingRights) -> bool {
         self.0 & right.0 != 0
     }
 
     #[allow(dead_code)]
     pub fn add(&mut self, castle: Castle, side: Side) {
-        self.0 |= CastlingRights::from(castle, side).to_usize()
+        self.0 |= CastlingRights::from(castle, side).0
     }
 
     pub fn set(&mut self, rights: CastlingRights) {
@@ -47,12 +47,12 @@ impl CastlingRights {
     }
 
     #[allow(dead_code)]
-    pub fn side_can(&self, side: Side) -> bool {
+    pub fn side_can(self, side: Side) -> bool {
         let rights = WHITE_RIGHTS.0 << side.raw();
         self.0 & rights != 0
     }
 
-    pub fn any(&self) -> bool {
+    pub fn any(self) -> bool {
         self.0 != 0
     }
 

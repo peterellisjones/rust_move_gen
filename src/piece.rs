@@ -1,7 +1,7 @@
 use side::Side;
 use std::fmt;
 
-pub type Internal = usize;
+pub type Internal = u8;
 
 /// Represents a piece for a particular side (eg black knight)
 #[derive(PartialEq, PartialOrd, Copy, Clone)]
@@ -31,19 +31,19 @@ const NAMES: [&str; 12] = [
 pub struct Kind(pub Internal);
 
 impl Kind {
-    pub fn pc(&self, side: Side) -> Piece {
+    pub fn pc(self, side: Side) -> Piece {
         Piece((self.0 << 1) | side.raw() as Internal)
     }
 
-    pub fn to_usize(&self) -> usize {
+    pub fn to_usize(self) -> usize {
         self.0 as usize
     }
 
-    pub const fn to_u8(&self) -> u8 {
+    pub const fn to_u8(self) -> u8 {
         self.0 as u8
     }
 
-    pub fn to_char(&self) -> char {
+    pub fn to_char(self) -> char {
         CHARS[self.to_usize() << 1]
     }
 
@@ -51,11 +51,11 @@ impl Kind {
         KindsIter(Kind(0))
     }
 
-    pub fn to_string(&self) -> &'static str {
+    pub fn to_string(self) -> &'static str {
         KIND_NAMES[self.to_usize()]
     }
 
-    pub fn string_plural(&self) -> String {
+    pub fn string_plural(self) -> String {
         KIND_NAMES[self.to_usize()].to_string() + "s"
     }
 }

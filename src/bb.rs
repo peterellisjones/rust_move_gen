@@ -30,68 +30,68 @@ impl BB {
         BB(u)
     }
 
-    pub fn to_u64(&self) -> u64 {
+    pub fn to_u64(self) -> u64 {
         self.0
     }
 
-    pub fn to_usize(&self) -> usize {
+    pub fn to_usize(self) -> usize {
         self.0 as usize
     }
 
     /// true if non empty
-    pub fn any(&self) -> bool {
+    pub fn any(self) -> bool {
         self.0 != 0u64
     }
 
-    pub fn none(&self) -> bool {
+    pub fn none(self) -> bool {
         self.0 == 0u64
     }
 
     /// swaps bytes
-    pub fn bswap(&self) -> BB {
+    pub fn bswap(self) -> BB {
         BB(self.0.swap_bytes())
     }
 
-    pub fn rot_left(&self, amount: u32) -> BB {
+    pub fn rot_left(self, amount: u32) -> BB {
         BB(self.0.rotate_left(amount))
     }
 
-    pub fn rot_right(&self, amount: u32) -> BB {
+    pub fn rot_right(self, amount: u32) -> BB {
         BB(self.0.rotate_right(amount))
     }
 
-    pub fn is_set(&self, sq: Square) -> bool {
+    pub fn is_set(self, sq: Square) -> bool {
         (self.0 >> sq.to_usize()) & 1 != 0
     }
 
-    pub fn row_empty(&self, row: usize) -> bool {
+    pub fn row_empty(self, row: usize) -> bool {
         let row_mask = 0xFFu64 << (row * 8);
         (self.0 & row_mask) == 0u64
     }
 
-    pub fn pop_count(&self) -> u32 {
+    pub fn pop_count(self) -> u32 {
         self.0.count_ones()
     }
 
-    fn lsb(&self) -> BB {
+    fn lsb(self) -> BB {
         BB(self.0 & 0u64.wrapping_sub(self.0))
     }
 
-    pub fn bitscan(&self) -> Square {
+    pub fn bitscan(self) -> Square {
         Square::new(self.0.trailing_zeros() as square::Internal)
     }
 
-    pub fn msb(&self) -> u32 {
+    pub fn msb(self) -> u32 {
         debug_assert!(self.0 != 0);
         63 ^ self.0.leading_zeros()
     }
 
-    pub fn leading_zeros(&self) -> u32 {
+    pub fn leading_zeros(self) -> u32 {
         debug_assert!(self.0 != 0);
         self.0.leading_zeros()
     }
 
-    pub fn bitscan_reverse(&self) -> u32 {
+    pub fn bitscan_reverse(self) -> u32 {
         self.0.leading_zeros() ^ 63
     }
 
@@ -99,11 +99,11 @@ impl BB {
         BBIterator(self)
     }
 
-    pub fn square_list(&self) -> Vec<Square> {
+    pub fn square_list(self) -> Vec<Square> {
         self.iter().map(|(sq, _)| sq).collect::<Vec<Square>>()
     }
 
-    pub fn occluded_east_fill(&self, empty: BB) -> BB {
+    pub fn occluded_east_fill(self, empty: BB) -> BB {
         let mut prop = empty.0 & NOT_FILE_A.0;
         let mut gen = self.0;
 
@@ -116,13 +116,13 @@ impl BB {
         BB(gen)
     }
 
-    pub fn east_attacks(&self, empty: BB) -> BB {
+    pub fn east_attacks(self, empty: BB) -> BB {
         let gen = self.occluded_east_fill(empty);
 
         (gen << 1) & NOT_FILE_A
     }
 
-    pub fn occluded_north_east_fill(&self, empty: BB) -> BB {
+    pub fn occluded_north_east_fill(self, empty: BB) -> BB {
         let mut prop = empty.0 & NOT_FILE_A.0;
         let mut gen = self.0;
 
@@ -135,13 +135,13 @@ impl BB {
         BB(gen)
     }
 
-    pub fn north_east_attacks(&self, empty: BB) -> BB {
+    pub fn north_east_attacks(self, empty: BB) -> BB {
         let gen = self.occluded_north_east_fill(empty);
 
         (gen << 9) & NOT_FILE_A
     }
 
-    pub fn occluded_north_fill(&self, empty: BB) -> BB {
+    pub fn occluded_north_fill(self, empty: BB) -> BB {
         let mut prop = empty.0;
         let mut gen = self.0;
 
@@ -154,13 +154,13 @@ impl BB {
         BB(gen)
     }
 
-    pub fn north_attacks(&self, empty: BB) -> BB {
+    pub fn north_attacks(self, empty: BB) -> BB {
         let gen = self.occluded_north_fill(empty);
 
         gen << 8
     }
 
-    pub fn occluded_south_east_fill(&self, empty: BB) -> BB {
+    pub fn occluded_south_east_fill(self, empty: BB) -> BB {
         let mut prop = empty.0 & NOT_FILE_A.0;
         let mut gen = self.0;
 
@@ -173,13 +173,13 @@ impl BB {
         BB(gen)
     }
 
-    pub fn south_east_attacks(&self, empty: BB) -> BB {
+    pub fn south_east_attacks(self, empty: BB) -> BB {
         let gen = self.occluded_south_east_fill(empty);
 
         (gen >> 7) & NOT_FILE_A
     }
 
-    pub fn occluded_west_fill(&self, empty: BB) -> BB {
+    pub fn occluded_west_fill(self, empty: BB) -> BB {
         let mut prop = empty.0 & NOT_FILE_H.0;
         let mut gen = self.0;
 
@@ -192,13 +192,13 @@ impl BB {
         BB(gen)
     }
 
-    pub fn west_attacks(&self, empty: BB) -> BB {
+    pub fn west_attacks(self, empty: BB) -> BB {
         let gen = self.occluded_west_fill(empty);
 
         (gen >> 1) & NOT_FILE_H
     }
 
-    pub fn occluded_south_west_fill(&self, empty: BB) -> BB {
+    pub fn occluded_south_west_fill(self, empty: BB) -> BB {
         let mut prop = empty.0 & NOT_FILE_H.0;
         let mut gen = self.0;
 
@@ -211,13 +211,13 @@ impl BB {
         BB(gen)
     }
 
-    pub fn south_west_attacks(&self, empty: BB) -> BB {
+    pub fn south_west_attacks(self, empty: BB) -> BB {
         let gen = self.occluded_south_west_fill(empty);
 
         (gen >> 9) & NOT_FILE_H
     }
 
-    pub fn occluded_north_west_fill(&self, empty: BB) -> BB {
+    pub fn occluded_north_west_fill(self, empty: BB) -> BB {
         let mut prop = empty.0 & NOT_FILE_H.0;
         let mut gen = self.0;
 
@@ -230,13 +230,13 @@ impl BB {
         BB(gen)
     }
 
-    pub fn north_west_attacks(&self, empty: BB) -> BB {
+    pub fn north_west_attacks(self, empty: BB) -> BB {
         let gen = self.occluded_north_west_fill(empty);
 
         (gen << 7) & NOT_FILE_H
     }
 
-    pub fn occluded_south_fill(&self, empty: BB) -> BB {
+    pub fn occluded_south_fill(self, empty: BB) -> BB {
         let mut prop = empty.0;
         let mut gen = self.0;
 
@@ -249,55 +249,55 @@ impl BB {
         BB(gen)
     }
 
-    pub fn south_attacks(&self, empty: BB) -> BB {
+    pub fn south_attacks(self, empty: BB) -> BB {
         let gen = self.occluded_south_fill(empty);
 
         gen >> 8
     }
 
-    pub fn occluded_east_fill_with_occluders(&self, empty: BB) -> BB {
+    pub fn occluded_east_fill_with_occluders(self, empty: BB) -> BB {
         let gen = self.occluded_east_fill(empty);
 
         BB(gen.0 | ((gen.0 << 1) & NOT_FILE_A.0))
     }
 
-    pub fn occluded_north_east_fill_with_occluders(&self, empty: BB) -> BB {
+    pub fn occluded_north_east_fill_with_occluders(self, empty: BB) -> BB {
         let gen = self.occluded_north_east_fill(empty);
 
         BB(gen.0 | ((gen.0 << 9) & NOT_FILE_A.0))
     }
 
-    pub fn occluded_north_fill_with_occluders(&self, empty: BB) -> BB {
+    pub fn occluded_north_fill_with_occluders(self, empty: BB) -> BB {
         let gen = self.occluded_north_fill(empty);
 
         BB(gen.0 | (gen.0 << 8))
     }
 
-    pub fn occluded_south_east_fill_with_occluders(&self, empty: BB) -> BB {
+    pub fn occluded_south_east_fill_with_occluders(self, empty: BB) -> BB {
         let gen = self.occluded_south_east_fill(empty);
 
         BB(gen.0 | ((gen.0 >> 7) & NOT_FILE_A.0))
     }
 
-    pub fn occluded_west_fill_with_occluders(&self, empty: BB) -> BB {
+    pub fn occluded_west_fill_with_occluders(self, empty: BB) -> BB {
         let gen = self.occluded_west_fill(empty);
 
         BB(gen.0 | ((gen.0 >> 1) & NOT_FILE_H.0))
     }
 
-    pub fn occluded_south_west_fill_with_occluders(&self, empty: BB) -> BB {
+    pub fn occluded_south_west_fill_with_occluders(self, empty: BB) -> BB {
         let gen = self.occluded_south_west_fill(empty);
 
         BB(gen.0 | ((gen.0 >> 9) & NOT_FILE_H.0))
     }
 
-    pub fn occluded_north_west_fill_with_occluders(&self, empty: BB) -> BB {
+    pub fn occluded_north_west_fill_with_occluders(self, empty: BB) -> BB {
         let gen = self.occluded_north_west_fill(empty);
 
         BB(gen.0 | ((gen.0 << 7) & NOT_FILE_H.0))
     }
 
-    pub fn occluded_south_fill_with_occluders(&self, empty: BB) -> BB {
+    pub fn occluded_south_fill_with_occluders(self, empty: BB) -> BB {
         let gen = self.occluded_south_fill(empty);
 
         BB(gen.0 | (gen.0 >> 8))

@@ -10,20 +10,20 @@ const CHARS: [char; 2] = ['w', 'b'];
 const NAMES: [&str; 2] = ["white", "black"];
 
 impl Side {
-    pub fn to_char(&self) -> char {
+    pub fn to_char(self) -> char {
         CHARS[self.to_usize()]
     }
 
-    pub fn to_usize(&self) -> usize {
+    pub fn to_usize(self) -> usize {
         self.0
     }
 
-    pub fn raw(&self) -> Internal {
+    pub fn raw(self) -> Internal {
         self.0
     }
 
     /// Flip switches sides
-    pub fn flip(&self) -> Side {
+    pub fn flip(self) -> Side {
         Side(self.0 ^ 1)
     }
 
@@ -36,7 +36,7 @@ impl Side {
         Err(format!("Side not recognised: {}", c))
     }
 
-    pub fn to_str(&self) -> &'static str {
+    pub fn to_str(self) -> &'static str {
         NAMES[self.0]
     }
 }

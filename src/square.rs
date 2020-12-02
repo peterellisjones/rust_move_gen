@@ -155,63 +155,63 @@ impl Square {
         Square(s)
     }
 
-    pub const fn to_u8(&self) -> u8 {
+    pub const fn to_u8(self) -> u8 {
         self.0 as u8
     }
 
-    pub fn to_i32(&self) -> i32 {
+    pub fn to_i32(self) -> i32 {
         self.0 as i32
     }
 
-    pub fn to_i16(&self) -> i16 {
+    pub fn to_i16(self) -> i16 {
         self.0 as i16
     }
 
-    pub fn to_u32(&self) -> u32 {
+    pub fn to_u32(self) -> u32 {
         self.0 as u32
     }
 
-    pub fn raw(&self) -> Internal {
+    pub fn raw(self) -> Internal {
         self.0
     }
 
-    pub fn file_mask(&self) -> BB {
+    pub fn file_mask(self) -> BB {
         FILE_A << (self.0 & 7)
     }
 
-    pub fn same_file(&self, other: Square) -> bool {
+    pub fn same_file(self, other: Square) -> bool {
         self.0 & 7 == other.0 & 7
     }
 
-    pub fn file_char(&self) -> char {
+    pub fn file_char(self) -> char {
         FILES[self.0 & 7]
     }
 
-    pub fn rank_char(&self) -> char {
+    pub fn rank_char(self) -> char {
         RANKS[self.0 >> 3]
     }
 
-    pub fn diagonals(&self) -> BB {
+    pub fn diagonals(self) -> BB {
         unsafe { *DIAGONALS.get_unchecked(self.to_usize()) }
     }
 
-    pub fn anti_diagonals(&self) -> BB {
+    pub fn anti_diagonals(self) -> BB {
         unsafe { *ANTI_DIAGONALS.get_unchecked(self.to_usize()) }
     }
 
-    pub fn bishop_rays(&self) -> BB {
+    pub fn bishop_rays(self) -> BB {
         unsafe { *BISHOP_RAYS.get_unchecked(self.to_usize()) }
     }
 
-    pub fn rook_rays(&self) -> BB {
+    pub fn rook_rays(self) -> BB {
         unsafe { *ROOK_RAYS.get_unchecked(self.to_usize()) }
     }
 
-    pub fn king_moves(&self) -> BB {
+    pub fn king_moves(self) -> BB {
         unsafe { *KING_MOVES.get_unchecked(self.to_usize()) }
     }
 
-    pub fn knight_moves(&self) -> BB {
+    pub fn knight_moves(self) -> BB {
         unsafe { *KNIGHT_MOVES.get_unchecked(self.to_usize()) }
     }
 
@@ -219,25 +219,25 @@ impl Square {
         self.0 += 1
     }
 
-    pub fn to_usize(&self) -> usize {
+    pub fn to_usize(self) -> usize {
         self.0
     }
 
     // Gives square from perspective of side
     // ie, flips if black
-    pub fn from_side(&self, side: Side) -> Square {
+    pub fn from_side(self, side: Side) -> Square {
         Square(self.0 ^ if side == BLACK { 56 } else { 0 })
     }
 
-    pub fn flip(&self) -> Square {
+    pub fn flip(self) -> Square {
         Square(self.0 ^ 56)
     }
 
-    pub fn rotate_right(&self, amount: Internal) -> Square {
+    pub fn rotate_right(self, amount: Internal) -> Square {
         Square((self.0 + (64 - amount)) & 63)
     }
 
-    pub fn rotate_left(&self, amount: Internal) -> Square {
+    pub fn rotate_left(self, amount: Internal) -> Square {
         Square((self.0 + amount) & 63)
     }
 
@@ -247,23 +247,23 @@ impl Square {
     }
 
     // returns a square at the same row as self, and the same col as another square
-    pub fn along_row_with_col(&self, other: Square) -> Square {
+    pub fn along_row_with_col(self, other: Square) -> Square {
         Square((self.0 & 56) | (other.0 & 7))
     }
 
-    pub fn change_row(&self, row: Internal) -> Square {
+    pub fn change_row(self, row: Internal) -> Square {
         Square((self.0 & 7) | (row * 8))
     }
 
-    pub fn row(&self) -> Internal {
+    pub fn row(self) -> Internal {
         self.0 >> 3
     }
 
-    pub fn rowx8(&self) -> Internal {
+    pub fn rowx8(self) -> Internal {
         self.0 & 56
     }
 
-    pub fn col(&self) -> Internal {
+    pub fn col(self) -> Internal {
         self.0 & 7
     }
 

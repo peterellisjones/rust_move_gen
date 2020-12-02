@@ -4,7 +4,7 @@ use castle::*;
 use castling_rights::*;
 use mv::{Move, NULL_MOVE};
 use piece::*;
-use side::Side;
+use side::{Side, BLACK};
 use square::*;
 
 // If move intersects this mask, then remove castling right
@@ -25,7 +25,9 @@ impl Position {
         let mut move_resets_half_move_clock = false;
 
         // increment full move clock if black moved
-        self.state.full_move_number += self.state.stm.to_usize();
+        if self.state.stm == BLACK {
+            self.state.full_move_number += 1;
+        }
         self.state.stm = self.state.stm.flip();
 
         self.state.ep_square = None;
@@ -113,7 +115,9 @@ impl Position {
         let initial_state = self.state.clone();
 
         // increment full move clock if black moved
-        self.state.full_move_number += self.state.stm.to_usize();
+        if self.state.stm == BLACK {
+            self.state.full_move_number += 1;
+        }
         self.state.half_move_clock += 1;
         self.state.stm = self.state.stm.flip();
         self.state.ep_square = None;

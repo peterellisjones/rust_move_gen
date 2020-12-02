@@ -14,13 +14,10 @@ pub use self::gen::generate_offsets;
 use self::consts::*;
 use std::arch::x86_64::{_pdep_u64, _pext_u64};
 
-use super::consts::rook_rays;
-use super::consts::bishop_rays;
-
 pub fn bishop_attacks_from_sq(from: Square, occupied: BB) -> BB {
     return unsafe {
         let offset = BISHOP_OFFSETS.get_unchecked(from.to_usize());
-        let outer_mask = bishop_rays(from);
+        let outer_mask = from.bishop_rays();
 
         let idx =
             (offset.base_offset as usize) + (_pext_u64(occupied.0, offset.inner_mask.0) as usize);
@@ -34,7 +31,7 @@ pub fn bishop_attacks_from_sq(from: Square, occupied: BB) -> BB {
 pub fn rook_attacks_from_sq(from: Square, occupied: BB) -> BB {
     return unsafe {
         let offset = ROOK_OFFSETS.get_unchecked(from.to_usize());
-        let outer_mask = rook_rays(from);
+        let outer_mask = from.rook_rays();
 
         let idx =
             (offset.base_offset as usize) + (_pext_u64(occupied.0, offset.inner_mask.0) as usize);

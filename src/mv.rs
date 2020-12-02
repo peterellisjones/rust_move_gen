@@ -45,6 +45,12 @@ pub struct Move {
     upper: Internal, // holds to square and promotion and capture flags
 }
 
+impl Default for Move {
+    fn default() -> Self {
+        NULL_MOVE
+    }
+}
+
 impl Move {
     pub fn from(self) -> Square {
         Square::new((self.lower & 63) as square::Internal)
@@ -57,7 +63,7 @@ impl Move {
     pub fn promote_to(self) -> Kind {
         debug_assert!(!self.is_castle());
         debug_assert!(self.is_promotion());
-        Kind(((self.upper as usize) & (!63)) >> 6)
+        Kind((self.upper & (!63)) >> 6)
     }
 
     /// Returns the absolute distance moved. Eg for a push from square 8 to square 24: |24 - 8| = 16
