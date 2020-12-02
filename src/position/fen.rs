@@ -214,7 +214,7 @@ mod test {
         5|........|5  half-move clock: 0
         4|........|4 full-move number: 1
         3|........|3              FEN: rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w QqKk - 0 1
-        2|PPPPPPPP|2
+        2|PPPPPPPP|2              KEY: 0674AFC18BB45C18
         1|RNBQKBNR|1
           ABCDEFGH
         ",
@@ -252,7 +252,7 @@ mod test {
             5|...KNN.k|5  half-move clock: 0
             4|..p....p|4 full-move number: 1
             3|........|3              FEN: 8/8/7p/3KNN1k/2p4p/8/3P2p1/8 w QqKk - 0 1
-            2|...P..p.|2
+            2|...P..p.|2              KEY: 85FD6119056946E4
             1|........|1
               ABCDEFGH
         ",

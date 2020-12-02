@@ -198,10 +198,7 @@ mod test {
         let initial_key = position.hash_key();
 
         let capture = position.make(mv);
-        assert_eq!(
-            position.to_string(),
-            Position::from_fen(expected_fen).unwrap().to_string()
-        );
+        assert_eq!(position.to_fen(), expected_fen);
 
         assert!(integrity::test(&position).is_none());
 

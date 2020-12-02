@@ -89,6 +89,7 @@ impl fmt::Display for Position {
             (" half-move clock", self.state.half_move_clock.to_string()),
             ("full-move number", self.state.full_move_number.to_string()),
             ("             FEN", self.to_fen()),
+            ("             KEY", format!("{:016X}", self.key)),
         ];
         let s = grid_to_string_with_props(
             |sq: Square| -> char {
@@ -316,7 +317,7 @@ mod test {
         5|........|5  half-move clock: 0
         4|........|4 full-move number: 1
         3|........|3              FEN: rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w QqKk - 0 1
-        2|PPPPPPPP|2
+        2|PPPPPPPP|2              KEY: 0674AFC18BB45C18
         1|RNBQKBNR|1
           ABCDEFGH
         ",
