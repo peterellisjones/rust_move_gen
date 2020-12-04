@@ -22,6 +22,10 @@ pub fn slider_diag_rays_to_squares(source: BB, attacker: BB, position: &Position
     pin_ray_diag(source, empty, attacker)
 }
 
+/// Calculates bitboards of
+/// * Opponent pieces giving check
+/// * Friendly pieces that are pinned
+/// * Opponent pieces pinning friendly pieces
 pub fn checkers_and_pinned(king: BB, attacker: Side, position: &Position) -> (BB, BB, BB) {
     let occupied = position.bb_occupied();
     let king_sq = king.bitscan();
@@ -41,16 +45,19 @@ pub fn checkers_and_pinned(king: BB, attacker: Side, position: &Position) -> (BB
 
     // Sliding pieces can be checkers or pinners depending on occupancy of intermediate squares
     let (diag_attackers, non_diag_attackers) = position.bb_sliders(attacker);
-    let potential_diag_pinners = occupied & king_sq.bishop_rays() & diag_attackers;
-    let potential_non_diag_pinners = occupied & king_sq.rook_rays() & non_diag_attackers;
 
-    let potential_pinners = potential_diag_pinners | potential_non_diag_pinners;
+    let potential_king_attackers = occupied
+        & ((king_sq.bishop_rays() & diag_attackers) | (king_sq.rook_rays() & non_diag_attackers));
 
-    for (sq, bb) in potential_pinners.iter() {
+    for (sq, bb) in potential_king_attackers.iter() {
         let potentially_pinned = squares_between(sq, king_sq) & occupied;
 
+        // If there are no friendly pieces between the attacker and the king
+        // then the attacker is giving check
         if potentially_pinned == EMPTY {
             checkers |= bb;
+        // If there is a friendly piece between the attacker and the king
+        // then it is pinned
         } else if potentially_pinned.pop_count() == 1 {
             pinned |= potentially_pinned;
             pinners |= bb;
@@ -106,7 +113,7 @@ pub fn attacked_squares_ignoring_ep(attacker: Side, position: &Position) -> BB {
     let pawns = position.bb_pc(PAWN.pc(attacker));
     for &(shift, file_mask) in PAWN_CAPTURE_FILE_MASKS[attacker.to_usize()].iter() {
         let targets = pawns.rot_left(shift as u32) & file_mask;
-        attacked_squares |=  targets;
+        attacked_squares |= targets;
     }
 
     attacked_squares
