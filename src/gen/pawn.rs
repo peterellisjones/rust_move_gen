@@ -1,13 +1,13 @@
 // contains methods for generating pawn moves
 use super::slider::*;
 use bb::*;
-use mv_list::MoveList;
+use mv_list::MoveAdder;
 use piece::*;
 use position::Position;
 use side::{Side, WHITE};
 use square;
 
-pub fn pawn_moves<L: MoveList>(
+pub fn pawn_moves<L: MoveAdder>(
     position: &Position,
     capture_mask: BB,
     push_mask: BB,
@@ -28,7 +28,7 @@ pub const PAWN_CAPTURE_FILE_MASKS: [[(usize, BB); 2]; 2] = [
     [(64 - 9, NOT_FILE_H), (64 - 7, NOT_FILE_A)],
 ];
 
-pub fn pawn_pushes<L: MoveList>(position: &Position, to_mask: BB, from_mask: BB, list: &mut L) {
+pub fn pawn_pushes<L: MoveAdder>(position: &Position, to_mask: BB, from_mask: BB, list: &mut L) {
     let stm = position.state().stm;
     let piece = PAWN.pc(stm);
     let movers = position.bb_pc(piece) & from_mask;
@@ -53,7 +53,7 @@ pub fn pawn_pushes<L: MoveList>(position: &Position, to_mask: BB, from_mask: BB,
     list.add_pawn_pushes(double_push_shift, double_pushes & to_mask);
 }
 
-pub fn pawn_captures<L: MoveList>(
+pub fn pawn_captures<L: MoveAdder>(
     position: &Position,
     capture_mask: BB,
     push_mask: BB,

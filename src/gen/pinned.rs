@@ -1,6 +1,6 @@
 use bb::*;
 use gen::pawn::PAWN_CAPTURE_FILE_MASKS;
-use mv_list::MoveList;
+use mv_list::MoveAdder;
 use piece::*;
 use position::Position;
 use side::{Side, WHITE};
@@ -8,7 +8,7 @@ use square;
 use square::Square;
 
 // Generates pawn moves along pin rays
-pub fn pawn_pin_ray_moves<L: MoveList>(
+pub fn pawn_pin_ray_moves<L: MoveAdder>(
     position: &Position,
     capture_mask: BB,
     push_mask: BB,
@@ -70,7 +70,7 @@ pub fn pawn_pin_ray_moves<L: MoveList>(
     }
 }
 
-pub fn pawn_pin_ray_captures<L: MoveList>(
+pub fn pawn_pin_ray_captures<L: MoveAdder>(
     position: &Position,
     capture_mask: BB,
     king_sq: Square,

@@ -179,11 +179,12 @@ impl fmt::Debug for Move {
     }
 }
 
-/// MoveScore encodes a move score tuple
+/// MovePSS encodes a move and the piece-square score change
+/// that the move creates
 #[derive(Clone, Copy)]
-pub struct MoveScore(Move, i16);
+pub struct MovePSS(Move, i16);
 
-impl MoveScore {
+impl MovePSS {
     pub fn mv(self) -> Move {
         self.0
     }
@@ -192,18 +193,18 @@ impl MoveScore {
         self.1
     }
 
-    pub const fn new(mv: Move, score: i16) -> MoveScore {
-        MoveScore(mv, score)
+    pub const fn new(mv: Move, score: i16) -> MovePSS {
+        MovePSS(mv, score)
     }
 }
 
-impl fmt::Display for MoveScore {
+impl fmt::Display for MovePSS {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{} ({})", self.0, self.1)
     }
 }
 
-impl fmt::Debug for MoveScore {
+impl fmt::Debug for MovePSS {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{} ({})", self.0, self.1)
     }

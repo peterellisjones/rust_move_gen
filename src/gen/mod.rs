@@ -17,7 +17,7 @@ use std::cmp::Ordering;
 
 use self::attacks::king_danger_squares;
 use bb::{BB, EMPTY};
-use mv_list::MoveList;
+use mv_list::MoveAdder;
 use piece::*;
 use position::Position;
 
@@ -42,8 +42,8 @@ impl MoveGenPreprocessing {
     }
 }
 
-/// Adds all legal moves to the provided MoveList. Returns true if mover is in check
-pub fn legal_moves<L: MoveList>(position: &Position, list: &mut L) -> bool {
+/// Adds all legal moves to the provided MoveAdder. Returns true if mover is in check
+pub fn legal_moves<L: MoveAdder>(position: &Position, list: &mut L) -> bool {
     legal_moves_with_preprocessing(position, list, movegen_preprocessing(position))
 }
 
@@ -55,8 +55,8 @@ pub fn movegen_preprocessing(position: &Position) -> MoveGenPreprocessing {
     MoveGenPreprocessing(checkers_and_pinned(kings, stm.flip(), position))
 }
 
-/// Adds all legal moves to the provided MoveList. Returns true if moving side is in check
-pub fn legal_moves_with_preprocessing<L: MoveList>(
+/// Adds all legal moves to the provided MoveAdder. Returns true if moving side is in check
+pub fn legal_moves_with_preprocessing<L: MoveAdder>(
     position: &Position,
     list: &mut L,
     preprocessed_data: MoveGenPreprocessing,
@@ -147,11 +147,11 @@ pub fn legal_moves_with_preprocessing<L: MoveList>(
 /// Loud moves are defined as:
 /// * Captures
 /// * Check evasions
-pub fn loud_legal_moves<L: MoveList>(position: &Position, list: &mut L) -> bool {
+pub fn loud_legal_moves<L: MoveAdder>(position: &Position, list: &mut L) -> bool {
     loud_legal_moves_with_preprocessing(position, list, movegen_preprocessing(position))
 }
 
-pub fn loud_legal_moves_with_preprocessing<L: MoveList>(
+pub fn loud_legal_moves_with_preprocessing<L: MoveAdder>(
     position: &Position,
     list: &mut L,
     preprocessed_data: MoveGenPreprocessing,

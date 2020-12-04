@@ -1,9 +1,14 @@
 use bb::*;
-use mv_list::MoveList;
+use mv_list::MoveAdder;
 use piece::*;
 use position::Position;
 
-pub fn king_moves<L: MoveList>(position: &Position, capture_mask: BB, push_mask: BB, list: &mut L) {
+pub fn king_moves<L: MoveAdder>(
+    position: &Position,
+    capture_mask: BB,
+    push_mask: BB,
+    list: &mut L,
+) {
     let stm = position.state().stm;
     let piece = KING.pc(stm);
     let movers = position.bb_pc(piece);
@@ -19,7 +24,7 @@ pub fn king_moves<L: MoveList>(position: &Position, capture_mask: BB, push_mask:
     list.add_non_captures(from, push_targets);
 }
 
-pub fn king_captures<L: MoveList>(position: &Position, capture_mask: BB, list: &mut L) {
+pub fn king_captures<L: MoveAdder>(position: &Position, capture_mask: BB, list: &mut L) {
     let stm = position.state().stm;
     let piece = KING.pc(stm);
     let movers = position.bb_pc(piece);
@@ -33,7 +38,7 @@ pub fn king_captures<L: MoveList>(position: &Position, capture_mask: BB, list: &
     list.add_captures(from, capture_targets);
 }
 
-pub fn knight_moves<L: MoveList>(
+pub fn knight_moves<L: MoveAdder>(
     position: &Position,
     capture_mask: BB,
     push_mask: BB,
@@ -54,7 +59,7 @@ pub fn knight_moves<L: MoveList>(
     }
 }
 
-pub fn knight_captures<L: MoveList>(
+pub fn knight_captures<L: MoveAdder>(
     position: &Position,
     capture_mask: BB,
     from_mask: BB,

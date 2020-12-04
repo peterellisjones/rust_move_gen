@@ -1,14 +1,14 @@
 use bb::{BB, END_ROWS};
 use castle::Castle;
 use mv::Move;
-use mv_list::MoveList;
+use mv_list::MoveAdder;
 use piece::*;
 use square;
 use square::Square;
 use std;
 use std::fmt;
 
-/// MoveVec implements MoveList and collects moves in a vector.
+/// MoveVec implements MoveAdder and collects moves in a vector.
 /// Use `iter` to access the moves once they have been added.
 #[derive(Clone)]
 pub struct MoveVec {
@@ -41,7 +41,7 @@ impl fmt::Debug for MoveVec {
     }
 }
 
-impl MoveList for MoveVec {
+impl MoveAdder for MoveVec {
     fn add_captures(&mut self, from: Square, targets: BB) {
         self.insert_moves(from, targets, Move::new_capture);
     }

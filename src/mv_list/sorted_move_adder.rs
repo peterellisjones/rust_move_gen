@@ -1,8 +1,8 @@
 use super::piece_square_table::PieceSquareTable;
 use bb::{BB, EMPTY, END_ROWS};
 use castle::Castle;
-use mv::{Move, MoveScore};
-use mv_list::MoveList;
+use mv::{Move, MovePSS};
+use mv_list::MoveAdder;
 use piece::*;
 use side::Side;
 use square;
@@ -11,8 +11,8 @@ use std::cmp::Ordering;
 use std::collections::BinaryHeap;
 use std::fmt;
 
-/// SortedMoveList is list of moves including the piece-square score for making this move
-/// It is sorted by an 'ordering score'
+/// SortedMoveAdder collects moves including the piece-square score for making the move
+/// Moves are sorted by an 'ordering score' and stored in a provided SortedMoveHeap
 ///     
 /// Non-captures are ordered by priotising destination squares that are
 /// further up the board relative to the mover, with a bonus for pawns
@@ -51,14 +51,14 @@ use std::fmt;
 /// 95..105: capture (exact score based on MVV-LVA)
 /// 120..130: capture and promotion to knight (exact score based on MVV-LVA)
 /// 145..155: capture and promotion to queen (exact score based on MVV-LVA)
-pub struct SortedMoveList<'a> {
+pub struct SortedMoveAdder<'a> {
     moves: &'a mut SortedMoveHeap,
     piece_square_table: &'a PieceSquareTable,
     piece_grid: &'a [Piece; 64],
     stm: Side,
 }
 
-impl<'a> fmt::Display for SortedMoveList<'a> {
+impl<'a> fmt::Display for SortedMoveAdder<'a> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
             f,
@@ -73,7 +73,7 @@ impl<'a> fmt::Display for SortedMoveList<'a> {
     }
 }
 
-impl<'a> fmt::Debug for SortedMoveList<'a> {
+impl<'a> fmt::Debug for SortedMoveAdder<'a> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
             f,
@@ -88,7 +88,7 @@ impl<'a> fmt::Debug for SortedMoveList<'a> {
     }
 }
 
-impl<'a> MoveList for SortedMoveList<'a> {
+impl<'a> MoveAdder for SortedMoveAdder<'a> {
     fn add_captures(&mut self, from: Square, targets: BB) {
         if targets == EMPTY {
             return;
@@ -261,7 +261,7 @@ impl<'a> MoveList for SortedMoveList<'a> {
     }
 }
 
-impl<'a> SortedMoveList<'a> {
+impl<'a> SortedMoveAdder<'a> {
     // Maps promotion target pieces to base move ordering score
     // reason: calculating rook and bishop promotions almost never gives
     // an advantage over queen and knight promotions
@@ -276,8 +276,8 @@ impl<'a> SortedMoveList<'a> {
         piece_grid: &'a [Piece; 64],
         stm: Side,
         moves: &'a mut SortedMoveHeap,
-    ) -> SortedMoveList<'a> {
-        SortedMoveList {
+    ) -> SortedMoveAdder<'a> {
+        SortedMoveAdder {
             moves,
             piece_square_table,
             piece_grid,
@@ -294,8 +294,7 @@ impl<'a> SortedMoveList<'a> {
     }
 
     fn insert(&mut self, mv: Move, piece_square_score: i16, move_ordering_score: i16) {
-        let item =
-            SortedMoveHeapItem((MoveScore::new(mv, piece_square_score), move_ordering_score));
+        let item = SortedMoveHeapItem((MovePSS::new(mv, piece_square_score), move_ordering_score));
 
         self.moves.push(item);
     }
@@ -345,14 +344,14 @@ impl<'a> SortedMoveList<'a> {
     }
 }
 
-pub struct SortedMoveHeapItem((MoveScore, i16));
+pub struct SortedMoveHeapItem((MovePSS, i16));
 
 impl SortedMoveHeapItem {
     fn ordering_score(&self) -> &i16 {
         &self.0 .1
     }
 
-    pub fn move_score(&self) -> &MoveScore {
+    pub fn move_score(&self) -> &MovePSS {
         &self.0 .0
     }
 }
@@ -407,10 +406,10 @@ impl SortedMoveHeap {
         self.0.into_iter_sorted()
     }
 
-    pub fn into_sorted_vec(self) -> Vec<MoveScore> {
+    pub fn into_sorted_vec(self) -> Vec<MovePSS> {
         self.iter()
             .map(|e| *e.move_score())
-            .collect::<Vec<MoveScore>>()
+            .collect::<Vec<MovePSS>>()
     }
 }
 
@@ -437,7 +436,7 @@ mod test {
         let piece_square_table = PieceSquareTable::new([[100i16; 64]; 6]);
 
         let mut heap = SortedMoveHeap::new();
-        let mut list = SortedMoveList::new(
+        let mut list = SortedMoveAdder::new(
             &piece_square_table,
             position.grid(),
             position.state().stm,
@@ -460,7 +459,7 @@ mod test {
 
         let piece_square_table = PieceSquareTable::new(piece_square_values);
         let mut heap = SortedMoveHeap::new();
-        let mut list = SortedMoveList::new(
+        let mut list = SortedMoveAdder::new(
             &piece_square_table,
             position.grid(),
             position.state().stm,
@@ -485,7 +484,7 @@ mod test {
 
         let piece_square_table = PieceSquareTable::new(piece_square_values);
         let mut heap = SortedMoveHeap::new();
-        let mut list = SortedMoveList::new(
+        let mut list = SortedMoveAdder::new(
             &piece_square_table,
             position.grid(),
             position.state().stm,
@@ -513,7 +512,7 @@ mod test {
 
         let piece_square_table = PieceSquareTable::new(piece_square_values);
         let mut heap = SortedMoveHeap::new();
-        let mut list = SortedMoveList::new(
+        let mut list = SortedMoveAdder::new(
             &piece_square_table,
             position.grid(),
             position.state().stm,
@@ -542,7 +541,7 @@ mod test {
 
             let move_score = {
                 let mut heap = SortedMoveHeap::new();
-                let mut list = SortedMoveList::new(
+                let mut list = SortedMoveAdder::new(
                     &piece_square_table,
                     position.grid(),
                     position.state().stm,

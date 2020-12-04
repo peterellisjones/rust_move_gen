@@ -29,12 +29,12 @@ pub use self::ray_magic::{bishop_attacks_from_sq, rook_attacks_from_sq};
 
 use super::consts::lines_along;
 use bb::BB;
-use mv_list::MoveList;
+use mv_list::MoveAdder;
 use piece::{BISHOP, QUEEN, ROOK};
 use position::Position;
 use square::Square;
 
-pub fn slider_moves<L: MoveList>(
+pub fn slider_moves<L: MoveAdder>(
     position: &Position,
     capture_mask: BB,
     push_mask: BB,
@@ -81,7 +81,7 @@ pub fn slider_moves<L: MoveList>(
     }
 }
 
-pub fn slider_captures<L: MoveList>(
+pub fn slider_captures<L: MoveAdder>(
     position: &Position,
     capture_mask: BB,
     pinned_mask: BB,
@@ -124,7 +124,7 @@ pub fn slider_captures<L: MoveList>(
 }
 
 #[allow(dead_code)]
-pub fn non_diag_slider_moves<L: MoveList>(
+pub fn non_diag_slider_moves<L: MoveAdder>(
     position: &Position,
     capture_mask: BB,
     push_mask: BB,
@@ -145,7 +145,7 @@ pub fn non_diag_slider_moves<L: MoveList>(
 }
 
 #[allow(dead_code)]
-pub fn diag_slider_moves<L: MoveList>(
+pub fn diag_slider_moves<L: MoveAdder>(
     position: &Position,
     capture_mask: BB,
     push_mask: BB,

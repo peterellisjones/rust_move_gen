@@ -1,10 +1,10 @@
 use bb::*;
 use castle::Castle;
 use castling_rights::CastlingRights;
-use mv_list::MoveList;
+use mv_list::MoveAdder;
 use position::Position;
 
-pub fn castles<L: MoveList>(position: &Position, attacks: BB, list: &mut L) {
+pub fn castles<L: MoveAdder>(position: &Position, attacks: BB, list: &mut L) {
     const CASTLE_BLOCKING_SQUARES: [[BB; 2]; 2] = [
         [
             BB((1u64 << 1) + (1u64 << 2) + (1u64 << 3)), /* WHITE QS = B1 + C1 + D1 */

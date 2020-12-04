@@ -1,10 +1,10 @@
 use bb::{BB, END_ROWS};
 use castle::Castle;
-use mv_list::MoveList;
+use mv_list::MoveAdder;
 use square::Square;
 use std::ops;
 
-/// MoveCounter implements MoveList and keeps a count of different types of moves added to it.
+/// MoveCounter implements MoveAdder and keeps a count of different types of moves added to it.
 #[derive(Debug, Clone, Copy, PartialEq, Default)]
 pub struct MoveCounter {
     pub moves: u64,
@@ -22,7 +22,7 @@ impl MoveCounter {
     }
 }
 
-impl MoveList for MoveCounter {
+impl MoveAdder for MoveCounter {
     fn add_captures(&mut self, _: Square, targets: BB) {
         let count = targets.pop_count() as u64;
         self.moves += count;

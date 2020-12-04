@@ -5,15 +5,19 @@ use square::Square;
 mod mv_counter;
 mod mv_vec;
 mod piece_square_table;
-mod sorted_move_list;
+mod sorted_move_adder;
 
 pub use self::mv_counter::MoveCounter;
 pub use self::mv_vec::MoveVec;
 pub use self::piece_square_table::PieceSquareTable;
-pub use self::sorted_move_list::{SortedMoveHeap, SortedMoveHeapItem, SortedMoveList};
+pub use self::sorted_move_adder::{SortedMoveAdder, SortedMoveHeap, SortedMoveHeapItem};
 
-/// MoveList represents a way to collect moves from move generation functions. Use this if you want to collect or record moves in a way not supported by MoveVec or MoveCounter
-pub trait MoveList {
+/// MoveAdder represents a way to collect moves from move generation functions
+/// Implementations:
+///   MoveCounter (count moves only)
+///   MoveVec (adds move to Vec)
+///   SortedMovePSSAdder (adds moves along with piece-square-scores to a sorted binary heap)
+pub trait MoveAdder {
   fn add_captures(&mut self, from: Square, targets: BB);
   fn add_non_captures(&mut self, from: Square, targets: BB);
 
