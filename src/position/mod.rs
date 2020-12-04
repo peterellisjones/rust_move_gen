@@ -160,6 +160,11 @@ impl Position {
         unsafe { return *self.grid.get_unchecked(sq.to_usize()) }
     }
 
+    pub fn king_square(&self, side: Side) -> Square {
+        let pc = KING.pc(side);
+        self.bb_pc(pc).bitscan()
+    }
+
     fn put_piece(&mut self, pc: Piece, sq: Square) {
         debug_assert!(self.at(sq).is_none());
 
