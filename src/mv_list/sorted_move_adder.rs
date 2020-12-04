@@ -1,7 +1,7 @@
 use super::piece_square_table::PieceSquareTable;
 use bb::{BB, EMPTY, END_ROWS};
 use castle::Castle;
-use mv::{Move, MovePSS};
+use mv::{Move, MoveScore};
 use mv_list::MoveAdder;
 use piece::*;
 use side::Side;
@@ -294,7 +294,8 @@ impl<'a> SortedMoveAdder<'a> {
     }
 
     fn insert(&mut self, mv: Move, piece_square_score: i16, move_ordering_score: i16) {
-        let item = SortedMoveHeapItem((MovePSS::new(mv, piece_square_score), move_ordering_score));
+        let item =
+            SortedMoveHeapItem((MoveScore::new(mv, piece_square_score), move_ordering_score));
 
         self.moves.push(item);
     }
@@ -344,14 +345,14 @@ impl<'a> SortedMoveAdder<'a> {
     }
 }
 
-pub struct SortedMoveHeapItem((MovePSS, i16));
+pub struct SortedMoveHeapItem((MoveScore, i16));
 
 impl SortedMoveHeapItem {
     fn ordering_score(&self) -> &i16 {
         &self.0 .1
     }
 
-    pub fn move_score(&self) -> &MovePSS {
+    pub fn move_score(&self) -> &MoveScore {
         &self.0 .0
     }
 }
@@ -379,11 +380,8 @@ impl Ord for SortedMoveHeapItem {
 pub struct SortedMoveHeap(BinaryHeap<SortedMoveHeapItem>);
 
 impl SortedMoveHeap {
-    pub fn new() -> SortedMoveHeap {
-        const DEFAULT_CAPACITY: usize = 32;
-        SortedMoveHeap(BinaryHeap::<SortedMoveHeapItem>::with_capacity(
-            DEFAULT_CAPACITY,
-        ))
+    pub fn new(capacity: usize) -> SortedMoveHeap {
+        SortedMoveHeap(BinaryHeap::<SortedMoveHeapItem>::with_capacity(capacity))
     }
 
     pub fn peek(&self) -> Option<&SortedMoveHeapItem> {
@@ -406,16 +404,10 @@ impl SortedMoveHeap {
         self.0.into_iter_sorted()
     }
 
-    pub fn into_sorted_vec(self) -> Vec<MovePSS> {
+    pub fn into_sorted_vec(self) -> Vec<MoveScore> {
         self.iter()
             .map(|e| *e.move_score())
-            .collect::<Vec<MovePSS>>()
-    }
-}
-
-impl Default for SortedMoveHeap {
-    fn default() -> Self {
-        Self::new()
+            .collect::<Vec<MoveScore>>()
     }
 }
 
@@ -435,7 +427,7 @@ mod test {
         let position = &Position::from_fen(STARTING_POSITION_FEN).unwrap();
         let piece_square_table = PieceSquareTable::new([[100i16; 64]; 6]);
 
-        let mut heap = SortedMoveHeap::new();
+        let mut heap = SortedMoveHeap::new(32);
         let mut list = SortedMoveAdder::new(
             &piece_square_table,
             position.grid(),
@@ -458,7 +450,7 @@ mod test {
         piece_square_values[PAWN.to_usize()][C4.to_usize()] = 165;
 
         let piece_square_table = PieceSquareTable::new(piece_square_values);
-        let mut heap = SortedMoveHeap::new();
+        let mut heap = SortedMoveHeap::new(32);
         let mut list = SortedMoveAdder::new(
             &piece_square_table,
             position.grid(),
@@ -483,7 +475,7 @@ mod test {
         piece_square_values[KNIGHT.to_usize()][C3.to_usize()] = 333;
 
         let piece_square_table = PieceSquareTable::new(piece_square_values);
-        let mut heap = SortedMoveHeap::new();
+        let mut heap = SortedMoveHeap::new(32);
         let mut list = SortedMoveAdder::new(
             &piece_square_table,
             position.grid(),
@@ -511,7 +503,7 @@ mod test {
         piece_square_values[PAWN.to_usize()][C6.to_usize()] = 50;
 
         let piece_square_table = PieceSquareTable::new(piece_square_values);
-        let mut heap = SortedMoveHeap::new();
+        let mut heap = SortedMoveHeap::new(32);
         let mut list = SortedMoveAdder::new(
             &piece_square_table,
             position.grid(),
@@ -540,7 +532,7 @@ mod test {
             let stm = position.state().stm;
 
             let move_score = {
-                let mut heap = SortedMoveHeap::new();
+                let mut heap = SortedMoveHeap::new(32);
                 let mut list = SortedMoveAdder::new(
                     &piece_square_table,
                     position.grid(),

@@ -16,7 +16,7 @@ pub use self::sorted_move_adder::{SortedMoveAdder, SortedMoveHeap, SortedMoveHea
 /// Implementations:
 ///   MoveCounter (count moves only)
 ///   MoveVec (adds move to Vec)
-///   SortedMovePSSAdder (adds moves along with piece-square-scores to a sorted binary heap)
+///   SortedMoveAdder (adds moves along with piece-square-scores to a sorted binary heap)
 pub trait MoveAdder {
   fn add_captures(&mut self, from: Square, targets: BB);
   fn add_non_captures(&mut self, from: Square, targets: BB);

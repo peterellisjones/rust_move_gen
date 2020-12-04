@@ -53,7 +53,7 @@ pub use gen::{
     legal_moves, legal_moves_with_preprocessing, loud_legal_moves,
     loud_legal_moves_with_preprocessing, movegen_preprocessing, MoveGenPreprocessing,
 };
-pub use mv::{Move, MovePSS, KING_SIDE_CASTLE, NULL_MOVE, QUEEN_SIDE_CASTLE};
+pub use mv::{Move, MoveScore, KING_SIDE_CASTLE, NULL_MOVE, QUEEN_SIDE_CASTLE};
 pub use mv_list::{
     MoveAdder, MoveCounter, MoveVec, PieceSquareTable, SortedMoveAdder, SortedMoveHeap,
     SortedMoveHeapItem,
