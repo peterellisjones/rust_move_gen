@@ -10,7 +10,7 @@ pub fn generate_offsets() {
   let mut offset = 0;
 
   println!("use bb::BB;");
-  println!("");
+  println!();
   println!("pub struct Offset {{");
   println!("    pub inner_mask: BB,");
   println!("    pub outer_mask: BB,");

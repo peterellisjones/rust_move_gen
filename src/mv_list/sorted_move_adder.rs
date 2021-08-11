@@ -14,15 +14,15 @@ use std::fmt;
 /// SortedMoveAdder collects moves including the piece-square score for making the move
 /// Moves are sorted by an 'ordering score' and stored in a provided SortedMoveHeap
 ///     
-/// Non-captures are ordered by priotising destination squares that are
+/// Non-captures are ordered by prioritising destination squares that are
 /// further up the board relative to the mover, with a bonus for pawns
 /// near promotion, a handicap for non-pawn moves to rank 1, and a handicap
 /// for pawn moves to low ranks.
 ///
-/// Captures are ordered by most-valuable-victim / least-valuable-aggresor
+/// Captures are ordered by most-valuable-victim / least-valuable-aggressor
 /// with piece scores worth:
 ///     Pawn: 0
-///     King: 1 (can only be aggresor)
+///     King: 1 (can only be aggressor)
 ///     Knight: 2
 ///     Bishop: 3
 ///     Rook: 4

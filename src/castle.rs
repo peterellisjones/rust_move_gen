@@ -2,7 +2,7 @@ use side::Side;
 use square::*;
 use std::fmt;
 
-/// Represents a castleove
+/// Represents a castle move
 #[derive(PartialEq, PartialOrd, Copy, Clone)]
 pub struct Castle(pub usize);
 

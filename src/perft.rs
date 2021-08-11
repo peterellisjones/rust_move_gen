@@ -25,11 +25,11 @@ pub fn perft(
   }
 
   if !multi_threading_enabled {
-    if cache_bytes_per_thread > 0 {
+    return if cache_bytes_per_thread > 0 {
       let mut cache = Cache::new(cache_bytes_per_thread).unwrap();
-      return perft_with_cache_inner(position, depth, &mut cache);
+      perft_with_cache_inner(position, depth, &mut cache)
     } else {
-      return perft_inner(position, depth);
+      perft_inner(position, depth)
     }
   }
 
