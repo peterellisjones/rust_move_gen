@@ -8,7 +8,6 @@ mod consts;
 #[cfg(test)]
 mod generation;
 
-
 use self::consts::*;
 use std::arch::x86_64::{_pdep_u64, _pext_u64};
 
@@ -63,7 +62,6 @@ mod test {
     use super::super::testing::*;
     use super::*;
     use ::test;
-
 
     #[test]
     fn t_rook_attacks() {

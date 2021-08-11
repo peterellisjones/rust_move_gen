@@ -186,8 +186,8 @@ mod test {
     use crate::integrity;
     use crate::mv::Move;
     use crate::piece::*;
-    use crate::square::*;
     use crate::position::Position;
+    use crate::square::*;
 
     fn test_make_unmake(initial_fen: &'static str, expected_fen: &'static str, mv: Move) {
         let mut position = Position::from_fen(initial_fen).unwrap();

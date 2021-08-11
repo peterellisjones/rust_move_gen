@@ -23,10 +23,10 @@ pub fn pawn_moves<L: MoveAdder>(
 // black, left  = -9 remove FILE_H
 // black, right = -7 remove FILE_A
 // maps: side -> capture-direction -> shift amount + overflow mask
-pub const PAWN_CAPTURE_FILE_MASKS: [[(usize, BB); 2]; 2] = [
-    [(7, NOT_FILE_H), (9, NOT_FILE_A)],
-    [(64 - 9, NOT_FILE_H), (64 - 7, NOT_FILE_A)],
-];
+pub const PAWN_CAPTURE_FILE_MASKS: [[(usize, BB); 2]; 2] = [[(7, NOT_FILE_H), (9, NOT_FILE_A)], [
+    (64 - 9, NOT_FILE_H),
+    (64 - 7, NOT_FILE_A),
+]];
 
 pub fn pawn_pushes<L: MoveAdder>(position: &Position, to_mask: BB, from_mask: BB, list: &mut L) {
     let stm = position.state().stm;
@@ -192,23 +192,17 @@ mod test {
         let mut list = MoveVec::new();
         pawn_moves::<MoveVec>(position, !EMPTY, !EMPTY, !EMPTY, &mut list);
 
-        assert_list_includes_moves(
-            &list,
-            &[
-                "a2a3", "b2b3", "c2c3", "d2d3", "e2e3", "f2f3", "g2g3", "h2h3",
-            ],
-        );
+        assert_list_includes_moves(&list, &[
+            "a2a3", "b2b3", "c2c3", "d2d3", "e2e3", "f2f3", "g2g3", "h2h3",
+        ]);
 
         let position =
             &Position::from_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b").unwrap();
         let mut list = MoveVec::new();
         pawn_moves::<MoveVec>(position, !EMPTY, !EMPTY, !EMPTY, &mut list);
-        assert_list_includes_moves(
-            &list,
-            &[
-                "a7a6", "b7b6", "c7c6", "d7d6", "e7e6", "f7f6", "g7g6", "h7h6",
-            ],
-        );
+        assert_list_includes_moves(&list, &[
+            "a7a6", "b7b6", "c7c6", "d7d6", "e7e6", "f7f6", "g7g6", "h7h6",
+        ]);
     }
 
     #[test]
@@ -223,12 +217,9 @@ mod test {
         pawn_moves::<MoveVec>(position, capture_mask, push_mask, !EMPTY, &mut list);
 
         assert_eq!(list.len(), 16);
-        assert_list_includes_moves(
-            &list,
-            &[
-                "a2a4", "b2b4", "c2c4", "d2d4", "e2e4", "f2f4", "g2g4", "h2h4",
-            ],
-        );
+        assert_list_includes_moves(&list, &[
+            "a2a4", "b2b4", "c2c4", "d2d4", "e2e4", "f2f4", "g2g4", "h2h4",
+        ]);
 
         let position =
             &Position::from_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b").unwrap();
@@ -239,12 +230,9 @@ mod test {
 
         pawn_moves::<MoveVec>(position, capture_mask, push_mask, !EMPTY, &mut list);
         assert_eq!(list.len(), 16);
-        assert_list_includes_moves(
-            &list,
-            &[
-                "a7a5", "b7b5", "c7c5", "d7d5", "e7e5", "f7f5", "g7g5", "h7h5",
-            ],
-        );
+        assert_list_includes_moves(&list, &[
+            "a7a5", "b7b5", "c7c5", "d7d5", "e7e5", "f7f5", "g7g5", "h7h5",
+        ]);
     }
 
     #[test]
@@ -281,12 +269,8 @@ mod test {
 
         pawn_moves::<MoveVec>(position, capture_mask, push_mask, !EMPTY, &mut list);
         assert_eq!(list.len(), 8);
-        assert_list_includes_moves(
-            &list,
-            &[
-                "d2xc1=N", "d2xc1=B", "d2xc1=R", "d2xc1=Q", "d2xe1=N", "d2xe1=B", "d2xe1=R",
-                "d2xe1=Q",
-            ],
-        );
+        assert_list_includes_moves(&list, &[
+            "d2xc1=N", "d2xc1=B", "d2xc1=R", "d2xc1=Q", "d2xe1=N", "d2xe1=B", "d2xe1=R", "d2xe1=Q",
+        ]);
     }
 }

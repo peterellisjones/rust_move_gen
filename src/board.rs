@@ -1,7 +1,7 @@
 use crate::mv::Move;
-use crate::square::*;
 use crate::piece::Piece;
 use crate::position::*;
+use crate::square::*;
 
 pub struct Board {
     position: Position,

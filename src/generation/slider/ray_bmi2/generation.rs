@@ -138,8 +138,6 @@ fn generate_occupancy_attack_map<F: Fn(Square, BB) -> BB>(
 #[cfg(test)]
 mod test {
 
-
-
     #[test]
     fn test_generate_offsets() {
         // uncomment to dump BMI offset table to `cargo test` output

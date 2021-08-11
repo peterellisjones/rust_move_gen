@@ -1,7 +1,7 @@
 use crate::square::{Square, SquareInternal};
+use crate::util::grid_to_string;
 use std::fmt;
 use std::ops::*;
-use crate::util::grid_to_string;
 
 #[cfg(test)]
 use rand;
@@ -456,13 +456,7 @@ impl fmt::Display for BB {
         write!(
             f,
             "{}",
-            grid_to_string(|sq: Square| -> char {
-                if self.is_set(sq) {
-                    '#'
-                } else {
-                    '.'
-                }
-            })
+            grid_to_string(|sq: Square| -> char { if self.is_set(sq) { '#' } else { '.' } })
         )
     }
 }
@@ -472,13 +466,7 @@ impl fmt::Debug for BB {
         write!(
             f,
             "{}",
-            grid_to_string(|sq: Square| -> char {
-                if self.is_set(sq) {
-                    '#'
-                } else {
-                    '.'
-                }
-            })
+            grid_to_string(|sq: Square| -> char { if self.is_set(sq) { '#' } else { '.' } })
         )
     }
 }

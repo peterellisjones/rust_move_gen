@@ -1,5 +1,5 @@
-use crate::square::*;
 use crate::side::Side;
+use crate::square::*;
 use std::fmt;
 
 /// Represents a castleove

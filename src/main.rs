@@ -31,8 +31,8 @@ extern crate test;
 #[cfg(test)]
 extern crate unindent;
 
-pub use perft::perft;
 pub use crate::position::{Position, STARTING_POSITION_FEN};
+pub use perft::perft;
 
 use std::time::Instant;
 fn main() {

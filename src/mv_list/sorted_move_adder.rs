@@ -354,11 +354,11 @@ pub struct SortedMoveHeapItem((MoveScore, i16));
 
 impl SortedMoveHeapItem {
     fn ordering_score(&self) -> &i16 {
-        &self.0 .1
+        &self.0.1
     }
 
     pub fn move_score(&self) -> &MoveScore {
-        &self.0 .0
+        &self.0.0
     }
 }
 
@@ -430,9 +430,9 @@ mod test {
     use super::*;
     use crate::generation::*;
     use crate::position::*;
-    use rand::seq::SliceRandom;
-    use rand::Rng;
     use crate::side::WHITE;
+    use rand::Rng;
+    use rand::seq::SliceRandom;
 
     #[test]
     fn test_scored_move_vec() {
@@ -575,10 +575,12 @@ mod test {
     fn assert_list_includes_moves(heap: SortedMoveHeap, moves: &[&'static str]) {
         let sorted_vec = heap.into_sorted_vec();
         for &m in moves.iter() {
-            assert!(sorted_vec
-                .iter()
-                .map(|move_score| format!("{} ({})", move_score.mv(), move_score.score()))
-                .any(|mv| mv == m));
+            assert!(
+                sorted_vec
+                    .iter()
+                    .map(|move_score| format!("{} ({})", move_score.mv(), move_score.score()))
+                    .any(|mv| mv == m)
+            );
         }
     }
 

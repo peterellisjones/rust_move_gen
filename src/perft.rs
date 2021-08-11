@@ -1,7 +1,7 @@
+use crate::cache::Cache;
 use crate::generation::legal_moves;
 use crate::mv_list::{MoveCounter, MoveVec};
 use crate::position::Position;
-use crate::cache::Cache;
 use num_cpus;
 use std::sync::mpsc::channel;
 use threadpool::ThreadPool;

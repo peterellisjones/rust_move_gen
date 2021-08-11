@@ -1,7 +1,7 @@
 // Represents a double bitboard
 use std::{
     ops::*,
-    simd::{simd_swizzle, u64x2, u8x16},
+    simd::{simd_swizzle, u8x16, u64x2},
 };
 
 use crate::bb::BB;
@@ -76,10 +76,9 @@ impl DBB {
 
     pub fn bswap(&self) -> DBB {
         let bytes: u8x16 = unsafe { transmute(self.0) };
-        let shuffled: u8x16 = simd_swizzle!(
-            bytes,
-            [7, 6, 5, 4, 3, 2, 1, 0, 15, 14, 13, 12, 11, 10, 9, 8]
-        );
+        let shuffled: u8x16 = simd_swizzle!(bytes, [
+            7, 6, 5, 4, 3, 2, 1, 0, 15, 14, 13, 12, 11, 10, 9, 8
+        ]);
         let ret: u64x2 = unsafe { transmute(shuffled) };
         DBB(ret)
     }

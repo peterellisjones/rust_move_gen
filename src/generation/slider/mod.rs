@@ -78,7 +78,6 @@ pub fn slider_moves<L: MoveAdder>(
     }
 }
 
-
 #[allow(dead_code)]
 pub fn slider_captures<L: MoveAdder>(
     position: &Position,
