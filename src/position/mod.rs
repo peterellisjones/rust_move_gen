@@ -62,7 +62,7 @@ impl std::clone::Clone for Position {
             grid: self.grid,
             bb_sides: self.bb_sides,
             bb_pieces: self.bb_pieces,
-            state: self.state.clone(),
+            state: self.state,
             key: self.key,
             hash: self.hash,
         }

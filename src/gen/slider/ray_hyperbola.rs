@@ -89,7 +89,7 @@ pub fn bishop_attacks_from_sq(from: Square, occupied_bb: BB) -> BB {
         let ret = (forward_targets ^ backward_targets) & masks;
 
         let (high, low) = ret.extract();
-        return high | low;
+        high | low
     }
 }
 

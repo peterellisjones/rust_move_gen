@@ -367,7 +367,7 @@ impl Eq for SortedMoveHeapItem {}
 
 impl PartialOrd for SortedMoveHeapItem {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        self.ordering_score().partial_cmp(&other.ordering_score())
+        self.ordering_score().partial_cmp(other.ordering_score())
     }
 }
 
