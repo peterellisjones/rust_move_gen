@@ -37,7 +37,7 @@ pub fn perft(
     let (tx, rx) = channel();
 
     let mut moves = MoveVec::new();
-    legal_moves(&position, &mut moves);
+    legal_moves(position, &mut moves);
     let moves_len = moves.len();
 
     for &mv in moves.iter() {
@@ -65,14 +65,14 @@ pub fn perft(
 pub fn perft_inner(position: &mut Position, depth: usize) -> u64 {
     if depth == 1 {
         let mut counter = MoveCounter::new();
-        legal_moves(&position, &mut counter);
+        legal_moves(position, &mut counter);
         return counter.moves;
     }
 
     let mut moves = MoveVec::new();
-    legal_moves(&position, &mut moves);
+    legal_moves(position, &mut moves);
 
-    let state = position.state().clone();
+    let state = *position.state();
     let key = position.hash_key();
     let mut count = 0;
     for &mv in moves.iter() {
@@ -103,7 +103,7 @@ fn perft_with_cache_inner(position: &mut Position, depth: usize, cache: &mut Cac
         let mut moves = MoveVec::new();
         legal_moves(&position, &mut moves);
 
-        let state = position.state().clone();
+        let state = *position.state();
         let key = position.hash_key();
         for &mv in moves.iter() {
             let capture = position.make(mv);
@@ -145,7 +145,7 @@ pub fn perft_detailed(
     let (tx, rx) = channel();
 
     let mut moves = MoveVec::new();
-    legal_moves(&position, &mut moves);
+    legal_moves(position, &mut moves);
     let moves_len = moves.len();
 
     for &mv in moves.iter() {
@@ -175,14 +175,14 @@ pub fn perft_detailed_inner(position: &mut Position, depth: usize) -> MoveCounte
     let mut counter = MoveCounter::new();
 
     if depth == 1 {
-        legal_moves(&position, &mut counter);
+        legal_moves(position, &mut counter);
         return counter;
     }
 
     let mut moves = MoveVec::new();
-    legal_moves(&position, &mut moves);
+    legal_moves(position, &mut moves);
 
-    let state = position.state().clone();
+    let state = *position.state();
     let key = position.hash_key();
     for &mv in moves.iter() {
         let capture = position.make(mv);

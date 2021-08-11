@@ -44,7 +44,7 @@ impl Board {
 
     #[allow(dead_code)]
     pub fn make(&mut self, mv: Move) {
-        let state = self.position.state().clone();
+        let state = *self.position.state();
         let key = self.position.hash_key();
         let captured = self.position.make(mv);
 

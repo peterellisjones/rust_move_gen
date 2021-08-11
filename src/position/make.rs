@@ -21,7 +21,7 @@ impl Position {
         debug_assert_ne!(mv, NULL_MOVE);
 
         let stm = self.state.stm;
-        let initial_state = self.state.clone();
+        let initial_state = self.state;
         let mut move_resets_half_move_clock = false;
 
         // increment full move clock if black moved
@@ -112,7 +112,7 @@ impl Position {
     }
 
     pub fn make_null_move(&mut self) -> Option<(Piece, Square)> {
-        let initial_state = self.state.clone();
+        let initial_state = self.state;
 
         // increment full move clock if black moved
         if self.state.stm == BLACK {
@@ -140,7 +140,7 @@ impl Position {
     ) {
         debug_assert_ne!(mv, NULL_MOVE);
 
-        self.state = original_state.clone();
+        self.state = *original_state;
         self.key = original_hash_key;
 
         if mv.is_castle() {
@@ -175,7 +175,7 @@ impl Position {
     }
 
     pub fn unmake_null_move(&mut self, original_state: &State, original_hash_key: u64) {
-        self.state = original_state.clone();
+        self.state = *original_state;
         self.key = original_hash_key;
     }
 }
