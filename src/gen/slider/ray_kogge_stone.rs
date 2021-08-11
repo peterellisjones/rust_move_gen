@@ -1,5 +1,5 @@
 // loop-based sliding piece attacks
-// efficient for pinned pieces and calculating multiple sliders simulataneously
+// efficient for pinned pieces and calculating multiple sliders simultaneously
 
 use bb::*;
 use square::Square;

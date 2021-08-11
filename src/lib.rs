@@ -13,7 +13,6 @@
 
 #![feature(test)]
 #![feature(platform_intrinsics)]
-#![feature(const_fn)]
 #![feature(binary_heap_into_iter_sorted)]
 
 pub mod bb;

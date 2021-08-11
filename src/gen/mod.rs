@@ -159,7 +159,7 @@ pub fn loud_legal_moves_with_preprocessing<L: MoveAdder>(
     let stm = position.state().stm;
     let kings = position.bb_pc(KING.pc(stm));
 
-    // We always need legal king movess
+    // We always need legal king moves
     let attacked_squares = king_danger_squares(kings, stm.flip(), position);
 
     let king_sq = kings.bitscan();
