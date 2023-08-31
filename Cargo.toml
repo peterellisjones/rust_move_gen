@@ -34,7 +34,7 @@ opt-level = 1
 
 [dependencies]
 rand = "0.7.3"
-packed_simd = { version = "0.3.4", package = "packed_simd_2" }
+packed_simd = "0.3.9"
 threadpool = "1.8.1"
 num_cpus = "1.13.0"
 
