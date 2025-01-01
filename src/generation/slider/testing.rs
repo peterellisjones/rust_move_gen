@@ -2,7 +2,6 @@
 
 use super::ray_naive::{bishop_attacks_from_sq, rook_attacks_from_sq};
 use crate::bb::*;
-use crate::square;
 use crate::square::*;
 use ::test;
 
