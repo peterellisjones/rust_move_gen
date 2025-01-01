@@ -2,3 +2,4 @@ target
 Cargo.lock
 log.txt
 tmp
+.cargo
