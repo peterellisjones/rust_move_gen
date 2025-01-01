@@ -1,15 +1,17 @@
-use bb::{ANTI_DIAGONALS, BB, BISHOP_RAYS, DIAGONALS, FILE_A, KING_MOVES, KNIGHT_MOVES, ROOK_RAYS};
-use side::{Side, BLACK};
+use crate::bb::{
+    ANTI_DIAGONALS, BB, BISHOP_RAYS, DIAGONALS, FILE_A, KING_MOVES, KNIGHT_MOVES, ROOK_RAYS,
+};
+use crate::side::{BLACK, Side};
 use std::fmt;
 
 #[cfg(test)]
 use rand;
 
-pub type Internal = usize;
+pub type SquareInternal = usize;
 
 /// Represents a square on the chessboard
 #[derive(PartialEq, PartialOrd, Copy, Clone)]
-pub struct Square(pub Internal);
+pub struct Square(pub SquareInternal);
 
 const NAMES: [&str; 64] = [
     "a1", "b1", "c1", "d1", "e1", "f1", "g1", "h1", "a2", "b2", "c2", "d2", "e2", "f2", "g2", "h2",
@@ -151,7 +153,7 @@ pub const G8: Square = Square(62);
 pub const H8: Square = Square(63);
 
 impl Square {
-    pub fn new(s: Internal) -> Square {
+    pub fn new(s: SquareInternal) -> Square {
         Square(s)
     }
 
@@ -171,7 +173,7 @@ impl Square {
         self.0 as u32
     }
 
-    pub fn raw(self) -> Internal {
+    pub fn raw(self) -> SquareInternal {
         self.0
     }
 
@@ -233,17 +235,17 @@ impl Square {
         Square(self.0 ^ 56)
     }
 
-    pub fn rotate_right(self, amount: Internal) -> Square {
+    pub fn rotate_right(self, amount: SquareInternal) -> Square {
         Square((self.0 + (64 - amount)) & 63)
     }
 
-    pub fn rotate_left(self, amount: Internal) -> Square {
+    pub fn rotate_left(self, amount: SquareInternal) -> Square {
         Square((self.0 + amount) & 63)
     }
 
     #[cfg(test)]
     pub fn random() -> Square {
-        Square(rand::random::<Internal>() % 64)
+        Square(rand::random::<SquareInternal>() % 64)
     }
 
     // returns a square at the same row as self, and the same col as another square
@@ -251,23 +253,23 @@ impl Square {
         Square((self.0 & 56) | (other.0 & 7))
     }
 
-    pub fn change_row(self, row: Internal) -> Square {
+    pub fn change_row(self, row: SquareInternal) -> Square {
         Square((self.0 & 7) | (row * 8))
     }
 
-    pub fn row(self) -> Internal {
+    pub fn row(self) -> SquareInternal {
         self.0 >> 3
     }
 
-    pub fn rowx8(self) -> Internal {
+    pub fn rowx8(self) -> SquareInternal {
         self.0 & 56
     }
 
-    pub fn col(self) -> Internal {
+    pub fn col(self) -> SquareInternal {
         self.0 & 7
     }
 
-    pub fn from(row: Internal, col: Internal) -> Square {
+    pub fn from(row: SquareInternal, col: SquareInternal) -> Square {
         Square(row * 8 + col)
     }
 
@@ -280,11 +282,11 @@ impl Square {
             return Err("String too short".to_string());
         }
 
-        let col_char = s.chars().next().unwrap() as Internal;
-        let row_char = s.chars().nth(1).unwrap() as Internal;
+        let col_char = s.chars().next().unwrap() as SquareInternal;
+        let row_char = s.chars().nth(1).unwrap() as SquareInternal;
 
-        let col = col_char - 'a' as Internal;
-        let row = row_char - '1' as Internal;
+        let col = col_char - 'a' as SquareInternal;
+        let row = row_char - '1' as SquareInternal;
 
         if col > 7 {
             return Err(format!("Bad column identifier: {}", col_char));

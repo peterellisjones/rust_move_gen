@@ -1,11 +1,11 @@
-use side::Side;
+use crate::side::Side;
 use std::fmt;
 
-pub type Internal = u8;
+type PieceInternal = u8;
 
 /// Represents a piece for a particular side (eg black knight)
 #[derive(PartialEq, PartialOrd, Copy, Clone)]
-pub struct Piece(Internal);
+pub struct Piece(PieceInternal);
 
 const CHARS: [char; 12] = ['B', 'b', 'Q', 'q', 'R', 'r', 'N', 'n', 'P', 'p', 'K', 'k'];
 // const SYMBOLS: [char; 14] = ['♙', '♟', '♘', '♞', '♗', '♝', '♖', '♜',
@@ -28,11 +28,11 @@ const NAMES: [&str; 12] = [
 
 /// Represents a kind of piece (eg knight)
 #[derive(PartialEq, PartialOrd, Copy, Clone)]
-pub struct Kind(pub Internal);
+pub struct Kind(pub PieceInternal);
 
 impl Kind {
     pub fn pc(self, side: Side) -> Piece {
-        Piece((self.0 << 1) | side.raw() as Internal)
+        Piece((self.0 << 1) | side.raw() as PieceInternal)
     }
 
     pub fn to_usize(self) -> usize {
@@ -228,7 +228,7 @@ impl fmt::Debug for Piece {
 #[cfg(test)]
 mod test {
     use super::*;
-    use side::{BLACK, WHITE};
+    use crate::side::{BLACK, WHITE};
 
     #[test]
     fn to_char() {

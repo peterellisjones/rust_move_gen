@@ -1,10 +1,9 @@
-use bb::{BB, END_ROWS};
-use castle::Castle;
-use mv::Move;
-use mv_list::MoveAdder;
-use piece::*;
-use square;
-use square::Square;
+use crate::bb::{BB, END_ROWS};
+use crate::castle::Castle;
+use crate::mv::Move;
+use crate::mv_list::MoveAdder;
+use crate::piece::*;
+use crate::square::{Square, SquareInternal};
 use std;
 use std::fmt;
 
@@ -99,7 +98,7 @@ impl MoveVec {
         f: F,
     ) {
         for (to, _) in targets.iter() {
-            let from = to.rotate_right(shift as square::Internal);
+            let from = to.rotate_right(shift as SquareInternal);
             self.moves.push(f(from, to));
         }
     }
@@ -108,6 +107,7 @@ impl MoveVec {
         self.moves.len()
     }
 
+    #[allow(dead_code)]
     pub fn is_empty(&self) -> bool {
         self.len() == 0
     }
@@ -119,7 +119,7 @@ impl MoveVec {
         f: F,
     ) {
         for (to, _) in targets.iter() {
-            let from = to.rotate_right(shift as square::Internal);
+            let from = to.rotate_right(shift as SquareInternal);
             self.moves.push(f(from, to, QUEEN));
             self.moves.push(f(from, to, KNIGHT));
             self.moves.push(f(from, to, BISHOP));
@@ -131,8 +131,8 @@ impl MoveVec {
 #[cfg(test)]
 mod test {
     use super::*;
-    use gen::*;
-    use position::*;
+    use crate::generation::*;
+    use crate::position::*;
 
     #[test]
     fn test_move_vec() {

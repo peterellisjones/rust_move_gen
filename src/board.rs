@@ -1,7 +1,7 @@
-use mv::Move;
-use piece::Piece;
-use position::*;
-use square::*;
+use crate::mv::Move;
+use crate::square::*;
+use crate::piece::Piece;
+use crate::position::*;
 
 pub struct Board {
     position: Position,
@@ -32,6 +32,7 @@ impl Board {
         &self.position
     }
 
+    #[allow(dead_code)]
     pub fn key(&self) -> u64 {
         self.position.hash_key()
     }
@@ -41,6 +42,7 @@ impl Board {
         self.stack.len()
     }
 
+    #[allow(dead_code)]
     pub fn make(&mut self, mv: Move) {
         let state = self.position.state().clone();
         let key = self.position.hash_key();
@@ -54,6 +56,7 @@ impl Board {
         })
     }
 
+    #[allow(dead_code)]
     pub fn unmake(&mut self) {
         let elem = self.stack.pop().unwrap();
         self.position

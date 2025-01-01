@@ -1,9 +1,8 @@
 use super::State;
-use castling_rights::*;
-use piece::*;
-use side::*;
-use square;
-use square::Square;
+use crate::castling_rights::*;
+use crate::piece::*;
+use crate::side::*;
+use crate::square::{Square, SquareInternal};
 
 pub fn from_fen(fen: &str) -> Result<([Piece; 64], State), String> {
     let mut state = State {
@@ -139,7 +138,7 @@ fn parse_row(row_str: &str, row: usize, grid: &mut [Piece; 64]) -> Option<String
             }
             match Piece::parse(c) {
                 Ok(pc) => {
-                    let sq = Square::from(row as square::Internal, col as square::Internal);
+                    let sq = Square::from(row as SquareInternal, col as SquareInternal);
                     grid[sq.to_usize()] = pc;
                 }
                 Err(err) => {
@@ -155,10 +154,10 @@ fn parse_row(row_str: &str, row: usize, grid: &mut [Piece; 64]) -> Option<String
 
 #[cfg(test)]
 mod test {
-    use castle::*;
-    use castling_rights::*;
-    use position::*;
-    use square::*;
+    use crate::castle::*;
+    use crate::castling_rights::*;
+    use crate::position::*;
+    use crate::square::*;
     use unindent;
 
     #[test]

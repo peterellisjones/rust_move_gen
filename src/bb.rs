@@ -1,8 +1,7 @@
-use square;
-use square::Square;
+use crate::square::{Square, SquareInternal};
 use std::fmt;
 use std::ops::*;
-use util::grid_to_string;
+use crate::util::grid_to_string;
 
 #[cfg(test)]
 use rand;
@@ -78,7 +77,7 @@ impl BB {
     }
 
     pub fn bitscan(self) -> Square {
-        Square::new(self.0.trailing_zeros() as square::Internal)
+        Square::new(self.0.trailing_zeros() as SquareInternal)
     }
 
     pub fn msb(self) -> u32 {
@@ -105,202 +104,202 @@ impl BB {
 
     pub fn occluded_east_fill(self, empty: BB) -> BB {
         let mut prop = empty.0 & NOT_FILE_A.0;
-        let mut gen = self.0;
+        let mut generator = self.0;
 
-        gen |= prop & (gen << 1);
+        generator |= prop & (generator << 1);
         prop &= prop << 1;
-        gen |= prop & (gen << 2);
+        generator |= prop & (generator << 2);
         prop &= prop << 2;
-        gen |= prop & (gen << 4);
+        generator |= prop & (generator << 4);
 
-        BB(gen)
+        BB(generator)
     }
 
     pub fn east_attacks(self, empty: BB) -> BB {
-        let gen = self.occluded_east_fill(empty);
+        let generator = self.occluded_east_fill(empty);
 
-        (gen << 1) & NOT_FILE_A
+        (generator << 1) & NOT_FILE_A
     }
 
     pub fn occluded_north_east_fill(self, empty: BB) -> BB {
         let mut prop = empty.0 & NOT_FILE_A.0;
-        let mut gen = self.0;
+        let mut generator = self.0;
 
-        gen |= prop & (gen << 9);
+        generator |= prop & (generator << 9);
         prop &= prop << 9;
-        gen |= prop & (gen << 18);
+        generator |= prop & (generator << 18);
         prop &= prop << 18;
-        gen |= prop & (gen << 36);
+        generator |= prop & (generator << 36);
 
-        BB(gen)
+        BB(generator)
     }
 
     pub fn north_east_attacks(self, empty: BB) -> BB {
-        let gen = self.occluded_north_east_fill(empty);
+        let generator = self.occluded_north_east_fill(empty);
 
-        (gen << 9) & NOT_FILE_A
+        (generator << 9) & NOT_FILE_A
     }
 
     pub fn occluded_north_fill(self, empty: BB) -> BB {
         let mut prop = empty.0;
-        let mut gen = self.0;
+        let mut generator = self.0;
 
-        gen |= prop & (gen << 8);
+        generator |= prop & (generator << 8);
         prop &= prop << 8;
-        gen |= prop & (gen << 16);
+        generator |= prop & (generator << 16);
         prop &= prop << 16;
-        gen |= prop & (gen << 32);
+        generator |= prop & (generator << 32);
 
-        BB(gen)
+        BB(generator)
     }
 
     pub fn north_attacks(self, empty: BB) -> BB {
-        let gen = self.occluded_north_fill(empty);
+        let generator = self.occluded_north_fill(empty);
 
-        gen << 8
+        generator << 8
     }
 
     pub fn occluded_south_east_fill(self, empty: BB) -> BB {
         let mut prop = empty.0 & NOT_FILE_A.0;
-        let mut gen = self.0;
+        let mut generator = self.0;
 
-        gen |= prop & (gen >> 7);
+        generator |= prop & (generator >> 7);
         prop &= prop >> 7;
-        gen |= prop & (gen >> 14);
+        generator |= prop & (generator >> 14);
         prop &= prop >> 14;
-        gen |= prop & (gen >> 28);
+        generator |= prop & (generator >> 28);
 
-        BB(gen)
+        BB(generator)
     }
 
     pub fn south_east_attacks(self, empty: BB) -> BB {
-        let gen = self.occluded_south_east_fill(empty);
+        let generator = self.occluded_south_east_fill(empty);
 
-        (gen >> 7) & NOT_FILE_A
+        (generator >> 7) & NOT_FILE_A
     }
 
     pub fn occluded_west_fill(self, empty: BB) -> BB {
         let mut prop = empty.0 & NOT_FILE_H.0;
-        let mut gen = self.0;
+        let mut generator = self.0;
 
-        gen |= prop & (gen >> 1);
+        generator |= prop & (generator >> 1);
         prop &= prop >> 1;
-        gen |= prop & (gen >> 2);
+        generator |= prop & (generator >> 2);
         prop &= prop >> 2;
-        gen |= prop & (gen >> 4);
+        generator |= prop & (generator >> 4);
 
-        BB(gen)
+        BB(generator)
     }
 
     pub fn west_attacks(self, empty: BB) -> BB {
-        let gen = self.occluded_west_fill(empty);
+        let generator = self.occluded_west_fill(empty);
 
-        (gen >> 1) & NOT_FILE_H
+        (generator >> 1) & NOT_FILE_H
     }
 
     pub fn occluded_south_west_fill(self, empty: BB) -> BB {
         let mut prop = empty.0 & NOT_FILE_H.0;
-        let mut gen = self.0;
+        let mut generator = self.0;
 
-        gen |= prop & (gen >> 9);
+        generator |= prop & (generator >> 9);
         prop &= prop >> 9;
-        gen |= prop & (gen >> 18);
+        generator |= prop & (generator >> 18);
         prop &= prop >> 18;
-        gen |= prop & (gen >> 36);
+        generator |= prop & (generator >> 36);
 
-        BB(gen)
+        BB(generator)
     }
 
     pub fn south_west_attacks(self, empty: BB) -> BB {
-        let gen = self.occluded_south_west_fill(empty);
+        let generator = self.occluded_south_west_fill(empty);
 
-        (gen >> 9) & NOT_FILE_H
+        (generator >> 9) & NOT_FILE_H
     }
 
     pub fn occluded_north_west_fill(self, empty: BB) -> BB {
         let mut prop = empty.0 & NOT_FILE_H.0;
-        let mut gen = self.0;
+        let mut generator = self.0;
 
-        gen |= prop & (gen << 7);
+        generator |= prop & (generator << 7);
         prop &= prop << 7;
-        gen |= prop & (gen << 14);
+        generator |= prop & (generator << 14);
         prop &= prop << 14;
-        gen |= prop & (gen << 28);
+        generator |= prop & (generator << 28);
 
-        BB(gen)
+        BB(generator)
     }
 
     pub fn north_west_attacks(self, empty: BB) -> BB {
-        let gen = self.occluded_north_west_fill(empty);
+        let generator = self.occluded_north_west_fill(empty);
 
-        (gen << 7) & NOT_FILE_H
+        (generator << 7) & NOT_FILE_H
     }
 
     pub fn occluded_south_fill(self, empty: BB) -> BB {
         let mut prop = empty.0;
-        let mut gen = self.0;
+        let mut generator = self.0;
 
-        gen |= prop & (gen >> 8);
+        generator |= prop & (generator >> 8);
         prop &= prop >> 8;
-        gen |= prop & (gen >> 16);
+        generator |= prop & (generator >> 16);
         prop &= prop >> 16;
-        gen |= prop & (gen >> 32);
+        generator |= prop & (generator >> 32);
 
-        BB(gen)
+        BB(generator)
     }
 
     pub fn south_attacks(self, empty: BB) -> BB {
-        let gen = self.occluded_south_fill(empty);
+        let generator = self.occluded_south_fill(empty);
 
-        gen >> 8
+        generator >> 8
     }
 
     pub fn occluded_east_fill_with_occluders(self, empty: BB) -> BB {
-        let gen = self.occluded_east_fill(empty);
+        let generator = self.occluded_east_fill(empty);
 
-        BB(gen.0 | ((gen.0 << 1) & NOT_FILE_A.0))
+        BB(generator.0 | ((generator.0 << 1) & NOT_FILE_A.0))
     }
 
     pub fn occluded_north_east_fill_with_occluders(self, empty: BB) -> BB {
-        let gen = self.occluded_north_east_fill(empty);
+        let generator = self.occluded_north_east_fill(empty);
 
-        BB(gen.0 | ((gen.0 << 9) & NOT_FILE_A.0))
+        BB(generator.0 | ((generator.0 << 9) & NOT_FILE_A.0))
     }
 
     pub fn occluded_north_fill_with_occluders(self, empty: BB) -> BB {
-        let gen = self.occluded_north_fill(empty);
+        let generator = self.occluded_north_fill(empty);
 
-        BB(gen.0 | (gen.0 << 8))
+        BB(generator.0 | (generator.0 << 8))
     }
 
     pub fn occluded_south_east_fill_with_occluders(self, empty: BB) -> BB {
-        let gen = self.occluded_south_east_fill(empty);
+        let generator = self.occluded_south_east_fill(empty);
 
-        BB(gen.0 | ((gen.0 >> 7) & NOT_FILE_A.0))
+        BB(generator.0 | ((generator.0 >> 7) & NOT_FILE_A.0))
     }
 
     pub fn occluded_west_fill_with_occluders(self, empty: BB) -> BB {
-        let gen = self.occluded_west_fill(empty);
+        let generator = self.occluded_west_fill(empty);
 
-        BB(gen.0 | ((gen.0 >> 1) & NOT_FILE_H.0))
+        BB(generator.0 | ((generator.0 >> 1) & NOT_FILE_H.0))
     }
 
     pub fn occluded_south_west_fill_with_occluders(self, empty: BB) -> BB {
-        let gen = self.occluded_south_west_fill(empty);
+        let generator = self.occluded_south_west_fill(empty);
 
-        BB(gen.0 | ((gen.0 >> 9) & NOT_FILE_H.0))
+        BB(generator.0 | ((generator.0 >> 9) & NOT_FILE_H.0))
     }
 
     pub fn occluded_north_west_fill_with_occluders(self, empty: BB) -> BB {
-        let gen = self.occluded_north_west_fill(empty);
+        let generator = self.occluded_north_west_fill(empty);
 
-        BB(gen.0 | ((gen.0 << 7) & NOT_FILE_H.0))
+        BB(generator.0 | ((generator.0 << 7) & NOT_FILE_H.0))
     }
 
     pub fn occluded_south_fill_with_occluders(self, empty: BB) -> BB {
-        let gen = self.occluded_south_fill(empty);
+        let generator = self.occluded_south_fill(empty);
 
-        BB(gen.0 | (gen.0 >> 8))
+        BB(generator.0 | (generator.0 >> 8))
     }
 }
 
@@ -487,7 +486,7 @@ impl fmt::Debug for BB {
 #[cfg(test)]
 pub mod test {
     use super::*;
-    use square::*;
+    use crate::square::*;
     use unindent;
 
     #[test]

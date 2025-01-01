@@ -1,9 +1,9 @@
-use castle::*;
-use castling_rights::*;
-use piece::*;
-use position::Position;
-use side::*;
-use square::*;
+use crate::castle::*;
+use crate::castling_rights::*;
+use crate::piece::*;
+use crate::position::Position;
+use crate::side::*;
+use crate::square::*;
 
 /*
     CHECKS:
@@ -208,7 +208,7 @@ fn test_piece_counts(position: &Position) -> Option<String> {
 #[cfg(test)]
 mod test {
     use super::*;
-    use position::*;
+    use crate::position::*;
 
     #[test]
     fn checks_castling_rights_king_position_1() {

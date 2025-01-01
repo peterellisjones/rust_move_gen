@@ -1,5 +1,5 @@
-use castle::*;
-use side::Side;
+use crate::castle::*;
+use crate::side::Side;
 use std::fmt;
 
 type Internal = u8;
@@ -111,7 +111,7 @@ impl fmt::Debug for CastlingRights {
 #[cfg(test)]
 mod test {
     use super::*;
-    use side::*;
+    use crate::side::*;
 
     #[test]
     fn can_1() {

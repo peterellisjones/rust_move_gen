@@ -1,19 +1,18 @@
 use super::piece_square_table::PieceSquareTable;
-use bb::{BB, EMPTY, END_ROWS};
-use castle::Castle;
-use mv::{Move, MoveScore};
-use mv_list::MoveAdder;
-use piece::*;
-use side::Side;
-use square;
-use square::*;
+use crate::bb::{BB, EMPTY, END_ROWS};
+use crate::castle::Castle;
+use crate::mv::{Move, MoveScore};
+use crate::mv_list::MoveAdder;
+use crate::piece::*;
+use crate::side::Side;
+use crate::square::*;
 use std::cmp::Ordering;
 use std::collections::BinaryHeap;
 use std::fmt;
 
 /// SortedMoveAdder collects moves including the piece-square score for making the move
 /// Moves are sorted by an 'ordering score' and stored in a provided SortedMoveHeap
-///     
+///
 /// Non-captures are ordered by priotising destination squares that are
 /// further up the board relative to the mover, with a bonus for pawns
 /// near promotion, a handicap for non-pawn moves to rank 1, and a handicap
@@ -51,6 +50,8 @@ use std::fmt;
 /// 95..105: capture (exact score based on MVV-LVA)
 /// 120..130: capture and promotion to knight (exact score based on MVV-LVA)
 /// 145..155: capture and promotion to queen (exact score based on MVV-LVA)
+///
+/// Note: rook and bishop promotions are penalized because queen promotion is nearly always a better choice
 pub struct SortedMoveAdder<'a> {
     moves: &'a mut SortedMoveHeap,
     piece_square_table: &'a PieceSquareTable,
@@ -176,7 +177,7 @@ impl<'a> MoveAdder for SortedMoveAdder<'a> {
         let from_kind = PAWN;
 
         for (to, _) in (targets & !END_ROWS).iter() {
-            let from = to.rotate_right(shift as square::Internal);
+            let from = to.rotate_right(shift as SquareInternal);
             let from_score = self
                 .piece_square_table
                 .score(from_kind, from.from_side(stm));
@@ -193,7 +194,7 @@ impl<'a> MoveAdder for SortedMoveAdder<'a> {
         }
 
         for (to, _) in (targets & END_ROWS).iter() {
-            let from = to.rotate_right(shift as square::Internal);
+            let from = to.rotate_right(shift as SquareInternal);
             let from_score = self
                 .piece_square_table
                 .score(from_kind, from.from_side(stm));
@@ -215,7 +216,7 @@ impl<'a> MoveAdder for SortedMoveAdder<'a> {
         let from_kind = PAWN;
 
         for (to, _) in (targets & !END_ROWS).iter() {
-            let from = to.rotate_right(shift as square::Internal);
+            let from = to.rotate_right(shift as SquareInternal);
             let from_score = self
                 .piece_square_table
                 .score(from_kind, from.from_side(stm));
@@ -236,7 +237,7 @@ impl<'a> MoveAdder for SortedMoveAdder<'a> {
         }
 
         for (to, _) in (targets & END_ROWS).iter() {
-            let from = to.rotate_right(shift as square::Internal);
+            let from = to.rotate_right(shift as SquareInternal);
             let from_score = self
                 .piece_square_table
                 .score(from_kind, from.from_side(stm));
@@ -271,6 +272,8 @@ impl<'a> SortedMoveAdder<'a> {
         (ROOK, -200i16),
         (BISHOP, -250i16),
     ];
+
+    #[allow(dead_code)]
     pub fn new(
         piece_square_table: &'a PieceSquareTable,
         piece_grid: &'a [Piece; 64],
@@ -285,10 +288,12 @@ impl<'a> SortedMoveAdder<'a> {
         }
     }
 
+    #[allow(dead_code)]
     pub fn len(&self) -> usize {
         self.moves.len()
     }
 
+    #[allow(dead_code)]
     pub fn is_empty(&self) -> bool {
         self.len() == 0
     }
@@ -380,30 +385,37 @@ impl Ord for SortedMoveHeapItem {
 pub struct SortedMoveHeap(BinaryHeap<SortedMoveHeapItem>);
 
 impl SortedMoveHeap {
+    #[allow(dead_code)]
     pub fn new(capacity: usize) -> SortedMoveHeap {
         SortedMoveHeap(BinaryHeap::<SortedMoveHeapItem>::with_capacity(capacity))
     }
 
+    #[allow(dead_code)]
     pub fn peek(&self) -> Option<&SortedMoveHeapItem> {
         self.0.peek()
     }
 
+    #[allow(dead_code)]
     pub fn len(&self) -> usize {
         self.0.len()
     }
 
+    #[allow(dead_code)]
     pub fn is_empty(&self) -> bool {
         self.len() == 0
     }
 
+    #[allow(dead_code)]
     pub fn push(&mut self, elem: SortedMoveHeapItem) {
         self.0.push(elem);
     }
 
+    #[allow(dead_code)]
     pub fn iter(self) -> std::collections::binary_heap::IntoIterSorted<SortedMoveHeapItem> {
         self.0.into_iter_sorted()
     }
 
+    #[allow(dead_code)]
     pub fn into_sorted_vec(self) -> Vec<MoveScore> {
         self.iter()
             .map(|e| *e.move_score())
@@ -416,11 +428,11 @@ mod test {
     extern crate rand;
 
     use super::*;
-    use gen::*;
-    use position::*;
+    use crate::generation::*;
+    use crate::position::*;
     use rand::seq::SliceRandom;
     use rand::Rng;
-    use side::WHITE;
+    use crate::side::WHITE;
 
     #[test]
     fn test_scored_move_vec() {
@@ -575,7 +587,7 @@ mod test {
 
         for pc in 0..6 {
             for sq in 0..64 {
-                piece_square_values[pc][sq] = rand::thread_rng().gen_range(100, 200) as i16;
+                piece_square_values[pc][sq] = rand::thread_rng().gen_range(100..=200) as i16;
             }
         }
 

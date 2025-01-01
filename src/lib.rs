@@ -10,10 +10,15 @@
 //! legal_moves::<MoveVec>(position, &mut list);
 //! assert_eq!(list.len(), 20);
 //! ```
+//!
+//! Ways to store moves:
+//!
+//! MoveVec: Wraps a vector of generated moves, useful if you need to access the actual moves being generated
+//! MoveCounter: Counts moves of each kind (captures, castles, promotions etc). Useful if you are making a perft function or need statistics about moves for a position, but don't care about the actual moves
+//! SortedMoveAdder + SortedMoveHeap: Stores genarated moves in a sorted binary heap, which are efficiently ordered as they are inserted based on a heuristic scoring and piece-square table that you provide. Use this if you want the moves to have a reasonably good initial ordering so moves that are checked first are more likely to lead to eg alpha-beta cutoffs and reduce the search tree size.
 
 #![feature(test)]
-#![feature(platform_intrinsics)]
-#![feature(const_fn)]
+#![feature(portable_simd)]
 #![feature(binary_heap_into_iter_sorted)]
 
 pub mod bb;
@@ -21,7 +26,7 @@ mod board;
 mod cache;
 mod castle;
 mod castling_rights;
-mod gen;
+mod generation;
 mod hash;
 mod integrity;
 mod mv;
@@ -45,28 +50,28 @@ extern crate test;
 #[cfg(test)]
 extern crate unindent;
 
-pub use bb::BB;
-pub use board::Board;
-pub use castle::{Castle, KING_SIDE, QUEEN_SIDE};
-pub use castling_rights::{CastlingRights, BLACK_KS, BLACK_QS, WHITE_KS, WHITE_QS};
-pub use gen::{
-    legal_moves, legal_moves_with_preprocessing, loud_legal_moves,
-    loud_legal_moves_with_preprocessing, movegen_preprocessing, MoveGenPreprocessing,
+pub use crate::bb::BB;
+pub use crate::castle::{Castle, KING_SIDE, QUEEN_SIDE};
+pub use crate::castling_rights::{BLACK_KS, BLACK_QS, CastlingRights, WHITE_KS, WHITE_QS};
+pub use crate::generation::{
+    MoveGenPreprocessing, legal_moves, legal_moves_with_preprocessing, loud_legal_moves,
+    loud_legal_moves_with_preprocessing, movegen_preprocessing,
 };
-pub use mv::{Move, MoveScore, KING_SIDE_CASTLE, NULL_MOVE, QUEEN_SIDE_CASTLE};
-pub use mv_list::{
+pub use crate::mv::{KING_SIDE_CASTLE, Move, MoveScore, NULL_MOVE, QUEEN_SIDE_CASTLE};
+pub use crate::mv_list::{
     MoveAdder, MoveCounter, MoveVec, PieceSquareTable, SortedMoveAdder, SortedMoveHeap,
     SortedMoveHeapItem,
 };
+pub use crate::piece::*;
+pub use crate::position::{Position, STARTING_POSITION_FEN, State};
+pub use crate::side::{BLACK, Side, WHITE};
+pub use crate::square::*;
+pub use board::Board;
 pub use perft::perft;
 pub use perft::perft_detailed;
-pub use piece::*;
-pub use position::{Position, State, STARTING_POSITION_FEN};
-pub use side::{Side, BLACK, WHITE};
-pub use square::*;
 
 #[cfg(target_feature = "sse3")]
-pub use dbb::*;
+pub use crate::dbb::*;
 
 #[test]
 fn basic_functionality() {

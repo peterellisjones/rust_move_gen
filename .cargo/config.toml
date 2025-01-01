@@ -1,0 +1,19 @@
+[target.x86_64-pc-windows-msvc]
+linker = "rust-lld.exe" # Use LLD Linker
+
+rustflags = [
+  "-Zthreads=0", # (Nightly) Use improved multithreading with the recommended amount of threads.
+  "-Ctarget-cpu=native"
+]
+
+# [unstable]
+# codegen-backend = true
+
+# [profile.dev]
+# codegen-backend = "cranelift"
+
+# [profile.dev.package."*"]
+# codegen-backend = "llvm"
+
+[build]
+target = "x86_64-pc-windows-msvc"

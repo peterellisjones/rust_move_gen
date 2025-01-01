@@ -1,10 +1,10 @@
 use std::fmt;
 
-type Internal = usize;
+type SideInternal = usize;
 
 /// Represents a side to move
 #[derive(PartialEq, PartialOrd, Copy, Clone)]
-pub struct Side(pub Internal);
+pub struct Side(pub SideInternal);
 
 const CHARS: [char; 2] = ['w', 'b'];
 const NAMES: [&str; 2] = ["white", "black"];
@@ -18,7 +18,7 @@ impl Side {
         self.0
     }
 
-    pub fn raw(self) -> Internal {
+    pub fn raw(self) -> SideInternal {
         self.0
     }
 

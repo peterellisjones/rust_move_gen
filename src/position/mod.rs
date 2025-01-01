@@ -3,15 +3,14 @@ pub mod make;
 
 use self::fen::*;
 use super::util::grid_to_string_with_props;
-use bb::*;
-use castling_rights::*;
-use hash::{Zobrist, DEFAULT_ZOBRISH_HASH};
-use mv_list::PieceSquareTable;
-use piece::*;
-use side::Side;
-use side::*;
-use square;
-use square::Square;
+use crate::bb::*;
+use crate::castling_rights::*;
+use crate::hash::{DEFAULT_ZOBRISH_HASH, Zobrist};
+use crate::mv_list::PieceSquareTable;
+use crate::piece::*;
+use crate::side::Side;
+use crate::side::*;
+use crate::square::{Square, SquareInternal};
 use std::fmt;
 
 use std;
@@ -94,11 +93,7 @@ impl fmt::Display for Position {
         let s = grid_to_string_with_props(
             |sq: Square| -> char {
                 let pc = self.at(sq);
-                if pc.is_none() {
-                    '.'
-                } else {
-                    pc.to_char()
-                }
+                if pc.is_none() { '.' } else { pc.to_char() }
             },
             props.as_slice(),
         );
@@ -113,7 +108,7 @@ impl Position {
         let mut bb_sides = [EMPTY; 2];
 
         for (idx, pc) in grid.iter().enumerate().filter(|&(_, &pc)| pc.is_some()) {
-            let bb_mask = BB::new(Square::new(idx as square::Internal));
+            let bb_mask = BB::new(Square::new(idx as SquareInternal));
             bb_sides[pc.side().raw()] |= bb_mask;
             bb_pieces[pc.to_usize()] |= bb_mask;
         }

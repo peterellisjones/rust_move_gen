@@ -1,6 +1,5 @@
 #![feature(test)]
-#![feature(platform_intrinsics)]
-#![feature(const_fn)]
+#![feature(portable_simd)]
 #![feature(binary_heap_into_iter_sorted)]
 
 pub mod bb;
@@ -8,7 +7,7 @@ mod board;
 mod cache;
 mod castle;
 mod castling_rights;
-mod gen;
+mod generation;
 mod hash;
 mod integrity;
 mod mv;
@@ -33,26 +32,26 @@ extern crate test;
 extern crate unindent;
 
 pub use perft::perft;
-pub use position::{Position, STARTING_POSITION_FEN};
+pub use crate::position::{Position, STARTING_POSITION_FEN};
 
 use std::time::Instant;
 fn main() {
-  let fen = STARTING_POSITION_FEN;
-  let mut position = Position::from_fen(fen).unwrap();
+    let fen = STARTING_POSITION_FEN;
+    let mut position = Position::from_fen(fen).unwrap();
 
-  let depth: usize = 7;
-  println!(
-    "Running performance test on starting position, depth {}",
-    depth
-  );
-  let now = Instant::now();
-  let move_count = perft(&mut position, depth, true, 1024 * 1024 * 4);
-  let elapsed = now.elapsed();
-  let sec = (elapsed.as_secs() as f64) + (elapsed.subsec_nanos() as f64 / 1_000_000_000.0);
-  let nps = move_count as f64 / sec;
+    let depth: usize = 7;
+    println!(
+        "Running performance test on starting position, depth {}",
+        depth
+    );
+    let now = Instant::now();
+    let move_count = perft(&mut position, depth, true, 1024 * 1024 * 4);
+    let elapsed = now.elapsed();
+    let sec = (elapsed.as_secs() as f64) + (elapsed.subsec_nanos() as f64 / 1_000_000_000.0);
+    let nps = move_count as f64 / sec;
 
-  println!(
-    "Done. Total moves: {} ({:5} seconds, {:0} NPS)",
-    move_count, sec, nps
-  );
+    println!(
+        "Done. Total moves: {} ({:5} seconds, {:0} NPS)",
+        move_count, sec, nps
+    );
 }

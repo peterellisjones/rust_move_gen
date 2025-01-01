@@ -1,5 +1,4 @@
-use square;
-use square::Square;
+use crate::square::{Square, SquareInternal};
 
 pub fn grid_to_string_with_props<F: Fn(Square) -> char>(
     char_at: F,
@@ -12,14 +11,14 @@ pub fn grid_to_string_with_props<F: Fn(Square) -> char>(
     for row in (0..8).rev() {
         string += &format!("{}|", row_chars[row]);
         for col in 0..8 {
-            string.push(char_at(Square::from(row as square::Internal, col)));
+            string.push(char_at(Square::from(row as SquareInternal, col)));
         }
         if props.len() > (7 - row) {
             string += &format!(
                 "|{} {}: {}\n",
                 row_chars[row],
-                props[(7 - row)].0,
-                props[(7 - row)].1
+                props[7 - row].0,
+                props[7 - row].1
             );
         } else {
             string += &format!("|{}\n", row_chars[row]);

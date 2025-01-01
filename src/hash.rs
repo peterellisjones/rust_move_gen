@@ -1,10 +1,9 @@
-use castle::*;
-use piece::*;
-use position::State;
-use rand::{rngs::StdRng, RngCore, SeedableRng};
-use side::*;
-use square;
-use square::Square;
+use crate::castle::*;
+use crate::piece::*;
+use crate::position::State;
+use crate::side::*;
+use crate::square::{Square, SquareInternal};
+use rand::{RngCore, SeedableRng, rngs::StdRng};
 
 /// Zobrist represents a set of keys for Zobrist hashing
 #[derive(Debug)]
@@ -63,10 +62,10 @@ pub static DEFAULT_ZOBRISH_HASH: Zobrist = Zobrist {
         12082317543310182802,
     ],
 
-    castles: [
-        [10993434298710260570, 16775444492128222288],
-        [13399088802984349794, 13139464958289927509],
-    ],
+    castles: [[10993434298710260570, 16775444492128222288], [
+        13399088802984349794,
+        13139464958289927509,
+    ]],
 
     stm: 5703255076737973876,
 };
@@ -123,7 +122,7 @@ impl Zobrist {
         let mut hash = 0u64;
 
         for (idx, &pc) in grid.iter().enumerate().filter(|&(_, &pc)| pc.is_some()) {
-            hash ^= self.piece_square(pc, Square::new(idx as square::Internal));
+            hash ^= self.piece_square(pc, Square::new(idx as SquareInternal));
         }
 
         hash ^= self.castling_rights[state.castling_rights.to_usize()];
@@ -177,7 +176,7 @@ impl Zobrist {
 #[cfg(test)]
 mod test {
     use super::*;
-    use square::*;
+    use crate::square::*;
 
     #[test]
     fn test_castle() {

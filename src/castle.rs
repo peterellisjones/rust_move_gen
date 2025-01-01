@@ -1,5 +1,5 @@
-use side::Side;
-use square::*;
+use crate::square::*;
+use crate::side::Side;
 use std::fmt;
 
 /// Represents a castleove
@@ -35,11 +35,7 @@ impl Castle {
 
     /// Convert to PGN string eg "O-O-O" or "O-O"
     pub fn pgn_string(&self) -> &'static str {
-        if *self == QUEEN_SIDE {
-            "O-O-O"
-        } else {
-            "O-O"
-        }
+        if *self == QUEEN_SIDE { "O-O-O" } else { "O-O" }
     }
 
     pub fn iter() -> CastlesIter {
@@ -81,7 +77,7 @@ impl fmt::Debug for Castle {
 #[cfg(test)]
 mod test {
     use super::*;
-    use side::*;
+    use crate::side::*;
 
     #[test]
     fn test_castle_squares() {

@@ -1,7 +1,6 @@
-use castle::{Castle, KING_SIDE, QUEEN_SIDE};
-use piece::*;
-use square;
-use square::Square;
+use crate::castle::{Castle, KING_SIDE, QUEEN_SIDE};
+use crate::piece::*;
+use crate::square::{Square, SquareInternal};
 use std::fmt;
 
 /*
@@ -28,10 +27,14 @@ const PROMOTION_FLAG: Internal = 128;
 const EP_CAPTURE_FLAG: Internal = 64;
 #[allow(dead_code)]
 pub const NULL_MOVE: Move = Move { upper: 0, lower: 0 };
+
+#[allow(dead_code)]
 pub const QUEEN_SIDE_CASTLE: Move = Move {
     lower: 0,
     upper: CASTLE_FLAG | (QUEEN_SIDE.to_u8() << 6),
 };
+
+#[allow(dead_code)]
 pub const KING_SIDE_CASTLE: Move = Move {
     lower: 0,
     upper: CASTLE_FLAG | (KING_SIDE.to_u8() << 6),
@@ -53,11 +56,11 @@ impl Default for Move {
 
 impl Move {
     pub fn from(self) -> Square {
-        Square::new((self.lower & 63) as square::Internal)
+        Square::new((self.lower & 63) as SquareInternal)
     }
 
     pub fn to(self) -> Square {
-        Square::new((self.upper & 63) as square::Internal)
+        Square::new((self.upper & 63) as SquareInternal)
     }
 
     pub fn promote_to(self) -> Kind {
@@ -185,10 +188,12 @@ impl fmt::Debug for Move {
 pub struct MoveScore(Move, i16);
 
 impl MoveScore {
+    #[allow(dead_code)]
     pub fn mv(self) -> Move {
         self.0
     }
 
+    #[allow(dead_code)]
     pub fn score(self) -> i16 {
         self.1
     }
@@ -213,7 +218,7 @@ impl fmt::Debug for MoveScore {
 #[cfg(test)]
 mod test {
     use super::*;
-    use square::*;
+    use crate::square::*;
     use std::mem;
 
     #[test]

@@ -1,11 +1,11 @@
 use super::{Position, State};
-use bb::*;
-use castle::*;
-use castling_rights::*;
-use mv::{Move, NULL_MOVE};
-use piece::*;
-use side::{Side, BLACK};
-use square::*;
+use crate::bb::*;
+use crate::castle::*;
+use crate::castling_rights::*;
+use crate::mv::{Move, NULL_MOVE};
+use crate::piece::*;
+use crate::side::{BLACK, Side};
+use crate::square::*;
 
 // If move intersects this mask, then remove castling right
 const CASTLE_MASKS: [BB; 4] = [
@@ -182,12 +182,12 @@ impl Position {
 
 #[cfg(test)]
 mod test {
-    use castle::*;
-    use integrity;
-    use mv::Move;
-    use piece::*;
-    use position::Position;
-    use square::*;
+    use crate::castle::*;
+    use crate::integrity;
+    use crate::mv::Move;
+    use crate::piece::*;
+    use crate::square::*;
+    use crate::position::Position;
 
     fn test_make_unmake(initial_fen: &'static str, expected_fen: &'static str, mv: Move) {
         let mut position = Position::from_fen(initial_fen).unwrap();

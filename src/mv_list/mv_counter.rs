@@ -1,7 +1,7 @@
-use bb::{BB, END_ROWS};
-use castle::Castle;
-use mv_list::MoveAdder;
-use square::Square;
+use crate::bb::{BB, END_ROWS};
+use crate::castle::Castle;
+use crate::mv_list::MoveAdder;
+use crate::square::Square;
 use std::ops;
 
 /// MoveCounter implements MoveAdder and keeps a count of different types of moves added to it.
@@ -93,8 +93,8 @@ impl ops::AddAssign<MoveCounter> for MoveCounter {
 #[cfg(test)]
 mod test {
     use super::*;
-    use gen::*;
-    use position::*;
+    use crate::generation::*;
+    use crate::position::*;
 
     #[test]
     fn test_move_counter() {
